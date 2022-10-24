@@ -29,7 +29,7 @@ export const mediatorSetup = () => {
 
     registerMediator(openhimConfig, mediatorConfig, (error) => {
         if (error) {
-            logger.error(`Failed to register mediator with: ${error.message}`)
+            logger.error(`Failed to register mediator: ${error.message}`)
             throw error
         }
 

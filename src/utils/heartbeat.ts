@@ -8,7 +8,7 @@ import { genAuthHeaders } from "./register"
 const emitter = new events.EventEmitter();
 let timer: NodeJS.Timeout;
 
-const sendHeartbeat = (options: RequestOptions, forceConfig: boolean, callback?: (error?: Error, body?: any) => void) => {
+const sendHeartbeat = (options: RequestOptions, forceConfig: boolean, callback?: (error: Error | undefined, body?: any) => void) => {
     const reqOptions = {
         url: `${options.apiURL}/mediators/${options.urn}/heartbeat`,
         headers: genAuthHeaders(options),
@@ -45,7 +45,7 @@ const sendHeartbeat = (options: RequestOptions, forceConfig: boolean, callback?:
             }
         } else {
             if (callback) {
-                return callback();
+                return callback(undefined);
             }
         }
     });

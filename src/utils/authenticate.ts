@@ -3,7 +3,7 @@ import request from 'request'
 import { RequestOptions } from '../types/request';
 import { authUserMap } from './register';
 
-export const authenticate = (options: RequestOptions, callback: (error?: Error, body?: any) => void) => {
+export const authenticate = (options: RequestOptions, callback: (error: Error | undefined, body?: any) => void) => {
     const reqOptions = {
         url: `${options.apiURL}/authenticate/${options.username}`,
         rejectUnauthorized: !options.trustSelfSigned
@@ -27,6 +27,6 @@ export const authenticate = (options: RequestOptions, callback: (error?: Error, 
             callback(new Error(`${err}`));
         }
 
-        callback(body);
+        callback(undefined, resp);
     });
 };

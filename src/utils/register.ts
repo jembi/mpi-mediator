@@ -31,7 +31,7 @@ export const registerMediator = (options: RequestOptions, mediatorConfig: Mediat
             if (resp.statusCode === 201) {
                 callback(undefined);
             } else {
-                callback(new Error(`Recieved non-201 status code with: ${resp.body}`));
+                callback(new Error(`Recieved non-201 status code: ${resp.body}`));
             }
         });
     });
