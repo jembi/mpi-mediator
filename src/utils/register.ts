@@ -23,7 +23,7 @@ export const registerMediator = (options: RequestOptions, mediatorConfig: Mediat
             rejectUnauthorized: !options.trustSelfSigned
         };
 
-        request.post(reqOptions, (err: Error, resp: any) => {
+        request.post(reqOptions, (err: Error, resp: request.Response) => {
             if (err) {
                 return callback(err);
             }

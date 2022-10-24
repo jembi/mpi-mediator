@@ -9,11 +9,11 @@ import { fetchConfig, activateHeartbeat } from '../utils/heartbeat'
 import { OPENHIM_PASSWORD, OPENHIM_MEDIATOR_URL, OPENHIM_USERNAME, TRUST_SELF_SIGNED } from '../config/config'
 
 export const mediatorSetup = () => {
-    const mediatorConfigFile = fs.readFileSync(path.resolve(path.resolve(), 'mediatorConfig.json'))
+    const mediatorConfigFile = fs.readFileSync(path.resolve(__dirname,'./mediatorConfig.json'))
 
     let mediatorConfig: MediatorConfig
     try {
-        mediatorConfig = JSON.parse(JSON.stringify(mediatorConfigFile))
+        mediatorConfig = JSON.parse(mediatorConfigFile.toString())
     } catch (error) {
         logger.error(`Failed to parse JSON in mediatorConfig.json`)
         throw error
