@@ -5,7 +5,7 @@ export interface MediatorConfig {
   description: string;
   defaultChannelConfig: ChannelConfig[];
   endpoints: Route[];
-  configDefs: string[]
+  configDefs: string[];
 }
 
 interface ChannelConfig {
@@ -25,4 +25,3 @@ interface Route {
   primary: boolean;
   type: string;
 }
-
