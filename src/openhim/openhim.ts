@@ -1,5 +1,4 @@
 import fs from 'fs'
-import path from 'path'
 
 import logger from '../logger'
 import { MediatorConfig } from '../types/mediatorConfig'
@@ -9,8 +8,8 @@ import { OPENHIM_PASSWORD, OPENHIM_MEDIATOR_URL, OPENHIM_USERNAME, TRUST_SELF_SI
 // @ts-ignore
 import { activateHeartbeat, fetchConfig, registerMediator } from 'openhim-mediator-utils'
 
-export const mediatorSetup = () => {
-    const mediatorConfigFile = fs.readFileSync(path.resolve(__dirname, './mediatorConfig.json'))
+const resolveMediatorConfig = (mediatorConfigFilePath: string) => {
+    const mediatorConfigFile = fs.readFileSync(mediatorConfigFilePath)
 
     let mediatorConfig: MediatorConfig
     try {
@@ -20,13 +19,22 @@ export const mediatorSetup = () => {
         throw error
     }
 
-    const openhimConfig: RequestOptions = {
+    return mediatorConfig
+}
+
+const resolveOpenhimConfig = (mediatorConfig: MediatorConfig) => {
+    return {
         apiURL: OPENHIM_MEDIATOR_URL,
         password: OPENHIM_PASSWORD,
         username: OPENHIM_USERNAME,
         trustSelfSigned: TRUST_SELF_SIGNED,
         urn: mediatorConfig.urn
     }
+}
+
+export const mediatorSetup = (mediatorConfigFilePath: string) => {
+    const mediatorConfig = resolveMediatorConfig(mediatorConfigFilePath)
+    const openhimConfig: RequestOptions = resolveOpenhimConfig(mediatorConfig)
 
     registerMediator(openhimConfig, mediatorConfig, (error: Error) => {
         if (error) {

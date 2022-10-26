@@ -1,4 +1,5 @@
 import express from "express";
+import path from 'path'
 
 import { getConfig, REGISTER_MEDIATOR } from './config/config'
 import logger from './logger'
@@ -16,6 +17,6 @@ app.listen(port, () => {
   logger.info(`Server is running on port - ${port}`)
 
   if (REGISTER_MEDIATOR) {
-    mediatorSetup()
+    mediatorSetup(path.resolve(__dirname, './openhim/mediatorConfig.json'))
   }
 })
