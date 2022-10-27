@@ -40,3 +40,22 @@ export const postData = async (
   };
 };
 
+export const buildOpenhimResponseObject = (
+  openhimTransactionStatus: string,
+  httpResponseStatusCode: number,
+  responseBody: object,
+  contentType: string = 'application/json'
+) : OpenHimResponseObject => {
+  const response : Response = {
+    status: httpResponseStatusCode,
+    headers: { 'content-type': contentType},
+    body: responseBody,
+    timestamp: moment().format()
+  };
+
+  return {
+    'x-mediator-urn': config.mediatorUrn,
+    status: openhimTransactionStatus,
+    response
+  };
+};
