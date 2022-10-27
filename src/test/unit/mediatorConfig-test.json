@@ -1,0 +1,39 @@
+{
+  "urn": "urn:mediator:mpi-checker",
+  "version": "1.0.0",
+  "name": "MPI checker",
+  "description": "Mediator that checks the existence of a patient in the Client Registry before sending the patient's clinical data to the Fhir Server. It also creates if the pateint resource does not exist",
+  "defaultChannelConfig": [
+    {
+      "name": "MPI checker",
+      "urlPattern": "^/fhir$",
+      "routes": [
+        {
+          "name": "MPI Endpoint",
+          "host": "mpi-checker-mediator",
+          "port": "3000",
+          "primary": true,
+          "type": "http"
+        }
+      ],
+      "allow": [
+        "instant"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "type": "http"
+    }
+  ],
+  "endpoints": [
+    {
+      "name": "MPI Endpoint",
+      "host": "mpi-checker-mediator",
+      "path": "/fhir",
+      "port": "3000",
+      "primary": true,
+      "type": "http"
+    }
+  ],
+  "configDefs": []
+}
