@@ -3,6 +3,7 @@ import fs from 'fs'
 import logger from '../logger'
 import { MediatorConfig } from '../types/mediatorConfig'
 import { RequestOptions } from '../types/request'
+import { validateConfiguration } from './validate-config'
 import { OPENHIM_PASSWORD, OPENHIM_MEDIATOR_URL, OPENHIM_USERNAME, TRUST_SELF_SIGNED } from '../config/config'
 
 // @ts-ignore
@@ -14,8 +15,9 @@ const resolveMediatorConfig = (mediatorConfigFilePath: string) => {
     let mediatorConfig: MediatorConfig
     try {
         mediatorConfig = JSON.parse(mediatorConfigFile.toString())
+        validateConfiguration(mediatorConfig)
     } catch (error) {
-        logger.error(`Failed to parse JSON in mediatorConfig.json`)
+        logger.error(`Failed to parse JSON in mediatorConfig.json: ${error}`)
         throw error
     }
 
