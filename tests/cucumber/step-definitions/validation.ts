@@ -3,7 +3,6 @@ import { Given, When, Then } from 'cucumber';
 import { expect } from 'chai';
 import rewire from 'rewire';
 import supertest from 'supertest';
-import fs from 'fs';
 import path from 'path';
 import fetch from 'node-fetch';
 
@@ -12,15 +11,11 @@ import { getConfig } from '../../../src/config/config';
 const app = rewire('../../../src/index').__get__('app');
 const config = getConfig();
 
-const invalidFhirBundle = JSON.parse(
-  fs.readFileSync(
-    path.resolve(__dirname, '..', 'data', 'invalidFhirBundle.json')
-  )
+const invalidFhirBundle = require(
+  path.resolve(__dirname, '..', 'data', 'invalidFhirBundle.json')
 );
-const validFhirBundle = JSON.parse(
-  fs.readFileSync(
-    path.resolve(__dirname, '..', 'data', 'validFhirBundle.json')
-  )
+const validFhirBundle = require(
+  path.resolve(__dirname, '..', 'data', 'validFhirBundle.json')
 );
 
 let server, request, responseBody;
