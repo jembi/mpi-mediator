@@ -6,10 +6,10 @@ import { MediatorConfig } from '../types/mediatorConfig';
 export function validateConfiguration(data: unknown): asserts data is MediatorConfig {
     const validator = createValidator({
         bundle: require(join(__dirname, '..', 'types', 'conf-types.to.json'))
-    })
+    });
 
-    const result = validator.validate("MediatorConfig", data)
+    const result = validator.validate("MediatorConfig", data);
     if (!result.valid) {
-        throw `invalid config file: ${result.error}`
+        throw new Error(`invalid config file: ${result.error}`);
     }
 }
