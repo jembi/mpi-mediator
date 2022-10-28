@@ -7,6 +7,7 @@ import { OpenHimResponseObject, PostResponseObject, Response } from '../types/re
 const config = getConfig();
 
 export const postData = async (
+  protocol: string,
   host: string,
   port: number | string,
   path: string,
@@ -17,7 +18,7 @@ export const postData = async (
   let status: number = 500;
 
   try {
-    const response = await fetch(`http://${host}:${port}/${path}`, {
+    const response = await fetch(`${protocol}://${host}:${port}/${path}`, {
       headers: {
         'Content-Type': contentType
       },

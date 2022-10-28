@@ -4,6 +4,7 @@ export const getConfig = () => {
     logLevel: process.env.LOG_LEVEL || 'info',
     fhirDatastoreHost: process.env.FHIR_DATASTORE_HOST || 'hapi-fhir',
     fhirDatastorePort: process.env.FHIR_DATASTORE_PORT || 8080,
+    fhirDatastoreProtocol: process.env.FHIR_DATASTORE_PROTOCOL || 'http', 
     mediatorUrn: process.env.MEDIATOR_URN || 'urn:mediator:mpi-mediator',
     runningMode: process.env.MODE || ''
   });

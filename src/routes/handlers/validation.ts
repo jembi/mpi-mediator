@@ -10,6 +10,7 @@ export const validate = async (bundle: Bundle) : Promise<ValidateResponseObect> 
   logger.info('Validating Fhir Resources');
 
   const response = await postData(
+    config.fhirDatastoreProtocol,
     config.fhirDatastoreHost,
     config.fhirDatastorePort,
     'fhir/Bundle/$validate',
