@@ -10,14 +10,13 @@ import { OPENHIM_PASSWORD, OPENHIM_MEDIATOR_URL, OPENHIM_USERNAME, TRUST_SELF_SI
 import { activateHeartbeat, fetchConfig, registerMediator } from 'openhim-mediator-utils'
 
 const resolveMediatorConfig = (mediatorConfigFilePath: string) => {
-    const mediatorConfigFile = fs.readFileSync(mediatorConfigFilePath)
-
     let mediatorConfig: MediatorConfig
     try {
+        const mediatorConfigFile = fs.readFileSync(mediatorConfigFilePath)
+
         mediatorConfig = JSON.parse(mediatorConfigFile.toString())
         validateConfiguration(mediatorConfig)
     } catch (error) {
-        logger.error(`Failed to parse JSON in mediatorConfig.json: ${error}`)
         throw error
     }
 
@@ -35,8 +34,16 @@ const resolveOpenhimConfig = (mediatorConfig: MediatorConfig) => {
 }
 
 export const mediatorSetup = (mediatorConfigFilePath: string) => {
-    const mediatorConfig = resolveMediatorConfig(mediatorConfigFilePath)
-    const openhimConfig: RequestOptions = resolveOpenhimConfig(mediatorConfig)
+    let mediatorConfig: MediatorConfig
+    let openhimConfig: RequestOptions
+    try {
+        mediatorConfig = resolveMediatorConfig(mediatorConfigFilePath)
+        openhimConfig = resolveOpenhimConfig(mediatorConfig)
+    } catch (error) {
+        logger.error(`Failed to parse JSON in mediatorConfig.json: ${error}`)
+        throw error
+    }
+
 
     registerMediator(openhimConfig, mediatorConfig, (error: Error) => {
         if (error) {
