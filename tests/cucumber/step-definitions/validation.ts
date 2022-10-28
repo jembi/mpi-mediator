@@ -21,7 +21,7 @@ const validFhirBundle = require(
 let server, request, responseBody;
 
 Given('the fhir datastore service is up and running', async () : Promise<void> => {
-  const response = await fetch(`http://${config.fhirDatastoreHost}:${config.fhirDatastorePort}`);
+  const response = await fetch(`${config.fhirDatastoreProtocol}://${config.fhirDatastoreHost}:${config.fhirDatastorePort}`);
   expect(response.status).to.equal(200);
 
   server = app.listen(3003);

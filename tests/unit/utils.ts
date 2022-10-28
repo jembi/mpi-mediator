@@ -36,13 +36,14 @@ describe('Utils', () : void => {
 
   describe('*postData', () : void => {
     it('should fail to post when service being posted to is down', async () : Promise<void> => {
-      const response : PostResponseObject = await postData('test', 2000, '', 'application/json', 'data')
+      const response : PostResponseObject = await postData('http', 'test', 2000, '', 'application/json', 'data')
 
       expect(response.status).to.equal(500);
       expect(response.body).to.have.property('error');
     });
 
     it('should post data', async () : Promise<void> => {
+      const protocol : string = 'http';
       const host : string = 'example';
       const port : number = 3000;
       const path : string = 'fhir';
@@ -60,7 +61,7 @@ describe('Utils', () : void => {
           message: 'Success'
         });
       
-      const response : PostResponseObject = await postData(host, port, path, contentType, data);
+      const response : PostResponseObject = await postData(protocol, host, port, path, contentType, data);
 
       expect(response.status).to.equal(200);
       expect(response.body).to.deep.equal(dataReturned);
