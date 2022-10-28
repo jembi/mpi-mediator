@@ -51,7 +51,7 @@ const expectedRequestOptions: RequestOptions = {
     urn: 'urn:mediator:mpi-checker'
 }
 
-describe('Unit tests... I will get there eventually', function () {
+describe('Unit tests for src/openhim/openhim.ts', function () {
     var openhimModule = rewire(path.resolve(__dirname, '../../openhim/openhim.ts'))
     const resolveMediatorConfig = openhimModule.__get__("resolveMediatorConfig")
     const resolveOpenhimConfig = openhimModule.__get__("resolveOpenhimConfig")
@@ -62,11 +62,12 @@ describe('Unit tests... I will get there eventually', function () {
             expect(mediatorConfig).to.eql(expectedMediatorConfig)
         })
         it('Should Return an Error for Non-Existant File', () => {
-            expect(() => resolveMediatorConfig(path.resolve(__dirname, './asdftgsa.json'))).to.throw()
+            expect(() => resolveMediatorConfig(path.resolve(__dirname, './asdftgsa.json')))
+                .to.throw(new RegExp('no such file or directory'))
         })
         it('Should return an error for invalid config file', () => {
             expect(() => { resolveMediatorConfig(path.resolve(__dirname, './mediatorConfig-test-fail.json')) })
-                .to.throw(new RegExp('(?=.*invalid config file)(?=.*is not conform to)'))
+                .to.throw(new RegExp('(?=.*invalid config file)(?=.*is not conform to)(?=.*Missing property)'))
         })
     })
 
