@@ -3,9 +3,9 @@ import rewire from 'rewire';
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { MediatorConfig } from '../../types/mediatorConfig';
-import { RequestOptions } from '../../types/request';
-import { OPENHIM_PASSWORD, OPENHIM_MEDIATOR_URL, OPENHIM_USERNAME, TRUST_SELF_SIGNED } from '../../config/config';
+import { MediatorConfig } from '../../src/types/mediatorConfig';
+import { RequestOptions } from '../../src/types/request';
+import { OPENHIM_PASSWORD, OPENHIM_MEDIATOR_URL, OPENHIM_USERNAME, TRUST_SELF_SIGNED } from '../../src/config/config';
 
 const expectedMediatorConfig: MediatorConfig = {
     urn: 'urn:mediator:mpi-checker',
@@ -52,7 +52,7 @@ const expectedRequestOptions: RequestOptions = {
 };
 
 describe('Unit tests for src/openhim/openhim.ts', () => {
-    const openhimModule = rewire(path.resolve(__dirname, '../../openhim/openhim.ts'));
+    const openhimModule = rewire(path.resolve(__dirname, '../../src/openhim/openhim.ts'));
     const resolveMediatorConfig = openhimModule.__get__("resolveMediatorConfig");
     const resolveOpenhimConfig = openhimModule.__get__("resolveOpenhimConfig");
 

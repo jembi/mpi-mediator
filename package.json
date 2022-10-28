@@ -4,10 +4,10 @@
   "description": "An OpenHIM mediator to handle all interactions with an MPI component",
   "main": "index.ts",
   "scripts": {
-    "start": "yarn typeonly && ts-node src/index.ts",
+    "start": "yarn typeonly && ts-node src/index.ts && rm src/types/conf-types.to.json",
     "lint": "tslint -c tslint.json -p tsconfig.json --fix",
     "docker:build": "docker build -t jembi/mpi-mediator:0.1.0 .",
-    "test": "yarn typeonly && ts-mocha -p ./tsconfig.json src/test/unit/*.ts && rm src/types/conf-types.to.json",
+    "test": "yarn typeonly && ts-mocha -p ./tsconfig.json tests/unit/*.ts && rm src/types/conf-types.to.json",
     "typeonly": "typeonly --bundle src/types/conf-types.to.json src/types/mediatorConfig.ts"
   },
   "repository": {
