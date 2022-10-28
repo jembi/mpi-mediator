@@ -43,7 +43,7 @@ const expectedMediatorConfig: MediatorConfig = {
     configDefs: []
 }
 
-const expectedCaseTwo: RequestOptions = {
+const expectedRequestOptions: RequestOptions = {
     username: OPENHIM_USERNAME,
     password: OPENHIM_PASSWORD,
     apiURL: OPENHIM_MEDIATOR_URL,
@@ -64,14 +64,17 @@ describe('Unit tests... I will get there eventually', function () {
         it('Should Return an Error for Non-Existant File', () => {
             expect(() => resolveMediatorConfig(path.resolve(__dirname, './asdftgsa.json'))).to.throw()
         })
+        it('Should return an error for invalid config file', () => {
+            expect(() => { resolveMediatorConfig(path.resolve(__dirname, './mediatorConfig-test-fail.json')) })
+                .to.throw(new RegExp('(?=.*invalid config file)(?=.*is not conform to)'))
+        })
     })
 
     describe('Test Resolving of Openhim Config', function () {
         it('Should Return the RequestOptions Matching expectedCaseTwo', () => {
             const mediatorConfig: MediatorConfig = resolveMediatorConfig(path.resolve(__dirname, './mediatorConfig-test.json'))
             const openhimConfig: RequestOptions = resolveOpenhimConfig(mediatorConfig)
-            expect(openhimConfig).to.eql(expectedCaseTwo)
+            expect(openhimConfig).to.eql(expectedRequestOptions)
         })
     })
 })
-
