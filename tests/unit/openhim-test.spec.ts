@@ -1,14 +1,13 @@
 import path from 'path';
 import rewire from 'rewire';
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { MediatorConfig } from '../../src/types/mediatorConfig';
 import { RequestOptions } from '../../src/types/request';
-import { OPENHIM_PASSWORD, OPENHIM_MEDIATOR_URL, OPENHIM_USERNAME, TRUST_SELF_SIGNED } from '../../src/config/config';
+import { getConfig } from '../../src/config/config';
 
 const expectedMediatorConfig: MediatorConfig = {
-    urn: 'urn:mediator:mpi-checker',
+    urn: 'urn:mediator:mpi-mediator',
     version: '1.0.0',
     name: 'MPI checker',
     description: "Mediator that checks the existence of a patient in the Client Registry before sending the patient's clinical data to the Fhir Server. It also creates if the pateint resource does not exist",
@@ -19,7 +18,7 @@ const expectedMediatorConfig: MediatorConfig = {
             routes: [
                 {
                     name: "MPI Endpoint",
-                    host: "mpi-checker-mediator",
+                    host: "mpi-mediator",
                     port: "3000",
                     primary: true,
                     type: "http"
@@ -33,7 +32,7 @@ const expectedMediatorConfig: MediatorConfig = {
     endpoints: [
         {
             name: 'MPI Endpoint',
-            host: 'mpi-checker-mediator',
+            host: 'mpi-mediator',
             path: '/fhir',
             port: '3000',
             primary: true,
@@ -43,15 +42,17 @@ const expectedMediatorConfig: MediatorConfig = {
     configDefs: []
 };
 
+const config = getConfig();
+
 const expectedRequestOptions: RequestOptions = {
-    username: OPENHIM_USERNAME,
-    password: OPENHIM_PASSWORD,
-    apiURL: OPENHIM_MEDIATOR_URL,
-    trustSelfSigned: TRUST_SELF_SIGNED,
-    urn: 'urn:mediator:mpi-checker'
+    username: config.openhimUsername,
+    password: config.openhimPassword,
+    apiURL: config.openhimMediatorUrl,
+    trustSelfSigned: config.trustSelfSigned,
+    urn: 'urn:mediator:mpi-mediator'
 };
 
-describe('Unit tests for src/openhim/openhim.ts', () => {
+describe('Mediator Registration', () => {
     const openhimModule = rewire(path.resolve(__dirname, '../../src/openhim/openhim.ts'));
     const resolveMediatorConfig = openhimModule.__get__("resolveMediatorConfig");
     const resolveOpenhimConfig = openhimModule.__get__("resolveOpenhimConfig");
@@ -72,7 +73,7 @@ describe('Unit tests for src/openhim/openhim.ts', () => {
     });
 
     describe('Test Resolving of Openhim Config', () => {
-        it('Should Return the RequestOptions Matching expectedCaseTwo', () => {
+        it('Should Return the RequestOptions Matching expectedRequestOptions', () => {
             const mediatorConfig: MediatorConfig = resolveMediatorConfig(path.resolve(__dirname, './mediatorConfig-test.json'));
             const openhimConfig: RequestOptions = resolveOpenhimConfig(mediatorConfig);
             expect(openhimConfig).to.eql(expectedRequestOptions);

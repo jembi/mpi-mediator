@@ -4,7 +4,7 @@ import logger from '../logger';
 import { MediatorConfig } from '../types/mediatorConfig';
 import { RequestOptions } from '../types/request';
 import { validateConfiguration } from './validate-config';
-import { OPENHIM_PASSWORD, OPENHIM_MEDIATOR_URL, OPENHIM_USERNAME, TRUST_SELF_SIGNED } from '../config/config';
+import { getConfig } from '../config/config';
 
 // @ts-ignore
 import { activateHeartbeat, fetchConfig, registerMediator } from 'openhim-mediator-utils';
@@ -24,11 +24,13 @@ const resolveMediatorConfig = (mediatorConfigFilePath: string) => {
 };
 
 const resolveOpenhimConfig = (mediatorConfig: MediatorConfig) => {
+    const config = getConfig();
+
     return {
-        apiURL: OPENHIM_MEDIATOR_URL,
-        password: OPENHIM_PASSWORD,
-        username: OPENHIM_USERNAME,
-        trustSelfSigned: TRUST_SELF_SIGNED,
+        username: config.openhimUsername,
+        password: config.openhimPassword,
+        apiURL: config.openhimMediatorUrl,
+        trustSelfSigned: config.trustSelfSigned,
         urn: mediatorConfig.urn
     };
 };

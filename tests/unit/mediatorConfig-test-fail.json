@@ -9,7 +9,7 @@
       "routes": [
         {
           "name": "MPI Endpoint",
-          "host": "mpi-checker-mediator",
+          "host": "mpi-mediator",
           "port": "3000",
           "primary": true,
           "type": "http"
@@ -27,7 +27,7 @@
   "endpoints": [
     {
       "name": "MPI Endpoint",
-      "host": "mpi-checker-mediator",
+      "host": "mpi-mediator",
       "path": "/fhir",
       "port": "3000",
       "primary": true,
