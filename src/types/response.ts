@@ -22,5 +22,5 @@ export interface PostResponseObject {
 
 export interface ValidateResponseObect {
   body: OpenHimResponseObject;
-  status: number
+  status: number;
 };
