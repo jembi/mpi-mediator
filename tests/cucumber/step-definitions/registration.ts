@@ -10,8 +10,8 @@ import { getConfig } from "../../../src/config/config";
 import { MediatorConfig } from "../../../src/types/mediatorConfig";
 import { mediatorSetup } from "../../../src/openhim/openhim";
 
-process.env.TRUST_SELF_SIGNED = 'true'
-process.env.REGISTER_MEDIATOR = 'true'
+process.env.TRUST_SELF_SIGNED = 'true';
+process.env.REGISTER_MEDIATOR = 'true';
 const config = getConfig();
 
 const httpsAgent = new https.Agent({
@@ -19,8 +19,8 @@ const httpsAgent = new https.Agent({
 });
 
 const DeleteMediator = async () => {
-  var headers = {} as { [key: string]: string }
-  headers['Authorization'] = 'Basic ' + Buffer.from(config.openhimUsername + ":" + config.openhimPassword).toString('base64')
+  let headers = {} as { [key: string]: string };
+  headers.Authorization = 'Basic ' + Buffer.from(config.openhimUsername + ":" + config.openhimPassword).toString('base64');
 
   const openhimModule = rewire(path.resolve(__dirname, '../../../src/openhim/openhim.ts'));
   const resolveMediatorConfig = openhimModule.__get__("resolveMediatorConfig");
@@ -29,10 +29,10 @@ const DeleteMediator = async () => {
 
   await fetch(config.openhimMediatorUrl + `/mediators/` + mediatorConfig.urn, {
     agent: httpsAgent,
-    headers: headers,
+    headers,
     method: 'DELETE'
   });
-}
+};
 
 function sleep(ms: number) {
   return new Promise((resolve) => {
@@ -53,17 +53,17 @@ When('the mediatorSetup function is run', () => {
 });
 
 Then('the OpenHIM Core service should have a registered mediator', async () => {
-  var headers = {} as { [key: string]: string }
-  headers['Authorization'] = 'Basic ' + Buffer.from(config.openhimUsername + ":" + config.openhimPassword).toString('base64')
+  const headers = {} as { [key: string]: string };
+  headers.Authorization = 'Basic ' + Buffer.from(config.openhimUsername + ":" + config.openhimPassword).toString('base64');
 
   const openhimModule = rewire(path.resolve(__dirname, '../../../src/openhim/openhim.ts'));
   const resolveMediatorConfig = openhimModule.__get__("resolveMediatorConfig");
 
-  await sleep(1000)
+  await sleep(1000);
 
   const response = await fetch(config.openhimMediatorUrl + '/mediators', {
     agent: httpsAgent,
-    headers: headers
+    headers
   });
 
   const respBody: MediatorConfig[] = JSON.parse(JSON.stringify(await response.json()));
