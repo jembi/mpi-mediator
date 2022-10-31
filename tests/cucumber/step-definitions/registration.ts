@@ -19,7 +19,7 @@ const httpsAgent = new https.Agent({
 });
 
 const DeleteMediator = async () => {
-  let headers = {} as { [key: string]: string };
+  const headers = {} as { [key: string]: string };
   headers.Authorization = 'Basic ' + Buffer.from(config.openhimUsername + ":" + config.openhimPassword).toString('base64');
 
   const openhimModule = rewire(path.resolve(__dirname, '../../../src/openhim/openhim.ts'));
