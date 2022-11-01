@@ -13,10 +13,12 @@ app.use(express.json({ type: 'application/fhir+json' }));
 
 app.use('/', routes);
 
-app.listen(config.port, () => {
-  logger.info(`Server is running on port - ${config.port}`);
+if (config.runningMode !== 'testing') {
+  app.listen(config.port, () => {
+    logger.info(`Server is running on port - ${config.port}`);
 
-  if (config.registerMediator) {
-    mediatorSetup(path.resolve(__dirname, './openhim/mediatorConfig.json'));
-  }
-});
+    if (config.registerMediator) {
+      mediatorSetup(path.resolve(__dirname, './openhim/mediatorConfig.json'));
+    }
+  });
+}
