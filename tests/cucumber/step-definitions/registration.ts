@@ -18,11 +18,12 @@ const httpsAgent = new https.Agent({
   rejectUnauthorized: false,
 });
 
+const openhimModule = rewire(path.resolve(__dirname, '../../../src/openhim/openhim.ts'));
+
 const DeleteMediator = async () => {
   const headers = {} as { [key: string]: string };
   headers.Authorization = 'Basic ' + Buffer.from(config.openhimUsername + ":" + config.openhimPassword).toString('base64');
 
-  const openhimModule = rewire(path.resolve(__dirname, '../../../src/openhim/openhim.ts'));
   const resolveMediatorConfig = openhimModule.__get__("resolveMediatorConfig");
 
   const mediatorConfig: MediatorConfig = resolveMediatorConfig(path.resolve(__dirname, '../../unit/mediatorConfig-test.json'));
@@ -56,7 +57,6 @@ Then('the OpenHIM Core service should have a registered mediator', async () => {
   const headers = {} as { [key: string]: string };
   headers.Authorization = 'Basic ' + Buffer.from(config.openhimUsername + ":" + config.openhimPassword).toString('base64');
 
-  const openhimModule = rewire(path.resolve(__dirname, '../../../src/openhim/openhim.ts'));
   const resolveMediatorConfig = openhimModule.__get__("resolveMediatorConfig");
 
   await sleep(1000);
