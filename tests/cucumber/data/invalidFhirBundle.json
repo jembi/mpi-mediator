@@ -1,0 +1,153 @@
+{
+  "resourceType": "Bundle",
+  "id": "0766274d-6371-4a20-a527-e3ed5af8b984",
+  "type": "transaction",
+  "entry": [
+    {
+      "fullUrl": "Composition/0f652630-c3e0-4ebc-90dc-bb200ace8d2a",
+      "resource": {
+        "resourceType": "Composition",
+        "id": "0f652630-c3e0-4ebc-90dc-bb200ace8d2a",
+        "meta": {
+          "profile": [
+            "http://openhie.org/fhir/hiv-casereporting/StructureDefinition/hiv-composition"
+          ]
+        },
+        "type": {
+          "coding": [
+            {
+              "code": "95412-3",
+              "system": "http://loinc.org"
+            }
+          ]
+        },
+        "status": "final",
+        "identifier": {
+          "system": "http://openhie.org/fhir/hiv-casereporting/identifier/hiv-case-report",
+          "value": "93c6f9b2-f2fe-423e-8955-65d65f8e3c85"
+        },
+        "date": "2021-05-18",
+        "author": [
+          {
+            "reference": "Organization/HIVOrganizationExample6"
+          }
+        ],
+        "title": "HIV Case Report",
+        "section": [
+          {
+            "title": "Client registration",
+            "code": {
+              "coding": [
+                {
+                  "code": "CLIENT-REGISTRATION",
+                  "system": "http://openhie.org/fhir/hiv-casereporting/CodeSystem/cs-case-report-sections"
+                }
+              ]
+            },
+            "entry": [
+              {
+                "reference": "Patient/2b90e71e-3e41-4418-a5c6-e32a1a64b216"
+              },
+              {
+                "reference": "RelatedPerson/91c08ad6-a1cb-43ab-a894-9777cc779071"
+              }
+            ]
+          },
+          {
+            "title": "HIV Diagnosis",
+            "code": {
+              "coding": [
+                {
+                  "code": "HIV-DIAGNOSIS",
+                  "system": "http://openhie.org/fhir/hiv-casereporting/CodeSystem/cs-case-report-sections"
+                }
+              ]
+            },
+            "entry": [
+              {
+                "reference": "Condition/672125fb-3da5-4aa5-bfa6-83b880c41f7f"
+              },
+              {
+                "reference": "Encounter/69c9adeb-09cb-475d-82e9-4503ec73c310"
+              },
+              {
+                "reference": "Observation/2c4f1a52-25b8-4f73-b868-0d07fc04a5dc"
+              },
+              {
+                "reference": "Observation/3531da39-c180-43b4-b80c-3afbd8311451"
+              }
+            ]
+          },
+          {
+            "title": "HIV Entry To Care",
+            "code": {
+              "coding": [
+                {
+                  "code": "HIV-ENTRY-TO-CARE",
+                  "system": "http://openhie.org/fhir/hiv-casereporting/CodeSystem/cs-case-report-sections"
+                }
+              ]
+            },
+            "entry": [
+              {
+                "reference": "EpisodeOfCare/213ceed5-d394-4ffa-86be-c009b53fc72a"
+              },
+              {
+                "reference": "Encounter/2fd4df52-8f9c-41fe-a60e-ccfeffb8e1ba"
+              }
+            ]
+          },
+          {
+            "title": "ARV Treatment",
+            "code": {
+              "coding": [
+                {
+                  "code": "arvTherapySummary",
+                  "system": "http://openhie.org/fhir/hiv-casereporting/CodeSystem/cs-case-report-sections"
+                }
+              ]
+            },
+            "entry": [
+              {
+                "reference": "CarePlan/1db4f7bf-7994-409d-ac5f-979e5d352049"
+              }
+            ]
+          },
+          {},
+          {
+            "title": "Viral Suppression",
+            "code": {
+              "coding": [
+                {
+                  "code": "VIRAL-SUPPRESSION",
+                  "system": "http://openhie.org/fhir/hiv-casereporting/CodeSystem/cs-case-report-sections"
+                }
+              ]
+            },
+            "entry": [
+              {
+                "reference": "Observation/842d9d6d-e59f-4394-a05d-bf86e619ea67"
+              }
+            ]
+          },
+          {
+            "title": "Death",
+            "code": {
+              "coding": [
+                {
+                  "code": "DEATH",
+                  "system": "http://openhie.org/fhir/hiv-casereporting/CodeSystem/cs-case-report-sections"
+                }
+              ]
+            },
+            "entry": [
+              {
+                "reference": "Observation/5337654a-9fc8-459d-b8b1-af5f6d3c2135"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
