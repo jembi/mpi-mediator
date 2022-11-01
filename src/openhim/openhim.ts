@@ -1,5 +1,3 @@
-import fs from 'fs';
-
 import logger from '../logger';
 import { MediatorConfig } from '../types/mediatorConfig';
 import { RequestOptions } from '../types/request';
@@ -12,9 +10,9 @@ import { activateHeartbeat, fetchConfig, registerMediator } from 'openhim-mediat
 const resolveMediatorConfig = (mediatorConfigFilePath: string) => {
     let mediatorConfig: MediatorConfig;
     try {
-        const mediatorConfigFile = fs.readFileSync(mediatorConfigFilePath);
+        const mediatorConfigFile = require(mediatorConfigFilePath);
 
-        mediatorConfig = JSON.parse(mediatorConfigFile.toString());
+        mediatorConfig = JSON.parse(JSON.stringify(mediatorConfigFile));
         validateConfiguration(mediatorConfig);
     } catch (error) {
         throw error;
@@ -45,7 +43,6 @@ export const mediatorSetup = (mediatorConfigFilePath: string) => {
         logger.error(`Failed to parse JSON: ${error}`);
         throw error;
     }
-
 
     registerMediator(openhimConfig, mediatorConfig, (error: Error) => {
         if (error) {

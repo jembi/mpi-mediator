@@ -1,10 +1,12 @@
 import path from 'path';
 import rewire from 'rewire';
-import { expect } from 'chai';
+import chai, { expect } from 'chai';
 
 import { MediatorConfig } from '../../src/types/mediatorConfig';
 import { RequestOptions } from '../../src/types/request';
 import { getConfig } from '../../src/config/config';
+
+chai.config.truncateThreshold = 0;
 
 const expectedMediatorConfig: MediatorConfig = {
     urn: 'urn:mediator:mpi-mediator',
@@ -64,7 +66,7 @@ describe('Mediator Registration', () => {
         });
         it('Should Return an Error for Non-Existant File', () => {
             expect(() => resolveMediatorConfig(path.resolve(__dirname, './asdftgsa.json')))
-                .to.throw(new RegExp('no such file or directory'));
+                .to.throw(new RegExp('Cannot find module'));
         });
         it('Should return an error for invalid config file', () => {
             expect(() => { resolveMediatorConfig(path.resolve(__dirname, './mediatorConfig-test-fail.json')); })
