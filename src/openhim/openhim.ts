@@ -42,7 +42,7 @@ export const mediatorSetup = (mediatorConfigFilePath: string) => {
         mediatorConfig = resolveMediatorConfig(mediatorConfigFilePath);
         openhimConfig = resolveOpenhimConfig(mediatorConfig);
     } catch (error) {
-        logger.error(`Failed to parse JSON in mediatorConfig.json: ${error}`);
+        logger.error(`Failed to parse JSON: ${error}`);
         throw error;
     }
 
