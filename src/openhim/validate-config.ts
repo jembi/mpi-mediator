@@ -3,7 +3,7 @@ import { createValidator } from "@typeonly/validator";
 import { join } from "path";
 import { MediatorConfig } from '../types/mediatorConfig';
 
-export function validateConfiguration(data: unknown): asserts data is MediatorConfig {
+export function validateConfiguration(data: MediatorConfig): asserts data is MediatorConfig {
     const validator = createValidator({
         bundle: require(join(__dirname, '..', 'types', 'conf-types.to.json'))
     });
