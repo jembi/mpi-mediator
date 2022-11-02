@@ -22,5 +22,10 @@ export interface PostResponseObject {
 
 export interface ValidateResponseObect {
   body: OpenHimResponseObject;
-  status: number
+  status: number;
+};
+
+export interface AuthHeader {
+  token: string;
+  error: string | null;
 };
