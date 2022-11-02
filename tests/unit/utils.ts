@@ -7,7 +7,8 @@ import {
   postData,
   extractPatientResource,
   extractPatientId,
-  modifyBundle
+  modifyBundle,
+  createAuthHeaderToken
 } from '../../src/routes/utils';
 import { OpenHimResponseObject, PostResponseObject } from '../../src/types/response';
 import { Bundle, Resource } from '../../src/types/bundle';
@@ -53,7 +54,7 @@ describe('Utils', () : void => {
       const protocol : string = 'http';
       const host : string = 'example';
       const port : number = 3000;
-      const path : string = 'fhir';
+      const path : string = '/fhir';
       const contentType : string = 'application/json';
       const data = JSON.stringify({
         data: 'data'
@@ -63,7 +64,7 @@ describe('Utils', () : void => {
       };
 
       nock(`http://${host}:${port}`)
-        .post(`/${path}`)
+        .post(`${path}`)
         .reply(200, {
           message: 'Success'
         });
@@ -351,6 +352,34 @@ describe('Utils', () : void => {
           clientRegistryPatientRef
         )
       ).to.be.deep.equal(expectedBundle);
+    });
+  });
+
+  describe('*createAuthHeaderToken', () : void => {
+    it('should return error when server error occurs', async () : Promise<void> => {
+      const errorMessage = {
+        message: 'Server down!'
+      };
+
+      nock(`${config.clientRegistryProtocol}://${config.clientRegistryHost}:${config.clientRegistryPort}`)
+        .post(`${config.clientRegistryAuthPath}`)
+        .reply(500, errorMessage);
+
+      const response = await createAuthHeaderToken();
+      expect(response.error).to.be.equal(JSON.stringify(errorMessage));
+    });
+
+    it('should return error when server error occurs', async () : Promise<void> => {
+      const successMessage = {
+        access_token: 'test'
+      };
+
+      nock(`${config.clientRegistryProtocol}://${config.clientRegistryHost}:${config.clientRegistryPort}`)
+        .post(`${config.clientRegistryAuthPath}`)
+        .reply(201, successMessage);
+
+      const response = await createAuthHeaderToken();
+      expect(response.token).to.be.equal(`${config.clientRegistryAuthHeaderType} test`);
     });
   });
 });
