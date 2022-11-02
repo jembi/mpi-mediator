@@ -3,7 +3,7 @@ import fetch from 'node-fetch';
 
 import { getConfig } from '../config/config';
 import logger from "../logger";
-import { OpenHimResponseObject, PostResponseObject, Response } from '../types/response';
+import { OpenHimResponseObject, PostResponseObject, Response, AuthHeader } from '../types/response';
 import { Bundle, Resource, Entry } from '../types/bundle';
 
 const config = getConfig();
@@ -20,7 +20,7 @@ export const postData = async (
   let status: number = 500;
 
   try {
-    const response = await fetch(`${protocol}://${host}:${port}/${path}`, {
+    const response = await fetch(`${protocol}://${host}:${port}${path}`, {
       headers: {
         'Content-Type': contentType
       },
@@ -126,4 +126,29 @@ export const modifyBundle = (
   )
 
   return modifiedBundle;
+};
+
+export const createAuthHeaderToken = async () : Promise<AuthHeader> => {
+  const authHeader : AuthHeader = {
+    token: '',
+    error: ''
+  };
+
+  const response : PostResponseObject = await postData(
+    config.clientRegistryProtocol,
+    config.clientRegistryHost,
+    config.clientRegistryPort,
+    config.clientRegistryAuthPath,
+    config.clientRegistryAuthCredentialsContentType,
+    config.clientRegistryAuthCredentials
+  );
+
+  if (response.status === 201) {
+    authHeader.token = `${config.clientRegistryAuthHeaderType} ${JSON.parse(JSON.stringify(response.body)).access_token}`;
+  } else {
+    authHeader.token = '';
+    authHeader.error = JSON.stringify(response.body);
+  };
+
+  return authHeader;
 };
