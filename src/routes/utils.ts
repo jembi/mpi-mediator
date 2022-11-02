@@ -5,27 +5,22 @@ import { getConfig } from '../config/config';
 import logger from "../logger";
 import { OpenHimResponseObject, PostResponseObject, Response, AuthHeader } from '../types/response';
 import { Bundle, Resource, Entry } from '../types/bundle';
+import { RequestDetails } from '../types/request';
 
 const config = getConfig();
 
-export const postData = async (
-  protocol: string,
-  host: string,
-  port: number | string,
-  path: string,
-  contentType: string,
-  data: string
-) : Promise<PostResponseObject> => {
+export const sendRequest = async (req : RequestDetails) : Promise<PostResponseObject> => {
   let body: object = {};
-  let status: number = 500;
+  let status: number = 200;
 
   try {
-    const response = await fetch(`${protocol}://${host}:${port}${path}`, {
+    const response = await fetch(`${req.protocol}://${req.host}:${req.port}${req.path}`, {
       headers: {
-        'Content-Type': contentType
+        'Content-Type': req.contentType ? req.contentType : '',
+        Authorization: req.authToken ? req.authToken : ''
       },
-      body: data,
-      method: 'POST'
+      body: req.data,
+      method: req.method
     });
     body = await response.json();
     status = response.status;
@@ -133,15 +128,17 @@ export const createAuthHeaderToken = async () : Promise<AuthHeader> => {
     token: '',
     error: ''
   };
+  const reqDetails : RequestDetails = {
+    protocol: config.clientRegistryProtocol,
+    host: config.clientRegistryHost,
+    port: config.clientRegistryPort,
+    path: config.clientRegistryAuthPath,
+    method: 'POST',
+    data: config.clientRegistryAuthCredentials,
+    contentType: config.clientRegistryAuthCredentialsContentType
+  }
 
-  const response : PostResponseObject = await postData(
-    config.clientRegistryProtocol,
-    config.clientRegistryHost,
-    config.clientRegistryPort,
-    config.clientRegistryAuthPath,
-    config.clientRegistryAuthCredentialsContentType,
-    config.clientRegistryAuthCredentials
-  );
+  const response : PostResponseObject = await sendRequest(reqDetails);
 
   if (response.status === 201) {
     authHeader.token = `${config.clientRegistryAuthHeaderType} ${JSON.parse(JSON.stringify(response.body)).access_token}`;

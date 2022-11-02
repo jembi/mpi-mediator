@@ -4,7 +4,7 @@ import nock from 'nock';
 import { getConfig } from '../../src/config/config';
 import {
   buildOpenhimResponseObject,
-  postData,
+  sendRequest,
   extractPatientResource,
   extractPatientId,
   modifyBundle,
@@ -12,6 +12,7 @@ import {
 } from '../../src/routes/utils';
 import { OpenHimResponseObject, PostResponseObject } from '../../src/types/response';
 import { Bundle, Resource } from '../../src/types/bundle';
+import { RequestDetails } from '../../src/types/request';
 
 const config = getConfig();
 
@@ -42,9 +43,17 @@ describe('Utils', () : void => {
     });
   });
 
-  describe('*postData', () : void => {
+  describe('*sendData', () : void => {
     it('should fail to post when service being posted to is down', async () : Promise<void> => {
-      const response : PostResponseObject = await postData('http', 'test', 2000, '', 'application/json', 'data')
+      const reqDetails : RequestDetails = {
+        protocol: 'http',
+        host: 'test',
+        port: 2000,
+        path: '',
+        method: 'POST',
+        data: 'data'
+      };
+      const response : PostResponseObject = await sendRequest(reqDetails);
 
       expect(response.status).to.equal(500);
       expect(response.body).to.have.property('error');
@@ -62,6 +71,15 @@ describe('Utils', () : void => {
       const dataReturned : object = {
         message: 'Success'
       };
+      const reqDetails : RequestDetails = {
+        protocol,
+        host,
+        port,
+        path,
+        contentType,
+        data,
+        method: 'POST'
+      };
 
       nock(`http://${host}:${port}`)
         .post(`${path}`)
@@ -69,7 +87,35 @@ describe('Utils', () : void => {
           message: 'Success'
         });
       
-      const response : PostResponseObject = await postData(protocol, host, port, path, contentType, data);
+      const response : PostResponseObject = await sendRequest(reqDetails);
+
+      expect(response.status).to.equal(200);
+      expect(response.body).to.deep.equal(dataReturned);
+    });
+
+    it('should get data', async () : Promise<void> => {
+      const protocol : string = 'http';
+      const host : string = 'example';
+      const port : number = 3000;
+      const path : string = '/fhir';
+      const dataReturned : object = {
+        message: 'Success'
+      };
+      const reqDetails : RequestDetails = {
+        protocol,
+        host,
+        port,
+        path,
+        method: 'GET'
+      };
+
+      nock(`http://${host}:${port}`)
+        .get(`${path}`)
+        .reply(200, {
+          message: 'Success'
+        });
+      
+      const response : PostResponseObject = await sendRequest(reqDetails);
 
       expect(response.status).to.equal(200);
       expect(response.body).to.deep.equal(dataReturned);
