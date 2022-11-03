@@ -428,4 +428,37 @@ describe('Utils', () : void => {
       expect(response.token).to.be.equal(`${config.clientRegistryAuthHeaderType} test`);
     });
   });
+
+  describe('*createNewPatientRef', () : void => {
+    it('should create new patient reference', () : void => {
+      const expectedRef : string = `${
+        config.clientRegistryProtocol
+      }://${
+        config.clientRegistryHost
+      }:${config.clientRegistryPort}/fhir/Patient/123`;
+
+      const ref = createNewPatientRef({id: '123'});
+      expect(ref).to.equal(expectedRef);
+    });
+  });
+
+  describe('*createHandlerResponseObject', () : void => {
+    it('should create handler response', () : void => {
+      const transactionStatus : string = 'Success';
+      const response : ResponseObject = {
+        status: 200,
+        body: {message: 'Success'}
+      };
+
+      const handlerResponse : HandlerResponseObect = createHandlerResponseObject(
+        transactionStatus,
+        response
+      );
+
+      expect(handlerResponse.status).to.equal(200);
+      expect(handlerResponse.body.response.body).to.deep.equal({
+        message: 'Success'
+      });
+    });
+  });
 });

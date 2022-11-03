@@ -149,3 +149,26 @@ export const createAuthHeaderToken = async () : Promise<AuthHeader> => {
 
   return authHeader;
 };
+
+export const createNewPatientRef = (body: object) : string => {
+  return `${
+    config.clientRegistryProtocol
+  }://${
+    config.clientRegistryHost
+  }:${config.clientRegistryPort}/fhir/Patient/${
+    JSON.parse(JSON.stringify(body)).id
+  }`;
+};
+
+export const createHandlerResponseObject = (transactionStatus : string, response : ResponseObject) : HandlerResponseObect => {
+  const responseBody = buildOpenhimResponseObject(
+    transactionStatus,
+    response.status,
+    response.body
+  );
+
+  return {
+    body: responseBody,
+    status: response.status
+  };
+};
