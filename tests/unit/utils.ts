@@ -8,9 +8,11 @@ import {
   extractPatientResource,
   extractPatientId,
   modifyBundle,
-  createAuthHeaderToken
+  createAuthHeaderToken,
+  createNewPatientRef,
+  createHandlerResponseObject
 } from '../../src/routes/utils';
-import { OpenHimResponseObject, PostResponseObject } from '../../src/types/response';
+import { HandlerResponseObect, OpenHimResponseObject, ResponseObject } from '../../src/types/response';
 import { Bundle, Resource } from '../../src/types/bundle';
 import { RequestDetails } from '../../src/types/request';
 
@@ -53,7 +55,7 @@ describe('Utils', () : void => {
         method: 'POST',
         data: 'data'
       };
-      const response : PostResponseObject = await sendRequest(reqDetails);
+      const response : ResponseObject = await sendRequest(reqDetails);
 
       expect(response.status).to.equal(500);
       expect(response.body).to.have.property('error');
@@ -87,7 +89,7 @@ describe('Utils', () : void => {
           message: 'Success'
         });
       
-      const response : PostResponseObject = await sendRequest(reqDetails);
+      const response : ResponseObject = await sendRequest(reqDetails);
 
       expect(response.status).to.equal(200);
       expect(response.body).to.deep.equal(dataReturned);
@@ -115,7 +117,7 @@ describe('Utils', () : void => {
           message: 'Success'
         });
       
-      const response : PostResponseObject = await sendRequest(reqDetails);
+      const response : ResponseObject = await sendRequest(reqDetails);
 
       expect(response.status).to.equal(200);
       expect(response.body).to.deep.equal(dataReturned);
