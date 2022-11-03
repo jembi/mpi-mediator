@@ -2,12 +2,12 @@ import { buildOpenhimResponseObject, sendRequest } from '../utils';
 import { getConfig } from "../../config/config";
 import logger from "../../logger";
 import { Bundle } from "../../types/bundle";
-import { ValidateResponseObect } from '../../types/response';
+import { HandlerResponseObect } from '../../types/response';
 import {  RequestDetails } from '../../types/request';
 
 const config = getConfig();
 
-export const validate = async (bundle: Bundle) : Promise<ValidateResponseObect> => {
+export const validate = async (bundle: Bundle) : Promise<HandlerResponseObect> => {
   logger.info('Validating Fhir Resources');
 
   const reqDetails : RequestDetails = {

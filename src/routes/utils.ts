@@ -3,13 +3,13 @@ import fetch from 'node-fetch';
 
 import { getConfig } from '../config/config';
 import logger from "../logger";
-import { OpenHimResponseObject, PostResponseObject, Response, AuthHeader } from '../types/response';
+import { OpenHimResponseObject, ResponseObject, Response, AuthHeader, HandlerResponseObect } from '../types/response';
 import { Bundle, Resource, Entry } from '../types/bundle';
 import { RequestDetails } from '../types/request';
 
 const config = getConfig();
 
-export const sendRequest = async (req : RequestDetails) : Promise<PostResponseObject> => {
+export const sendRequest = async (req : RequestDetails) : Promise<ResponseObject> => {
   let body: object = {};
   let status: number = 200;
 
@@ -93,8 +93,8 @@ export const extractPatientId = (bundle: Bundle) : string | null => {
 */
 export const modifyBundle = (
   bundle: Bundle,
-  tempPatientRef: string,
-  clientRegistryPatientRef: string
+  tempPatientRef: string = '',
+  clientRegistryPatientRef: string = ''
 ) : Bundle => {
   let modifiedBundle = Object.assign({}, bundle);
 
@@ -116,9 +116,11 @@ export const modifyBundle = (
   });
   modifiedBundle.entry = newEntry;
 
-  modifiedBundle = JSON.parse(
-    JSON.stringify(modifiedBundle).replace(new RegExp(tempPatientRef, 'g'), clientRegistryPatientRef)
-  )
+  if (tempPatientRef && clientRegistryPatientRef) {
+    modifiedBundle = JSON.parse(
+      JSON.stringify(modifiedBundle).replace(new RegExp(tempPatientRef, 'g'), clientRegistryPatientRef)
+    );
+  };
 
   return modifiedBundle;
 };
@@ -138,7 +140,7 @@ export const createAuthHeaderToken = async () : Promise<AuthHeader> => {
     contentType: config.clientRegistryAuthCredentialsContentType
   }
 
-  const response : PostResponseObject = await sendRequest(reqDetails);
+  const response : ResponseObject = await sendRequest(reqDetails);
 
   if (response.status === 201) {
     authHeader.token = `${config.clientRegistryAuthHeaderType} ${JSON.parse(JSON.stringify(response.body)).access_token}`;

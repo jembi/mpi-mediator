@@ -15,12 +15,12 @@ export interface OpenHimResponseObject {
   response: Response;
 };
 
-export interface PostResponseObject {
+export interface ResponseObject {
   status: number;
   body: object;
 };
 
-export interface ValidateResponseObect {
+export interface HandlerResponseObect {
   body: OpenHimResponseObject;
   status: number;
 };
