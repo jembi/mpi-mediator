@@ -4,7 +4,7 @@
   "description": "An OpenHIM mediator to handle all interactions with an MPI component",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node src/index.ts",
+    "start": "ts-node -r dotenv/config src/index.ts",
     "lint": "tslint -c tslint.json -p tsconfig.json --fix",
     "test:unit": "LOG_LEVEL='fatal' mocha -r ts-node/register 'tests/unit/*.ts'",
     "test:cucumber": "LOG_LEVEL='fatal' MODE='testing' cucumber-js tests/cucumber/features/*.feature --no-color --logLevel=error --require tests/cucumber/step-definitions/*.ts --require-module ts-node/register --format-options \"{\\\"snippetInterface\\\": \\\"async-await\\\"}\" --format summary --format progress-bar"
@@ -30,6 +30,7 @@
     "@types/supertest": "^2.0.12",
     "chai": "^4.3.6",
     "cucumber": "^6.0.7",
+    "dotenv": "^16.0.3",
     "mocha": "^10.1.0",
     "nock": "^13.2.9",
     "rewire": "^6.0.0",
