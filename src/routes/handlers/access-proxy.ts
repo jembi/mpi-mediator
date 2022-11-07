@@ -64,6 +64,14 @@ export const santeMpiAuthMiddleware: RequestHandler = async (
   }
 };
 
+const filterFhirRequests = (pathname: string, req: Request) => {
+  const config = getConfig();
+  return (
+    req.method === 'GET' &&
+    !!pathname.match(`^/fhir/(${config.accessProxyResources.join('|')})(/.+)?`)
+  );
+};
+
 const logProvider = () => {
   return {
     log: logger.debug.bind(logger),
@@ -110,4 +118,26 @@ export const createSanteMpiAccessProxy = () => {
   });
 
   return proxyMiddleWare;
+};
+
+export const createAccessProxy = () => {
+  const config = getConfig();
+  const {
+    fhirDatastoreProtocol: protocol,
+    fhirDatastoreHost: host,
+    fhirDatastorePort: port,
+    logLevel,
+  } = config;
+
+  // Create a proxy to HAPI FHIR
+  const target = new URL(`${protocol}://${host}:${port}`);
+  return createProxyMiddleware(filterFhirRequests, {
+    target,
+    logLevel,
+    onProxyReq(proxyReq, req, res) {
+      // add custom header to request
+      // or log the req
+      // WIP
+    },
+  });
 };
