@@ -142,7 +142,7 @@ export const createAuthHeaderToken = async () : Promise<AuthHeader> => {
 
   const response : ResponseObject = await sendRequest(reqDetails);
 
-  if (response.status === 201) {
+  if (response.status === 200) {
     authHeader.token = `${config.clientRegistryAuthHeaderType} ${JSON.parse(JSON.stringify(response.body)).access_token}`;
   } else {
     authHeader.token = '';
