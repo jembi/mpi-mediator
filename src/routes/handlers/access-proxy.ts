@@ -64,14 +64,6 @@ export const santeMpiAuthMiddleware: RequestHandler = async (
   }
 };
 
-const filterFhirRequests = (pathname: string, req: Request) => {
-  const config = getConfig();
-  return (
-    req.method === 'GET' &&
-    !!pathname.match(`^/fhir/(${config.accessProxyResources.join('|')})(/.+)?`)
-  );
-};
-
 const logProvider = () => {
   return {
     log: logger.debug.bind(logger),
@@ -120,7 +112,25 @@ export const createSanteMpiAccessProxy = () => {
   return proxyMiddleWare;
 };
 
-export const createAccessProxy = () => {
+/**
+ * Helper function to filter out the requests that needs to be proxied to HAPI FHIR
+ * @param {String} pathname
+ * @param {Request} req
+ * @returns {Boolean}
+ */
+const filterFhirRequests = (pathname: string, req: Request) => {
+  const config = getConfig();
+  return (
+    req.method === 'GET' &&
+    !!pathname.match(`^/fhir/(${config.accessProxyResources})(/.+)?`)
+  );
+};
+
+/**
+ * Creates a request handler that will handle API interactions for other FHIR resources
+ * @returns {RequestHandler}
+ */
+export const createFhirAccessProxy = () => {
   const config = getConfig();
   const {
     fhirDatastoreProtocol: protocol,
@@ -131,13 +141,14 @@ export const createAccessProxy = () => {
 
   // Create a proxy to HAPI FHIR
   const target = new URL(`${protocol}://${host}:${port}`);
-  return createProxyMiddleware(filterFhirRequests, {
+  const proxyMiddleWare = createProxyMiddleware(filterFhirRequests, {
     target,
     logLevel,
-    onProxyReq(proxyReq, req, res) {
-      // add custom header to request
-      // or log the req
-      // WIP
+    logProvider,
+    onProxyRes(proxyRes, req, res) {
+      // @todo : Request SanteMPI MDM whenever $mdm query param is provided 
     },
   });
+
+  return proxyMiddleWare;
 };

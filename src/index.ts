@@ -2,10 +2,11 @@ import express from 'express';
 import {
   createSanteMpiAccessProxy,
   santeMpiAuthMiddleware,
-  createAccessProxy,
+  createFhirAccessProxy,
 } from './routes/handlers/access-proxy';
 import { getConfig } from './config/config';
 import logger from './logger';
+
 import routes from './routes/index';
 
 const config = getConfig();
@@ -21,7 +22,7 @@ app.use(
 
 app.use(express.json({ type: 'application/fhir+json' }));
 
-app.use('/fhir', createAccessProxy());
+app.use('/fhir', createFhirAccessProxy());
 
 app.use('/', routes);
 

@@ -20,6 +20,6 @@ export const getConfig = () => {
     santeMpiProtocol: process.env.SANTE_MPI_PROTOCOL || 'http',
     santeMpiClientId: process.env.SANTE_MPI_CLIENT_ID || '',
     santeMpiClientSecret: process.env.SANTE_MPI_CLIENT_SECRET || '',
-    accessProxyResources: process.env.ACCESS_PROXY_RESOURCES?.split(',') || [],
+    accessProxyResources: process.env.ACCESS_PROXY_RESOURCES || '.+',
   });
 };
