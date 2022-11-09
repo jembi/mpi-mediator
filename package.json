@@ -7,7 +7,7 @@
     "start": "ts-node src/index.ts",
     "lint": "tslint -c tslint.json -p tsconfig.json --fix",
     "test:unit": "LOG_LEVEL='fatal' mocha -r ts-node/register 'tests/unit/*.ts'",
-    "test:cucumber": "LOG_LEVEL='fatal' MODE='testing' cucumber-js tests/cucumber/features/*.feature --no-color --logLevel=error --require tests/cucumber/step-definitions/*.ts --require-module ts-node/register --format-options \"{\\\"snippetInterface\\\": \\\"async-await\\\"}\" --format summary --format progress-bar"
+    "test:cucumber": "LOG_LEVEL='fatal' MODE='testing' cucumber-js tests/cucumber/features/**/*.feature --no-color --logLevel=error --require tests/cucumber/step-definitions/**/*.ts --require-module ts-node/register --format-options \"{\\\"snippetInterface\\\": \\\"async-await\\\"}\" --format summary --format progress-bar"
   },
   "repository": {
     "type": "git",
@@ -33,14 +33,17 @@
     "mocha": "^10.1.0",
     "nock": "^13.2.9",
     "rewire": "^6.0.0",
+    "sinon": "^14.0.1",
     "supertest": "^6.3.1",
     "ts-node": "^10.9.1",
     "tslint": "^6.1.3",
     "typescript": "^4.8.4"
   },
   "dependencies": {
+    "@types/sinon": "^10.0.13",
     "express": "^4.18.2",
     "express-async-handler": "^1.2.0",
+    "kafkajs": "^2.2.2",
     "moment": "^2.29.4",
     "node-fetch": "^2.6.7",
     "pino": "^8.7.0",

@@ -3,9 +3,15 @@ export interface Resource {
   id: string;
 };
 
+export interface Request {
+  method: string;
+  url: string;
+};
+
 export interface Entry {
   resource: Resource;
   fullUrl: string;
+  request?: Request
 };
 
 export interface Bundle {
