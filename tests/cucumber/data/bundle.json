@@ -1,0 +1,24 @@
+{
+  "resourceType": "Bundle",
+  "id": "testBundle",
+  "type": "document",
+  "entry": [
+    {
+      "fullUrl": "Patient/testPatient",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "testPatient"
+      }
+    },
+    {
+      "fullUrl": "Observation/testObservation",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "testObservation",
+        "subject": {
+          "reference": "Patient/testPatient"
+        }
+      }
+    }
+  ]
+}

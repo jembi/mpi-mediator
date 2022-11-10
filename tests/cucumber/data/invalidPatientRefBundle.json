@@ -1,0 +1,17 @@
+{
+    "resourceType": "Bundle",
+    "id": "testBundle",
+    "type": "document",
+    "entry": [
+      {
+        "fullUrl": "Observation/testObservation",
+        "resource": {
+          "resourceType": "Observation",
+          "id": "testObservation",
+          "subject": {
+            "reference": "Patient/9eca7bca-3f86-421c-a431-b0bd49753937"
+          }
+        }
+      }
+    ]
+  }

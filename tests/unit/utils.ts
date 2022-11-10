@@ -424,7 +424,7 @@ describe('Utils', () : void => {
 
       nock(`${config.clientRegistryProtocol}://${config.clientRegistryHost}:${config.clientRegistryPort}`)
         .post(`${config.clientRegistryAuthPath}`)
-        .reply(201, successMessage);
+        .reply(200, successMessage);
 
       const response = await createAuthHeaderToken();
       expect(response.token).to.be.equal(`${config.clientRegistryAuthHeaderType} test`);

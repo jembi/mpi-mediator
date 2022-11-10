@@ -124,7 +124,7 @@ describe('Match Patient Synchronously', (): void => {
     });
 
     it(
-      'should return error response when patient referenced dose not exist the in Client Registry',
+      'should return error response when patient referenced does not exist the in Client Registry',
       async (): Promise<void> => {
       const patientId: string = '1234'
       const bundle = {
