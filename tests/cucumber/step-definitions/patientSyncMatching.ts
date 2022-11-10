@@ -53,7 +53,7 @@ Given(
 
 When("a fhir bundle is send to the MPI mediator", async (): Promise<void> => {
   const response = await request
-    .post("/fhir/sync")
+    .post("/fhir")
     .send(bundle)
     .set("content-type", "application/fhir+json")
     .expect(200);
@@ -65,7 +65,7 @@ When(
   "a fhir bundle with an invalid patient reference is send to the MPI mediator",
   async (): Promise<void> => {
     const response = await request
-      .post("/fhir/sync")
+      .post("/fhir")
       .send(invalidPatientRefBundle)
       .set("content-type", "application/fhir+json")
       .expect(404);
@@ -96,7 +96,7 @@ When(
     invalidPatientRefBundle.entry[0].resource.subject.reference = `Patient/${patient.id}`;
 
     const response = await request
-      .post("/fhir/sync")
+      .post("/fhir")
       .send(invalidPatientRefBundle)
       .set("content-type", "application/fhir+json")
       .expect(200);

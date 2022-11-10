@@ -14,7 +14,7 @@ routes.post('/fhir/validate', asyncHandler(async (req, res) => {
   res.status(result.status).send(result.body);
 }));
 
-routes.post('/fhir/sync', asyncHandler(async (req, res) => {
+routes.post('/fhir', asyncHandler(async (req, res) => {
   res.set('Content-Type', 'application/openhim+json');
 
   const result = await matchSyncHandler(req.body);
