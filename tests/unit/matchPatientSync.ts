@@ -261,7 +261,7 @@ describe('Match Patient Synchronously', (): void => {
             },
           },
           {
-            fullUrl: `Patient/12333}`,
+            fullUrl: `Patient/12333`,
             resource: {
               resourceType: 'Patient',
               id: '12333',
