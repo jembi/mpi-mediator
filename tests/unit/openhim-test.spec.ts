@@ -73,7 +73,7 @@ describe('Mediator Registration', () => {
     describe('Test Resolving of Openhim Config', () => {
         it('Should Return the RequestOptions Matching expectedRequestOptions', () => {
             const mediatorConfig: MediatorConfig = resolveMediatorConfig(path.resolve(__dirname, './mediatorConfig-test.json'));
-            const openhimConfig: RequestOptions = resolveOpenhimConfig(mediatorConfig);
+            const openhimConfig: RequestOptions = resolveOpenhimConfig(mediatorConfig.urn);
             expect(openhimConfig).to.eql(expectedRequestOptions);
         });
     });

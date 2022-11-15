@@ -6,20 +6,19 @@ import { getConfig } from '../config/config';
 // @ts-ignore
 import { activateHeartbeat, fetchConfig, registerMediator } from 'openhim-mediator-utils';
 
-const resolveMediatorConfig = (mediatorConfigFilePath: string) => {
-  let mediatorConfig: MediatorConfig;
+const resolveMediatorConfig = (mediatorConfigFilePath: string): MediatorConfig => {
+  let mediatorConfigFile;
   try {
-    const mediatorConfigFile = require(mediatorConfigFilePath);
-
-    mediatorConfig = JSON.parse(JSON.stringify(mediatorConfigFile));
+    mediatorConfigFile = require(mediatorConfigFilePath);
   } catch (error) {
+    logger.error(`Failed to parse JSON: ${error}`);
     throw error;
   }
 
-  return mediatorConfig;
+  return mediatorConfigFile;
 };
 
-const resolveOpenhimConfig = (mediatorConfig: MediatorConfig) => {
+const resolveOpenhimConfig = (urn: string): RequestOptions => {
   const config = getConfig();
 
   return {
@@ -27,24 +26,17 @@ const resolveOpenhimConfig = (mediatorConfig: MediatorConfig) => {
     password: config.openhimPassword,
     apiURL: config.openhimMediatorUrl,
     trustSelfSigned: config.trustSelfSigned,
-    urn: mediatorConfig.urn,
+    urn: urn,
   };
 };
 
 export const mediatorSetup = (mediatorConfigFilePath: string) => {
-  let mediatorConfig: MediatorConfig;
-  let openhimConfig: RequestOptions;
-  try {
-    mediatorConfig = resolveMediatorConfig(mediatorConfigFilePath);
-    openhimConfig = resolveOpenhimConfig(mediatorConfig);
-  } catch (error) {
-    logger.error(`Failed to parse JSON: ${error}`);
-    throw error;
-  }
+  const mediatorConfig = resolveMediatorConfig(mediatorConfigFilePath);
+  const openhimConfig = resolveOpenhimConfig(mediatorConfig.urn);
 
   registerMediator(openhimConfig, mediatorConfig, (error: Error) => {
     if (error) {
-      logger.error(`Failed to register mediator: ${error.message}`);
+      logger.error(`Failed to register mediator: ${JSON.stringify(error)}`);
       throw error;
     }
 
@@ -52,7 +44,7 @@ export const mediatorSetup = (mediatorConfigFilePath: string) => {
 
     fetchConfig(openhimConfig, (err: Error) => {
       if (err) {
-        logger.error(`Failed to fetch initial config: ${error}`);
+        logger.error(`Failed to fetch initial config: ${JSON.stringify(err)}`);
         throw err;
       }
 
