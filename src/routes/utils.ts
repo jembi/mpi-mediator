@@ -13,31 +13,32 @@ export const postData = async (
   path: string,
   contentType: string,
   data: string
-) : Promise<PostResponseObject> => {
+): Promise<PostResponseObject> => {
   let body: object = {};
   let status: number = 500;
 
   try {
     const response = await fetch(`${protocol}://${host}:${port}/${path}`, {
       headers: {
-        'Content-Type': contentType
+        'Content-Type': contentType,
       },
       body: data,
-      method: 'POST'
+      method: 'POST',
     });
     body = await response.json();
     status = response.status;
   } catch (err) {
     if (typeof err === 'string') {
-      body = {error: err};
+      body = { error: err };
     } else if (err instanceof Error) {
-      body = {error: err.message};
+      body = { error: err.message };
     }
     status = 500;
   }
 
   return {
-    status, body
+    status,
+    body,
   };
 };
 
@@ -46,17 +47,17 @@ export const buildOpenhimResponseObject = (
   httpResponseStatusCode: number,
   responseBody: object,
   contentType: string = 'application/json'
-) : OpenHimResponseObject => {
-  const response : Response = {
+): OpenHimResponseObject => {
+  const response: Response = {
     status: httpResponseStatusCode,
-    headers: { 'content-type': contentType},
+    headers: { 'content-type': contentType },
     body: responseBody,
-    timestamp: moment().format()
+    timestamp: moment().format(),
   };
 
   return {
     'x-mediator-urn': config.mediatorUrn,
     status: openhimTransactionStatus,
-    response
+    response,
   };
 };
