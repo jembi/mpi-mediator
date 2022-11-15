@@ -4,12 +4,11 @@
   "description": "An OpenHIM mediator to handle all interactions with an MPI component",
   "main": "index.ts",
   "scripts": {
-    "start": "yarn typeonly && ts-node src/index.ts && rm src/types/conf-types.to.json",
+    "start": "ts-node src/index.ts",
     "lint": "tslint -c tslint.json -p tsconfig.json --fix",
     "docker:build": "docker build -t jembi/mpi-mediator:0.1.0 .",
-    "test:unit": "yarn typeonly && LOG_LEVEL='fatal' mocha -r ts-node/register 'tests/unit/*.ts' && rm src/types/conf-types.to.json",
-    "test:cucumber": "yarn typeonly && LOG_LEVEL='fatal' MODE='testing' cucumber-js tests/cucumber/features/*.feature --no-color --exit --logLevel=error --require 'tests/cucumber/step-definitions/*.ts' --require-module ts-node/register --format-options \"{\\\"snippetInterface\\\": \\\"async-await\\\"}\" --format summary --format progress-bar && rm src/types/conf-types.to.json",
-    "typeonly": "typeonly --bundle src/types/conf-types.to.json src/types/mediatorConfig.ts"
+    "test:unit": "LOG_LEVEL='fatal' mocha -r ts-node/register 'tests/unit/*.ts'",
+    "test:cucumber": "LOG_LEVEL='fatal' MODE='testing' cucumber-js tests/cucumber/features/*.feature --no-color --exit --logLevel=error --require 'tests/cucumber/step-definitions/*.ts' --require-module ts-node/register --format-options \"{\\\"snippetInterface\\\": \\\"async-await\\\"}\" --format summary --format progress-bar"
   },
   "repository": {
     "type": "git",
@@ -17,7 +16,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC", 
+  "license": "ISC",
   "bugs": {
     "url": "https://github.com/jembi/mpi-mediator/issues"
   },

@@ -71,8 +71,6 @@ Then('the OpenHIM Core service should have a registered mediator', async () => {
 
   expect(respBody.length).to.eql(1);
   expect(respBody[0].name).to.eql(mediatorConfig.name);
-
-  expect(async () => await DeleteMediator()).to.not.throw();
 });
 
 Then('the registered mediator should be deleted', async () => {

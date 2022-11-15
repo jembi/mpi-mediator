@@ -68,10 +68,6 @@ describe('Mediator Registration', () => {
             expect(() => resolveMediatorConfig(path.resolve(__dirname, './asdftgsa.json')))
                 .to.throw(new RegExp('Cannot find module'));
         });
-        it('Should return an error for invalid config file', () => {
-            expect(() => { resolveMediatorConfig(path.resolve(__dirname, './mediatorConfig-test-fail.json')); })
-                .to.throw(new RegExp('(?=.*invalid config file)(?=.*is not conform to)(?=.*Missing property)'));
-        });
     });
 
     describe('Test Resolving of Openhim Config', () => {

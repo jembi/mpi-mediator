@@ -1,7 +1,6 @@
 import logger from '../logger';
 import { MediatorConfig } from '../types/mediatorConfig';
 import { RequestOptions } from '../types/request';
-import { validateConfiguration } from './validate-config';
 import { getConfig } from '../config/config';
 
 // @ts-ignore
@@ -13,7 +12,6 @@ const resolveMediatorConfig = (mediatorConfigFilePath: string) => {
         const mediatorConfigFile = require(mediatorConfigFilePath);
 
         mediatorConfig = JSON.parse(JSON.stringify(mediatorConfigFile));
-        validateConfiguration(mediatorConfig);
     } catch (error) {
         throw error;
     }
