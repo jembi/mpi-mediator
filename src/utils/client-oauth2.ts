@@ -138,26 +138,6 @@ export class OAuth2Token {
   }
 
   /**
-   * Sign a standardised request object with user authentication information.
-   *
-   * @param  {Object} requestObject
-   * @return {Object}
-   */
-  sign(requestObject: ClientRequest) {
-    if (!this.accessToken) {
-      throw new Error('Unable to sign without access token');
-    }
-
-    if (this.tokenType === 'bearer') {
-      requestObject.setHeader('Authorization', `Bearer ${this.accessToken}`);
-    } else {
-      throw new Error('Only token type bearer is supported for the moment.');
-    }
-
-    return requestObject;
-  }
-
-  /**
    * Refresh a user access token with the supplied token.
    *
    * @param  {Object}  opts

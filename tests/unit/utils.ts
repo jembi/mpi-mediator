@@ -17,20 +17,20 @@ describe('Utils', () : void => {
       };
       const contentType : string = 'application/json';
       
-      const returnedObect : OpenHimResponseObject = buildOpenhimResponseObject(
+      const returnedObject : OpenHimResponseObject = buildOpenhimResponseObject(
         transactionStatus,
         httpStatus,
         body,
         contentType
       );
 
-      expect(returnedObect['x-mediator-urn']).to.equal(config.mediatorUrn);
-      expect(returnedObect.status).to.equal(transactionStatus);
-      expect(returnedObect.response).to.have.property('timestamp');
-      expect(returnedObect.response.headers).to.deep.equal({
+      expect(returnedObject['x-mediator-urn']).to.equal(config.mediatorUrn);
+      expect(returnedObject.status).to.equal(transactionStatus);
+      expect(returnedObject.response).to.have.property('timestamp');
+      expect(returnedObject.response.headers).to.deep.equal({
         'content-type': contentType
       });
-      expect(returnedObect.response.body).to.deep.equal(body);
+      expect(returnedObject.response.body).to.deep.equal(body);
     });
   });
 

@@ -69,9 +69,9 @@ const logProvider = () => {
   return {
     log: logger.debug.bind(logger),
     debug: logger.debug.bind(logger),
-    info: logger.debug.bind(logger),
-    warn: logger.debug.bind(logger),
-    error: logger.debug.bind(logger),
+    info: logger.info.bind(logger),
+    warn: logger.warn.bind(logger),
+    error: logger.error.bind(logger),
   };
 };
 
@@ -97,14 +97,13 @@ export const createSanteMpiAccessProxy = () => {
     santeMpiProtocol: protocol,
     santeMpiHost: host,
     santeMpiPort: port,
-    logLevel,
   } = config;
 
   // Create a proxy to SanteMPI
   const target = new URL(`${protocol}://${host}:${port}`);
   const proxyMiddleWare = createProxyMiddleware(filterSanteMpiRequests, {
     target,
-    logLevel,
+    logLevel: 'debug',
     logProvider,
     pathRewrite(path, req) {
       // @TODO: Will we submit body data as json or form data ?
@@ -118,6 +117,9 @@ export const createSanteMpiAccessProxy = () => {
       proxyReq.method = 'GET';
       proxyReq.setHeader('Content-Length', 0);
       proxyReq.write('');
+    },
+    onError(err, req, res) {
+      logger.error(err);
     },
   });
 
