@@ -15,6 +15,7 @@ export const getConfig = () => {
     clientRegistryAuthHeaderType: process.env.CLIENT_REGISTRY_AUTH_TYPE || 'Bearer',
     kafkaBrokers: process.env.kAFKA_BROKERS || 'kafka:9092',
     kafkaBundleTopic: process.env.KAFKA_BUNDLE_TOPIC || '2xx',
+    kafkaAsyncBundleTopic: process.env.KAFKA_ASYNC_BUNDLE_TOPIC || '2xx-async',
     mpiKafkaClientId: process.env.MPI_KAFKA_CLIENT_ID || 'mpi-mediator',
     runningMode: process.env.MODE || ''
   });
