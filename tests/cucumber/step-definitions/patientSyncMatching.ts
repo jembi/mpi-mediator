@@ -16,6 +16,7 @@ const config = getConfig();
 
 const bundle = require(path.resolve(__dirname, "..", "data", "bundle.json"));
 const invalidPatientRefBundle = require(path.resolve(__dirname, "..", "data", "invalidPatientRefBundle.json"));
+const invalidFhirBundle = require(path.resolve(__dirname, '..', 'data', 'invalidFhirBundle.json'));
 
 let server: unknown, request: unknown, responseBody: unknown;
 
@@ -57,6 +58,16 @@ When("a fhir bundle is send to the MPI mediator", async (): Promise<void> => {
     .send(bundle)
     .set("content-type", "application/fhir+json")
     .expect(200);
+
+  responseBody = response.body;
+});
+
+When("an invalid fhir bundle is send to the MPI mediator", async (): Promise<void> => {
+  const response = await request
+    .post("/fhir")
+    .send(invalidFhirBundle)
+    .set("content-type", "application/fhir+json")
+    .expect(412);
 
   responseBody = response.body;
 });
@@ -168,6 +179,11 @@ Then('an error, indicating the patient does not exist, should be sent back', ():
 
 Then('a response, indicating the clinical data has been stored, should be sent back', (): void => {
   expect(responseBody.status).to.equal('Success')
+  server.close();
+});
+
+Then('a response, indicating validation failure, should be sent back', (): void => {
+  expect(responseBody.status).to.equal('Failed')
   sendToKafka.restore();
   server.close();
 });

@@ -1,4 +1,4 @@
-import { buildOpenhimResponseObject, sendRequest } from '../utils';
+import { buildOpenhimResponseObject, modifyBundle, sendRequest } from '../utils';
 import { getConfig } from "../../config/config";
 import logger from "../../logger";
 import { Bundle } from "../../types/bundle";
@@ -17,7 +17,7 @@ export const validate = async (bundle: Bundle) : Promise<HandlerResponseObect> =
     path: '/fhir/Bundle/$validate',
     contentType: 'application/fhir+json',
     method: 'POST',
-    data: JSON.stringify(bundle)
+    data: JSON.stringify(modifyBundle(bundle))
   }
 
   const response = await sendRequest(reqDetails);

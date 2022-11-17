@@ -12,7 +12,12 @@ Feature: Synchronous Patient matching
     When a fhir bundle with an invalid patient reference is send to the MPI mediator
     Then an error, indicating the patient does not exist, should be sent back
 
- Scenario: Send bundle with valid patient reference to MPI
+  Scenario: Send bundle with valid patient reference to MPI
     Given the fhir datastore, kafka and the client registry are up and running
     When a fhir bundle with a valid patient reference is send to the MPI mediator
     Then a response, indicating the clinical data has been stored, should be sent back
+
+  Scenario: Send an invalid fhir bundle
+    Given the fhir datastore, kafka and the client registry are up and running
+    When an invalid fhir bundle is send to the MPI mediator
+    Then a response, indicating validation failure, should be sent back

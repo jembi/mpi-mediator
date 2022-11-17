@@ -23,6 +23,32 @@ describe('Match Patient Synchronously', (): void => {
       data: ''
     };
 
+    it('should fail when bundle validataion fails', async (): Promise<void> => {
+      const bundle: Bundle = {
+        type: 'document',
+        resourceType: 'Bundle',
+        id: '12',
+        entry: [
+          {
+            fullUrl: 'Encounter/1234',
+            resource: {
+              resourceType: 'Encounter',
+              id: '1233',
+            },
+          },
+        ]
+      };
+
+      nock(`${config.fhirDatastoreProtocol}://${config.fhirDatastoreHost}:${config.fhirDatastorePort}`)
+        .post('/fhir/Bundle/$validate')
+        .reply(412, {});
+
+      const handlerResponse = await matchSyncHandler(bundle);
+
+      expect(handlerResponse.status).to.be.equal(412);
+      expect(handlerResponse.body.status).to.be.equal('Failed');
+    });
+
     it('should process bundle without patient or patient ref', async (): Promise<void> => {
       const bundle: Bundle = {
         type: 'document',
@@ -56,6 +82,10 @@ describe('Match Patient Synchronously', (): void => {
           }
         ]
       };
+
+      nock(`${config.fhirDatastoreProtocol}://${config.fhirDatastoreHost}:${config.fhirDatastorePort}`)
+        .post('/fhir/Bundle/$validate')
+        .reply(200, {});
 
       const stub = sinon.stub(kafkaFhir, 'sendToFhirAndKafka');
       stub.callsFake(async (requestDetails: RequestDetails, bundle: Bundle): Promise<HandlerResponseObect> => {
@@ -112,6 +142,10 @@ describe('Match Patient Synchronously', (): void => {
         error: 'Internal Server'
       };
 
+      nock(`${config.fhirDatastoreProtocol}://${config.fhirDatastoreHost}:${config.fhirDatastorePort}`)
+        .post('/fhir/Bundle/$validate')
+        .reply(200, {});
+
       nock(`${config.clientRegistryProtocol}://${config.clientRegistryHost}:${config.clientRegistryPort}`)
         .post('/fhir/Patient')
         .reply(500, error);
@@ -147,6 +181,10 @@ describe('Match Patient Synchronously', (): void => {
       const error = {
         error: 'Resource not found'
       };
+
+      nock(`${config.fhirDatastoreProtocol}://${config.fhirDatastoreHost}:${config.fhirDatastorePort}`)
+        .post('/fhir/Bundle/$validate')
+        .reply(200, {});
 
       nock(`${config.clientRegistryProtocol}://${config.clientRegistryHost}:${config.clientRegistryPort}`)
         .get(`/fhir/Patient/${patientId}`)
@@ -209,6 +247,10 @@ describe('Match Patient Synchronously', (): void => {
         resourceType: 'Patient',
         id: patientId,
       };
+
+      nock(`${config.fhirDatastoreProtocol}://${config.fhirDatastoreHost}:${config.fhirDatastorePort}`)
+        .post('/fhir/Bundle/$validate')
+        .reply(200, {});
 
       nock(`${config.clientRegistryProtocol}://${config.clientRegistryHost}:${config.clientRegistryPort}`)
         .get(`/fhir/Patient/${patientId}`)
@@ -299,6 +341,10 @@ describe('Match Patient Synchronously', (): void => {
         resourceType: 'Patient',
         id: patientId,
       };
+
+      nock(`${config.fhirDatastoreProtocol}://${config.fhirDatastoreHost}:${config.fhirDatastorePort}`)
+        .post('/fhir/Bundle/$validate')
+        .reply(200, {});
 
       nock(`${config.clientRegistryProtocol}://${config.clientRegistryHost}:${config.clientRegistryPort}`)
         .post(`/fhir/Patient`)

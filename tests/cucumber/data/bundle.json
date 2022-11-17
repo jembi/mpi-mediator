@@ -1,23 +1,49 @@
 {
   "resourceType": "Bundle",
   "id": "testBundle",
-  "type": "document",
+  "type": "transaction",
   "entry": [
     {
       "fullUrl": "Patient/testPatient",
       "resource": {
-        "resourceType": "Patient",
-        "id": "testPatient"
+          "resourceType": "Patient",
+          "id": "testPatient",
+          "text": {
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"> <span id=\"a1\">Resource</span></div>",
+            "status": "generated"
+          }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Patient/testPatient"
       }
     },
     {
       "fullUrl": "Observation/testObservation",
       "resource": {
-        "resourceType": "Observation",
-        "id": "testObservation",
-        "subject": {
-          "reference": "Patient/testPatient"
-        }
+          "resourceType": "Observation",
+          "id": "testObservation",
+          "subject": {
+            "reference": "Patient/testPatient"
+          },
+          "status": "final",
+          "text": {
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Resource<span id=\"a1\">Asthma</span></div>",
+            "status": "generated"
+          },
+          "code": {
+            "coding": [
+              {
+                "system": "http://loinc.org",
+                "code": "29463-7",
+                "display": "Body Weight"
+              }
+            ]
+          }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Observation/testObservation"
       }
     }
   ]

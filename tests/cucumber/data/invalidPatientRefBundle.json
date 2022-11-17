@@ -1,17 +1,31 @@
 {
-    "resourceType": "Bundle",
-    "id": "testBundle",
-    "type": "document",
-    "entry": [
-      {
-        "fullUrl": "Observation/testObservation",
-        "resource": {
+  "resourceType": "Bundle",
+  "id": "testBundle",
+  "type": "transaction",
+  "entry": [
+    {
+      "fullUrl": "Observation/testObservation",
+      "resource": {
           "resourceType": "Observation",
           "id": "testObservation",
           "subject": {
             "reference": "Patient/9eca7bca-3f86-421c-a431-b0bd49753937"
+          },
+          "status": "final",
+          "text": {
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Resource<span id=\"a1\">Asthma</span></div>",
+            "status": "generated"
+          },
+          "code": {
+            "coding": [
+              {
+                "system": "http://loinc.org",
+                "code": "29463-7",
+                "display": "Body Weight"
+              }
+            ]
           }
-        }
       }
-    ]
-  }
+    }
+  ]
+}

@@ -13,6 +13,7 @@ import { Bundle, Resource } from "../../types/bundle";
 import { ResponseObject, HandlerResponseObect, AuthHeader } from '../../types/response';
 import { RequestDetails } from '../../types/request';
 import { sendToFhirAndKafka } from '../kafkaFhir';
+import { validate } from './validation';
 
 const config = getConfig();
 
@@ -40,6 +41,10 @@ export const matchSyncHandler = async (bundle: Bundle) : Promise<HandlerResponse
 
   const fhirDatastoreRequestDetails: RequestDetails = Object.assign({}, fhirDatastoreRequestDetailsOrg);
   const clientRegistryRequestDetails: RequestDetails = Object.assign({}, ClientRegistryRequestDetailsOrg);
+
+  const validationResponse: HandlerResponseObect = await validate(bundle);
+  if (validationResponse.status !== 200) return validationResponse;
+
   const patientResource: Resource | null = extractPatientResource(bundle);
   const patientId: string | null = extractPatientId(bundle);
 
