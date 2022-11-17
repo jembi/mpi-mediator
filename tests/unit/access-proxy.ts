@@ -12,6 +12,8 @@ const config = getConfig();
 
 const { santeMpiProtocol, santeMpiHost, santeMpiPort } = config;
 
+const mpiUrl = `${santeMpiProtocol}://${santeMpiHost}:${santeMpiPort}`
+
 const newOauth2TokenGenerated = {
   token_type: 'bearer',
   access_token: 'accessToken',
@@ -23,7 +25,7 @@ describe('Access proxy', (): void => {
   describe('*getSanteMpiAuthToken', async (): Promise<void> => {
 
     it('should generate access token', async (): Promise<void> => {
-      nock(`${santeMpiProtocol}://${santeMpiHost}:${santeMpiPort}`)
+      nock(mpiUrl)
         .post('/auth/oauth2_token')
         .reply(200, newOauth2TokenGenerated);
 
@@ -40,7 +42,7 @@ describe('Access proxy', (): void => {
     });
 
     it('should get saved access token', async (): Promise<void> => {
-      nock(`${santeMpiProtocol}://${santeMpiHost}:${santeMpiPort}`)
+      nock(mpiUrl)
         .post('/auth/oauth2_token')
         .reply(200, {});
 
@@ -67,7 +69,7 @@ describe('Access proxy', (): void => {
         expires_in: 1, // 1s
       };
 
-      nock(`${santeMpiProtocol}://${santeMpiHost}:${santeMpiPort}`)
+      nock(mpiUrl)
         .post(
           '/auth/oauth2_token',
           `refresh_token=${newOauth2TokenGenerated.refresh_token}&grant_type=refresh_token&clientId=&client_secret=`
@@ -93,7 +95,7 @@ describe('Access proxy', (): void => {
 			// Wait for expiration
   		await new Promise(resolve => setTimeout(resolve, 3000));
 
-      nock(`${santeMpiProtocol}://${santeMpiHost}:${santeMpiPort}`)
+      nock(mpiUrl)
         .post('/auth/oauth2_token')
         .reply(200, newOauth2TokenGenerated);
 
@@ -115,7 +117,7 @@ describe('Access proxy', (): void => {
     it('should fail if no token was found', async (): Promise<void> => {
       await new Promise(resolve => setTimeout(resolve, 3000));
 
-      nock(`${santeMpiProtocol}://${santeMpiHost}:${santeMpiPort}`)
+      nock(mpiUrl)
         .post('/auth/oauth2_token')
         .reply(400, {});
 
