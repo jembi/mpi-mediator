@@ -38,7 +38,7 @@ export const getSanteMpiAuthToken = async (): Promise<OAuth2Token> => {
   } else if (santeMpiToken.expired()) {
     santeMpiToken = await santeMpiToken.refresh();
   }
-  return Promise.resolve(santeMpiToken);
+  return santeMpiToken;
 };
 
 /**
