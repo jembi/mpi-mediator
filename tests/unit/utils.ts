@@ -18,9 +18,9 @@ import { RequestDetails } from '../../src/types/request';
 
 const config = getConfig();
 
-describe('Utils', () : void => {
-  describe('*buildOpenhimResponseObject', () : void => {
-    it('should return Object', () : void => {
+describe('Utils', (): void => {
+  describe('*buildOpenhimResponseObject', (): void => {
+    it('should return Object', (): void => {
       const transactionStatus : string = 'Success';
       const httpStatus : number = 200;
       const body : object = {
@@ -45,8 +45,8 @@ describe('Utils', () : void => {
     });
   });
 
-  describe('*sendData', () : void => {
-    it('should fail to post when service being posted to is down', async () : Promise<void> => {
+  describe('*sendData', (): void => {
+    it('should fail to post when service being posted to is down', async (): Promise<void> => {
       const reqDetails : RequestDetails = {
         protocol: 'http',
         host: 'test',
@@ -61,19 +61,19 @@ describe('Utils', () : void => {
       expect(response.body).to.have.property('error');
     });
 
-    it('should post data', async () : Promise<void> => {
-      const protocol : string = 'http';
-      const host : string = 'example';
-      const port : number = 3000;
-      const path : string = '/fhir';
-      const contentType : string = 'application/json';
+    it('should post data', async (): Promise<void> => {
+      const protocol: string = 'http';
+      const host: string = 'example';
+      const port: number = 3000;
+      const path: string = '/fhir';
+      const contentType: string = 'application/json';
       const data = JSON.stringify({
         data: 'data'
       });
-      const dataReturned : object = {
+      const dataReturned: object = {
         message: 'Success'
       };
-      const reqDetails : RequestDetails = {
+      const reqDetails: RequestDetails = {
         protocol,
         host,
         port,
@@ -89,21 +89,21 @@ describe('Utils', () : void => {
           message: 'Success'
         });
       
-      const response : ResponseObject = await sendRequest(reqDetails);
+      const response: ResponseObject = await sendRequest(reqDetails);
 
       expect(response.status).to.equal(200);
       expect(response.body).to.deep.equal(dataReturned);
     });
 
-    it('should get data', async () : Promise<void> => {
-      const protocol : string = 'http';
-      const host : string = 'example';
-      const port : number = 3000;
-      const path : string = '/fhir';
-      const dataReturned : object = {
+    it('should get data', async (): Promise<void> => {
+      const protocol: string = 'http';
+      const host: string = 'example';
+      const port: number = 3000;
+      const path: string = '/fhir';
+      const dataReturned: object = {
         message: 'Success'
       };
-      const reqDetails : RequestDetails = {
+      const reqDetails: RequestDetails = {
         protocol,
         host,
         port,
@@ -117,16 +117,16 @@ describe('Utils', () : void => {
           message: 'Success'
         });
       
-      const response : ResponseObject = await sendRequest(reqDetails);
+      const response: ResponseObject = await sendRequest(reqDetails);
 
       expect(response.status).to.equal(200);
       expect(response.body).to.deep.equal(dataReturned);
     });
   });
 
-  describe('*extractPatientResource', () : void => {
-    it('should return null when bundle is invalid (zero entries)', () : void => {
-      const bundle : Bundle = {
+  describe('*extractPatientResource', (): void => {
+    it('should return null when bundle is invalid (zero entries)', (): void => {
+      const bundle: Bundle = {
         id: '12',
         entry: [],
         resourceType: 'Bundle',
@@ -136,8 +136,8 @@ describe('Utils', () : void => {
       expect(extractPatientResource(bundle)).to.be.null;
     });
 
-    it('should return null when bundle does not have patient', () : void => {
-      const bundle : Bundle = {
+    it('should return null when bundle does not have patient', (): void => {
+      const bundle: Bundle = {
         id: '12',
         entry: [{
           fullUrl: 'Encounter/1234',
@@ -153,12 +153,12 @@ describe('Utils', () : void => {
       expect(extractPatientResource(bundle)).to.be.null;
     });
 
-    it('should return patient', () : void => {
-      const patient : Resource = {
+    it('should return patient', (): void => {
+      const patient: Resource = {
         resourceType: 'Patient',
         id: '1233'
       };
-      const bundle : Bundle = {
+      const bundle: Bundle = {
         id: '12',
         entry: [{
           fullUrl: 'Patient/1234',
@@ -172,9 +172,9 @@ describe('Utils', () : void => {
     });
   });
 
-  describe('*extractPatientId', () : void => {
+  describe('*extractPatientId', (): void => {
     it('should return null when patient ref does not exist in the bundle', () : void => {
-      const bundle : Bundle = {
+      const bundle: Bundle = {
         id: '12',
         entry: [{
           fullUrl: 'Encounter/1234',
@@ -191,7 +191,7 @@ describe('Utils', () : void => {
     });
 
     it('should return patient id', () : void => {
-      const patientId : string = 'testPatient1';
+      const patientId: string = 'testPatient1';
       const bundle = {
         id: '12',
         entry: [{
@@ -212,9 +212,9 @@ describe('Utils', () : void => {
     });
   });
 
-  describe('*modifyBundle', () : void => {
-    it('should change the bundle type to transaction from document', () : void => {
-      const bundle : Bundle = {
+  describe('*modifyBundle', (): void => {
+    it('should change the bundle type to transaction from document', (): void => {
+      const bundle: Bundle = {
         id: '12',
         entry: [],
         resourceType: 'Bundle',
@@ -230,8 +230,8 @@ describe('Utils', () : void => {
       ).to.be.equal('transaction');
     });
 
-    it('should add the request property to the entries', () : void => {
-      const bundle : Bundle = {
+    it('should add the request property to the entries', (): void => {
+      const bundle: Bundle = {
         type: 'document',
         resourceType: 'Bundle',
         id: '12',
@@ -271,8 +271,8 @@ describe('Utils', () : void => {
       ).to.be.deep.equal(expectedBundle);
     });
 
-    it('should replace tempPatientRef', () : void => {
-      const tempPatientRef : string = 'Patient/1233';
+    it('should replace tempPatientRef', (): void => {
+      const tempPatientRef: string = 'Patient/1233';
       const bundle = {
         type: 'document',
         resourceType: 'Bundle',
@@ -288,7 +288,7 @@ describe('Utils', () : void => {
           }
         }]
       };
-      const clientRegistryPatientRef : string = 'http://client-registry:8080/fhir/Patient/1455';
+      const clientRegistryPatientRef: string = 'http://client-registry:8080/fhir/Patient/1455';
       const expectedBundle = {
         resourceType: 'Bundle',
         type: 'transaction',
@@ -320,8 +320,8 @@ describe('Utils', () : void => {
       ).to.be.deep.equal(expectedBundle);
     });
 
-    it('should remove patient resource', () : void => {
-      const tempPatientRef : string = 'Patient/1233';
+    it('should remove patient resource', (): void => {
+      const tempPatientRef: string = 'Patient/1233';
       const bundle = {
         type: 'document',
         resourceType: 'Bundle',
@@ -356,7 +356,7 @@ describe('Utils', () : void => {
           }
        ]
       };
-      const clientRegistryPatientRef : string = 'http://client-registry:8080/fhir/Patient/1455';
+      const clientRegistryPatientRef: string = 'http://client-registry:8080/fhir/Patient/1455';
       const expectedBundle = {
         resourceType: 'Bundle',
         type: 'transaction',
@@ -403,8 +403,8 @@ describe('Utils', () : void => {
     });
   });
 
-  describe('*createAuthHeaderToken', () : void => {
-    it('should return error when server error occurs', async () : Promise<void> => {
+  describe('*createAuthHeaderToken', (): void => {
+    it('should return error when server error occurs', async (): Promise<void> => {
       const errorMessage = {
         message: 'Server down!'
       };
@@ -417,7 +417,7 @@ describe('Utils', () : void => {
       expect(response.error).to.be.equal(JSON.stringify(errorMessage));
     });
 
-    it('should return error when server error occurs', async () : Promise<void> => {
+    it('should return error when server error occurs', async (): Promise<void> => {
       const successMessage = {
         access_token: 'test'
       };
@@ -431,7 +431,7 @@ describe('Utils', () : void => {
     });
   });
 
-  describe('*createNewPatientRef', () : void => {
+  describe('*createNewPatientRef', (): void => {
     it('should create new patient reference', () : void => {
       const expectedRef : string = `${
         config.clientRegistryProtocol
@@ -444,7 +444,7 @@ describe('Utils', () : void => {
     });
   });
 
-  describe('*createHandlerResponseObject', () : void => {
+  describe('*createHandlerResponseObject', (): void => {
     it('should create handler response', () : void => {
       const transactionStatus : string = 'Success';
       const response : ResponseObject = {

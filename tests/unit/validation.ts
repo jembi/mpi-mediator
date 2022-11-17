@@ -7,9 +7,9 @@ import { HandlerResponseObect } from '../../src/types/response';
 
 const config = getConfig();
 
-describe('Validation handler', () : void => {
-  describe('*validate', () : void => {
-    it('should return error when validating server is unavalaible', async () : Promise<void> => {
+describe('Validation handler', (): void => {
+  describe('*validate', (): void => {
+    it('should return error when validating server is unavalaible', async (): Promise<void> => {
       const bundle = {
         resourceType: 'Bundle',
         id: 'testBundle',
@@ -33,12 +33,12 @@ describe('Validation handler', () : void => {
       .post('/fhir/Bundle/$validate')
       .reply(500, {});
 
-      const result : HandlerResponseObect = await validate(bundle);
+      const result: HandlerResponseObect = await validate(bundle);
 
       expect(result.status).to.equal(500);
     });
 
-    it('should succesfully validate', async () : Promise<void> => {
+    it('should succesfully validate', async (): Promise<void> => {
       const bundle = {
         resourceType: 'Bundle',
         id: 'testBundle',
@@ -65,7 +65,7 @@ describe('Validation handler', () : void => {
           message: 'Success'
         });
 
-      const result : HandlerResponseObect = await validate(bundle);
+      const result: HandlerResponseObect = await validate(bundle);
       
       expect(result.status).to.equal(200);
     });

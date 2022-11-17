@@ -200,7 +200,7 @@ describe('Match Patient Synchronously', (): void => {
     it(
       'should send to the FHir store and Kafka when patient exists in the Client Registry',
       async (): Promise<void> => {
-      const patientId : string = 'testPatient'
+      const patientId: string = 'testPatient'
       const bundle = {
         type: 'document',
         resourceType: 'Bundle',

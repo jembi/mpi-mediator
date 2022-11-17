@@ -2,15 +2,15 @@ import { buildOpenhimResponseObject, modifyBundle, sendRequest } from '../utils'
 import { getConfig } from "../../config/config";
 import logger from "../../logger";
 import { Bundle } from "../../types/bundle";
-import { HandlerResponseObect } from '../../types/response';
+import { HandlerResponseObect, OpenHimResponseObject } from '../../types/response';
 import {  RequestDetails } from '../../types/request';
 
 const config = getConfig();
 
-export const validate = async (bundle: Bundle) : Promise<HandlerResponseObect> => {
+export const validate = async (bundle: Bundle): Promise<HandlerResponseObect> => {
   logger.info('Validating Fhir Resources');
 
-  const reqDetails : RequestDetails = {
+  const reqDetails: RequestDetails = {
     protocol: config.fhirDatastoreProtocol,
     host: config.fhirDatastoreHost,
     port: config.fhirDatastorePort,
@@ -22,7 +22,7 @@ export const validate = async (bundle: Bundle) : Promise<HandlerResponseObect> =
 
   const response = await sendRequest(reqDetails);
 
-  let transactionStatus : string;
+  let transactionStatus: string;
 
   if (response.status === 200) {
     logger.info('Successfully validated bundle!')
@@ -32,7 +32,7 @@ export const validate = async (bundle: Bundle) : Promise<HandlerResponseObect> =
     transactionStatus = 'Failed';
   }
 
-  const responseBody = buildOpenhimResponseObject(
+  const responseBody: OpenHimResponseObject = buildOpenhimResponseObject(
     transactionStatus,
     response.status,
     response.body

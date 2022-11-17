@@ -9,7 +9,7 @@ import { RequestDetails } from '../types/request';
 
 const config = getConfig();
 
-export const sendRequest = async (req : RequestDetails) : Promise<ResponseObject> => {
+export const sendRequest = async (req: RequestDetails): Promise<ResponseObject> => {
   let body: object = {};
   let status: number = 200;
 
@@ -43,8 +43,8 @@ export const buildOpenhimResponseObject = (
   httpResponseStatusCode: number,
   responseBody: object,
   contentType: string = 'application/json'
-) : OpenHimResponseObject => {
-  const response : Response = {
+): OpenHimResponseObject => {
+  const response: Response = {
     status: httpResponseStatusCode,
     headers: { 'content-type': contentType},
     body: responseBody,
@@ -58,12 +58,12 @@ export const buildOpenhimResponseObject = (
   };
 };
 
-export const extractPatientResource = (bundle : Bundle) :  Resource | null => {
+export const extractPatientResource = (bundle: Bundle):  Resource | null => {
   if (!bundle || !bundle.entry || !bundle.entry.length) {
     return null;
   };
 
-  const patientEntry : Entry | undefined = bundle.entry.find((val, i) => {
+  const patientEntry: Entry | undefined = bundle.entry.find((val, i) => {
     if (val.resource.resourceType === 'Patient') {
       return true;
     }
@@ -73,14 +73,14 @@ export const extractPatientResource = (bundle : Bundle) :  Resource | null => {
 };
 
 export const extractPatientId = (bundle: Bundle) : string | null => {
-  const patientRefs : string[] = Array.from(
+  const patientRefs: string[] = Array.from(
     new Set(JSON.stringify(bundle).match(/Patient\/[^/^"]*/g))
   );
 
   if (!patientRefs.length) {
     return null;
   };
-  const splitRef : string[] = patientRefs[0].split('/');
+  const splitRef: string[] = patientRefs[0].split('/');
 
   return splitRef.length === 2 ? splitRef[1] : null
 };
@@ -95,7 +95,7 @@ export const modifyBundle = (
   bundle: Bundle,
   tempPatientRef: string = '',
   clientRegistryPatientRef: string = ''
-) : Bundle => {
+): Bundle => {
   let modifiedBundle = Object.assign({}, bundle);
 
   if (modifiedBundle.type === 'document') {
@@ -125,12 +125,12 @@ export const modifyBundle = (
   return modifiedBundle;
 };
 
-export const createAuthHeaderToken = async () : Promise<AuthHeader> => {
+export const createAuthHeaderToken = async (): Promise<AuthHeader> => {
   const authHeader : AuthHeader = {
     token: '',
     error: ''
   };
-  const reqDetails : RequestDetails = {
+  const reqDetails: RequestDetails = {
     protocol: config.clientRegistryProtocol,
     host: config.clientRegistryHost,
     port: config.clientRegistryPort,
@@ -140,7 +140,7 @@ export const createAuthHeaderToken = async () : Promise<AuthHeader> => {
     contentType: config.clientRegistryAuthCredentialsContentType
   }
 
-  const response : ResponseObject = await sendRequest(reqDetails);
+  const response: ResponseObject = await sendRequest(reqDetails);
 
   if (response.status === 200) {
     authHeader.token = `${config.clientRegistryAuthHeaderType} ${JSON.parse(JSON.stringify(response.body)).access_token}`;
@@ -152,7 +152,7 @@ export const createAuthHeaderToken = async () : Promise<AuthHeader> => {
   return authHeader;
 };
 
-export const createNewPatientRef = (body: object) : string => {
+export const createNewPatientRef = (body: object): string => {
   return `${
     config.clientRegistryProtocol
   }://${
@@ -162,7 +162,7 @@ export const createNewPatientRef = (body: object) : string => {
   }`;
 };
 
-export const createHandlerResponseObject = (transactionStatus : string, response : ResponseObject) : HandlerResponseObect => {
+export const createHandlerResponseObject = (transactionStatus: string, response: ResponseObject): HandlerResponseObect => {
   const responseBody = buildOpenhimResponseObject(
     transactionStatus,
     response.status,

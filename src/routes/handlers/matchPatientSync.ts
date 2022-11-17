@@ -36,7 +36,7 @@ const fhirDatastoreRequestDetailsOrg: RequestDetails = {
   data: ''
 };
 
-export const matchSyncHandler = async (bundle: Bundle) : Promise<HandlerResponseObect> => {
+export const matchSyncHandler = async (bundle: Bundle): Promise<HandlerResponseObect> => {
   logger.info('Fhir bundle recieved for synchronous matching of the patient!');
 
   const fhirDatastoreRequestDetails: RequestDetails = Object.assign({}, fhirDatastoreRequestDetailsOrg);
