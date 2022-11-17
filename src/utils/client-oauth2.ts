@@ -1,4 +1,3 @@
-import { ClientRequest } from 'http';
 import Querystring, { ParsedUrlQueryInput } from 'querystring';
 import fetch, { HeadersInit } from 'node-fetch';
 
@@ -135,26 +134,6 @@ export class OAuth2Token {
     }
 
     return this.expires;
-  }
-
-  /**
-   * Sign a standardised request object with user authentication information.
-   *
-   * @param  {Object} requestObject
-   * @return {Object}
-   */
-  sign(requestObject: ClientRequest) {
-    if (!this.accessToken) {
-      throw new Error('Unable to sign without access token');
-    }
-
-    if (this.tokenType === 'bearer') {
-      requestObject.setHeader('Authorization', `Bearer ${this.accessToken}`);
-    } else {
-      throw new Error('Only token type bearer is supported for the moment.');
-    }
-
-    return requestObject;
   }
 
   /**
@@ -302,20 +281,6 @@ export class ClientOAuth2 {
       query: { ...requestOptions.query, ...options.query },
       headers: { ...requestOptions.headers, ...options.headers },
     };
-  }
-
-  /**
-   * Attempt to parse response body as JSON, fall back to parsing as a query string.
-   *
-   * @param {string} body
-   * @return {Object}
-   */
-  parseResponseBody(body: any): Data {
-    try {
-      return JSON.parse(body);
-    } catch (e) {
-      return Querystring.parse(body) as Data;
-    }
   }
 
   /**

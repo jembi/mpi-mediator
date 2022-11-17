@@ -7,8 +7,8 @@
     "dev": "nodemon --config restart.json",
     "start": "ts-node -r dotenv/config src/index.ts",
     "lint": "tslint -c tslint.json -p tsconfig.json --fix",
-    "test:unit": "LOG_LEVEL='fatal' mocha -r ts-node/register 'tests/unit/*.ts'",
-    "test:cucumber": "LOG_LEVEL='fatal' MODE='testing' cucumber-js tests/cucumber/features/*.feature --no-color --logLevel=error --require tests/cucumber/step-definitions/*.ts --require-module ts-node/register --format-options \"{\\\"snippetInterface\\\": \\\"async-await\\\"}\" --format summary --format progress-bar"
+    "test:unit": "LOG_LEVEL='fatal' mocha -r ts-node/register 'tests/unit/*.ts' --timeout 15000",
+    "test:cucumber": "LOG_LEVEL='error' MODE='testing' cucumber-js 'tests/cucumber/features/*.feature' --no-color --logLevel='error' --require 'tests/cucumber/step-definitions/*.ts' --require-module 'ts-node/register' --require-module 'dotenv/config' --format-options \"{\\\"snippetInterface\\\": \\\"async-await\\\"}\" --format summary --format progress-bar"
   },
   "repository": {
     "type": "git",
