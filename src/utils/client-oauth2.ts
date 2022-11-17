@@ -1,4 +1,3 @@
-import { ClientRequest } from 'http';
 import Querystring, { ParsedUrlQueryInput } from 'querystring';
 import fetch, { HeadersInit } from 'node-fetch';
 
@@ -282,20 +281,6 @@ export class ClientOAuth2 {
       query: { ...requestOptions.query, ...options.query },
       headers: { ...requestOptions.headers, ...options.headers },
     };
-  }
-
-  /**
-   * Attempt to parse response body as JSON, fall back to parsing as a query string.
-   *
-   * @param {string} body
-   * @return {Object}
-   */
-  parseResponseBody(body: any): Data {
-    try {
-      return JSON.parse(body);
-    } catch (e) {
-      return Querystring.parse(body) as Data;
-    }
   }
 
   /**

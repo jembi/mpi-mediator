@@ -14,7 +14,7 @@ export let santeMpiToken: OAuth2Token | null = null;
  * Returns an instance of SanteMPI token, it does renew the token when expired.
  * @returns {Promise<OAuth2Token>}
  */
-export const getSanteMpiAuthToken = (): Promise<OAuth2Token> => {
+export const getSanteMpiAuthToken = async (): Promise<OAuth2Token> => {
   const config = getConfig();
   const {
     santeMpiProtocol,
@@ -33,12 +33,12 @@ export const getSanteMpiAuthToken = (): Promise<OAuth2Token> => {
       accessTokenUri: `${santeMpiApiUrl}auth/oauth2_token`,
       scopes: ['*'],
     });
-    return santeMpiAuth.getToken();
+
+    santeMpiToken = await santeMpiAuth.getToken();
   } else if (santeMpiToken.expired()) {
-    return santeMpiToken.refresh();
-  } else {
-    return Promise.resolve(santeMpiToken);
+    santeMpiToken = await santeMpiToken.refresh();
   }
+  return Promise.resolve(santeMpiToken);
 };
 
 /**
