@@ -7,7 +7,7 @@ import { getConfig } from '../../src/config/config';
 import { RequestDetails } from '../../src/types/request';
 import { Bundle } from '../../src/types/bundle';
 import { HandlerResponseObect } from '../../src/types/response';
-import { matchSyncHandler } from '../../src/routes/handlers/matchPatientSync'
+import { matchSyncHandler } from '../../src/routes/handlers/matchPatientSync';
 
 const config = getConfig();
 
