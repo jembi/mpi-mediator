@@ -1,7 +1,6 @@
 import { expect } from "chai";
 import nock from "nock";
 import sinon from "sinon";
-import rewire from "rewire";
 
 import { getConfig } from "../../src/config/config";
 import logger from '../../src/logger';
@@ -12,8 +11,6 @@ import { RequestDetails } from "../../src/types/request";
 import { HandlerResponseObect, ResponseObject } from "../../src/types/response";
 
 const config = getConfig();
-const checkClientRegistryResponse = rewire('../../src/routes/kafkaFhir').__get__('checkClientRegistryResponse');
-const checkPostResponse = rewire('../../src/routes/kafkaFhir').__get__('checkPostResponse');
 
 describe("Kafka Fhir interaction", (): void => {
   describe("*sendToFhirAndKafka", (): void => {
@@ -183,6 +180,21 @@ describe("Kafka Fhir interaction", (): void => {
 
   describe(
     '*checkClientRegistryResponse', () => {
+      const bundle: Bundle = {
+        type: "document",
+        resourceType: "Bundle",
+        id: "12",
+        entry: [
+          {
+            fullUrl: "Encounter/1234",
+            resource: {
+              resourceType: "Encounter",
+              id: "1233",
+            },
+          },
+        ],
+      };
+  
       it('should return error', (): void => {
         const response: ResponseObject = {
           status: 500,
@@ -191,7 +203,13 @@ describe("Kafka Fhir interaction", (): void => {
         const patientResource = null;
         const patientId = '';
 
-        expect(checkClientRegistryResponse(response, patientResource, patientId)).to.equal('Failed');
+        const stub = sinon.stub(kafkaFhir, 'sendToKafka');
+        stub.callsFake(async (_m, _n): Promise<Error | null> => {
+          return null;
+        });
+
+        expect(kafkaFhir.checkClientRegistryResponse(response, bundle, patientResource, patientId)).to.equal('Failed');
+        stub.restore();
       });
 
       it('should return null', (): void => {
@@ -202,7 +220,7 @@ describe("Kafka Fhir interaction", (): void => {
         const patientResource = null;
         const patientId = '';
 
-        expect(checkClientRegistryResponse(response, patientResource, patientId)).to.be.null;
+        expect(kafkaFhir.checkClientRegistryResponse(response, bundle, patientResource, patientId)).to.be.null;
       });
     }
   );
@@ -213,21 +231,54 @@ describe("Kafka Fhir interaction", (): void => {
         status: 500,
         body: {message: 'Error'}
       };
+      const bundle: Bundle = {
+        type: "document",
+        resourceType: "Bundle",
+        id: "12",
+        entry: [
+          {
+            fullUrl: "Encounter/1234",
+            resource: {
+              resourceType: "Encounter",
+              id: "1233",
+            },
+          },
+        ],
+      };
       const stub = sinon.stub(logger, 'error');
       stub.callsFake(msg => {
         expect(msg).to.equal(
           `Failed to process Fhir bundle - ${JSON.stringify({message: 'Error'})}`
         );
       });
+      const stub1 = sinon.stub(kafkaFhir, 'sendToKafka');
+      stub1.callsFake(async (_m, _n): Promise<Error | null> => {
+        return null;
+      });
 
-      checkPostResponse(response);
+      kafkaFhir.checkPostResponse(response, bundle);
       stub.restore();
+      stub1.restore();
     });
 
     it('should check response - success', (): void => {
       const response: ResponseObject = {
         status: 200,
         body: {message: 'Success'}
+      };
+      const bundle: Bundle = {
+        type: "document",
+        resourceType: "Bundle",
+        id: "12",
+        entry: [
+          {
+            fullUrl: "Encounter/1234",
+            resource: {
+              resourceType: "Encounter",
+              id: "1233",
+            },
+          },
+        ],
       };
       const stub = sinon.stub(logger, 'info');
       stub.callsFake(msg => {
@@ -236,7 +287,7 @@ describe("Kafka Fhir interaction", (): void => {
         );
       });
 
-      checkPostResponse(response);
+      kafkaFhir.checkPostResponse(response, bundle);
       stub.restore();
     });
   });

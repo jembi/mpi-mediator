@@ -16,6 +16,7 @@ export const getConfig = () => {
     kafkaBrokers: process.env.kAFKA_BROKERS || 'kafka:9092',
     kafkaBundleTopic: process.env.KAFKA_BUNDLE_TOPIC || '2xx',
     kafkaAsyncBundleTopic: process.env.KAFKA_ASYNC_BUNDLE_TOPIC || '2xx-async',
+    kafkaErrorTopic: process.env.KAFKA_ERROR_TOPIC || 'errors',
     mpiKafkaClientId: process.env.MPI_KAFKA_CLIENT_ID || 'mpi-mediator',
     runningMode: process.env.MODE || ''
   });

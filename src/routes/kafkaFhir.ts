@@ -88,7 +88,7 @@ export const processBundle = async (bundle: Bundle): Promise<void> => {
 
     const response: HandlerResponseObect = await sendToFhirAndKafka(fhirDatastoreRequestDetails, modifyBundle(bundle));
     
-    checkPostResponse(response);
+    checkPostResponse(response, bundle);
     return;
   }
 
@@ -105,7 +105,7 @@ export const processBundle = async (bundle: Bundle): Promise<void> => {
 
   const clientRegistryResponse: ResponseObject = await sendRequest(clientRegistryRequestDetails);
   
-  const responseError = checkClientRegistryResponse(clientRegistryResponse, patientResource, patientId)
+  const responseError = checkClientRegistryResponse(clientRegistryResponse, bundle, patientResource, patientId)
   if (responseError) return;
 
   const newPatientRef: string = createNewPatientRef(clientRegistryResponse.body);
@@ -118,11 +118,12 @@ export const processBundle = async (bundle: Bundle): Promise<void> => {
     newPatientRef
   );
 
-  checkPostResponse(response);
+  checkPostResponse(response, bundle);
 };
 
-const checkClientRegistryResponse = (
+export const checkClientRegistryResponse = (
   clientRegistryResponse: ResponseObject,
+  bundle: Bundle,
   patientResource: Resource | null,
   patientId: string | null
 ): string | null => {
@@ -145,19 +146,22 @@ const checkClientRegistryResponse = (
         )}`
       );
     }
+    sendToKafka(bundle, config.kafkaErrorTopic);
     return "Failed";
   }
   logger.info(`Patient ${patientResource ? 'creation' : 'verification' } successful in Client Registry`)
   return null;
 };
 
-const checkPostResponse = (
-  response: ResponseObject
+export const checkPostResponse = (
+  response: ResponseObject,
+  bundle: Bundle
 ) => {
   if (response.status !== 200) {
     logger.error(
       `Failed to process Fhir bundle - ${JSON.stringify(response.body)}`
     );
+    sendToKafka(bundle, config.kafkaErrorTopic);
   } else {
     logger.info('Successfully sent Fhir Bundle to Fhir datastore and Kafka');
   }
