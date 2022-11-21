@@ -6,13 +6,13 @@ import {
   santeMpiToken,
   getSanteMpiAuthToken,
   santeMpiAuthMiddleware,
-} from '../../src/config/access-proxy';
+} from '../../src/routes/handlers/access-proxy';
 
 const config = getConfig();
 
 const { santeMpiProtocol, santeMpiHost, santeMpiPort } = config;
 
-const mpiUrl = `${santeMpiProtocol}://${santeMpiHost}:${santeMpiPort}`
+const mpiUrl = `${santeMpiProtocol}://${santeMpiHost}:${santeMpiPort}`;
 
 const newOauth2TokenGenerated = {
   token_type: 'bearer',
@@ -23,7 +23,6 @@ const newOauth2TokenGenerated = {
 
 describe('Access proxy', (): void => {
   describe('*getSanteMpiAuthToken', async (): Promise<void> => {
-
     it('should generate access token', async (): Promise<void> => {
       nock(mpiUrl)
         .post('/auth/oauth2_token')
@@ -38,13 +37,11 @@ describe('Access proxy', (): void => {
       expect(santeMpiToken?.accessToken).to.equal(
         newOauth2TokenGenerated.access_token
       );
-      nock.cleanAll()
+      nock.cleanAll();
     });
 
     it('should get saved access token', async (): Promise<void> => {
-      nock(mpiUrl)
-        .post('/auth/oauth2_token')
-        .reply(200, {});
+      nock(mpiUrl).post('/auth/oauth2_token').reply(200, {});
 
       const response = await getSanteMpiAuthToken();
 
@@ -55,12 +52,12 @@ describe('Access proxy', (): void => {
       expect(santeMpiToken?.accessToken).to.equal(
         newOauth2TokenGenerated.access_token
       );
-  		nock.cleanAll()
+      nock.cleanAll();
     });
 
     it('should refresh expired access token', async (): Promise<void> => {
       // Wait for expiration
-  		await new Promise(resolve => setTimeout(resolve, 3000));
+      await new Promise((resolve) => setTimeout(resolve, 3000));
 
       const newOauth2TokenRefreshed = {
         token_type: 'bearer',
@@ -86,14 +83,14 @@ describe('Access proxy', (): void => {
         newOauth2TokenRefreshed.access_token
       );
 
-  		nock.cleanAll()
+      nock.cleanAll();
     });
   });
 
   describe('*santeMpiAuthMiddleware', (): void => {
     it('should build the header with bearer token', async (): Promise<void> => {
-			// Wait for expiration
-  		await new Promise(resolve => setTimeout(resolve, 3000));
+      // Wait for expiration
+      await new Promise((resolve) => setTimeout(resolve, 3000));
 
       nock(mpiUrl)
         .post('/auth/oauth2_token')
@@ -115,11 +112,9 @@ describe('Access proxy', (): void => {
     });
 
     it('should fail if no token was found', async (): Promise<void> => {
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      await new Promise((resolve) => setTimeout(resolve, 3000));
 
-      nock(mpiUrl)
-        .post('/auth/oauth2_token')
-        .reply(400, {});
+      nock(mpiUrl).post('/auth/oauth2_token').reply(400, {});
 
       const requestExample = {
         body: {},

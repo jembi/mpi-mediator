@@ -30,11 +30,16 @@ When(
     const response = await request
       .post('/fhir/Patient/$match')
       .set('Content-Type', 'application/fhir+json')
-      .expect(200);
+      .expect(400);
 
     responseBody = response.body;
   }
 );
+
+Then('we should get an error response', (): void => {
+  expect(responseBody.issue[0].severity).not.empty;
+  server.close();
+});
 
 When(
   'a post request with body was sent to get patients',
@@ -42,7 +47,34 @@ When(
     const response = await request
       .post('/fhir/Patient/$match')
       .send({
-        name: 'drake',
+        "resourceType": "Parameters",
+        "id": "example",
+        "parameter": [
+          {
+            "name": "resource",
+            "resource": {
+              "resourceType": "Patient",
+              "name": [
+                {
+                  "family": [
+                    "Smith"
+                  ],
+                  "given": [
+                    "John"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "count",
+            "valueInteger": "3"
+          },
+          {
+            "name": "onlyCertainMatches",
+            "valueBoolean": "false"
+          }
+        ]
       })
       .set('Content-Type', 'application/fhir+json')
       .expect(200);

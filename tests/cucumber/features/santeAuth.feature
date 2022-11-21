@@ -4,7 +4,7 @@ Feature: Sante Authenticating
     Scenario: Post without body
         Given SanteMPI client registry service is up and running
         When a post request without body was sent to get patients
-        Then a response should be sent back
+        Then we should get an error response
 
     Scenario: Post with body
         Given SanteMPI client registry service is up and running

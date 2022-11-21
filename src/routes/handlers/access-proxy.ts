@@ -1,11 +1,10 @@
 import { Request, RequestHandler } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
-import Querystring from 'querystring';
 
-import logger from '../logger';
-import { buildOpenhimResponseObject } from '../routes/utils';
-import { ClientOAuth2, OAuth2Error, OAuth2Token } from '../utils/client-oauth2';
-import { getConfig } from './config';
+import logger from '../../logger';
+import { buildOpenhimResponseObject } from '../../routes/utils';
+import { ClientOAuth2, OAuth2Error, OAuth2Token } from '../../utils/client-oauth2';
+import { getConfig } from '../../config/config';
 
 // Singleton instance of SanteMPI Token stored in memory
 export let santeMpiToken: OAuth2Token | null = null;
@@ -99,26 +98,13 @@ export const createSanteMpiAccessProxy = () => {
     santeMpiPort: port,
   } = config;
 
-  // Create a proxy to SanteMPI
+  // Create a proxy to SanteMPIssss
   const target = new URL(`${protocol}://${host}:${port}`);
   const proxyMiddleWare = createProxyMiddleware(filterSanteMpiRequests, {
     target,
     logLevel: 'debug',
     logProvider,
-    pathRewrite(path, req) {
-      // @TODO: Will we submit body data as json or form data ?
-      const query = Querystring.stringify(req.body);
-      // Remove trailing '/$match'
-      return path.replace('/$match', ``).concat(query ? `?${query}` : '');
-    },
-
-    onProxyReq(proxyReq, req, _res) {
-      // Replace the 'POST' method by a 'GET' + empty the body
-      proxyReq.method = 'GET';
-      proxyReq.setHeader('Content-Length', 0);
-      proxyReq.write('');
-    },
-    onError(err, req, res) {
+    onError(err, _req, _res) {
       logger.error(err);
     },
   });
