@@ -2,9 +2,10 @@ import { Request, RequestHandler } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 
 import logger from '../../logger';
-import { buildOpenhimResponseObject } from '../../routes/utils';
+import { buildOpenhimResponseObject, getData } from '../../routes/utils';
 import { ClientOAuth2, OAuth2Error, OAuth2Token } from '../../utils/client-oauth2';
 import { getConfig } from '../../config/config';
+import { Patient, Resource } from 'fhir/r2';
 
 // Singleton instance of SanteMPI Token stored in memory
 export let santeMpiToken: OAuth2Token | null = null;
@@ -113,6 +114,85 @@ export const createSanteMpiAccessProxy = () => {
 };
 
 /**
+ * Fetch resource by ref from Sante MPI
+ * @param {String} ref
+ */
+export const fetchResourceByRefFromSanteMpi = async <T extends Resource>(ref: string): Promise<T | undefined> => {
+  const config = getConfig();
+  const {
+    santeMpiProtocol: protocol,
+    santeMpiHost: host,
+    santeMpiPort: port,
+  } = config;
+  const token = await getSanteMpiAuthToken();
+  const response = await getData(protocol, host, port, ref, {
+    'authorization': `Bearer ${token.accessToken}`,
+    'Content-Type': 'application/fhir+json',
+  });
+  return response.status === 200 ? response.body as T : undefined;
+}
+
+/**
+ * Recusively fetch linked patient refs from Sante MPI 
+ * @param {String} patientRef 
+ * @param {String} patientLinks
+ */
+export const fetchSanteMpiPatientLinks = async (patientRef: string, patientLinks: string[]) => {
+  patientLinks.push(patientRef);
+  const patient = await fetchResourceByRefFromSanteMpi<Patient>(patientRef);
+  if (patient?.link) {
+    const linkedRefs = patient.link.map(({ other }) => other.reference);
+    const refsToFetch = linkedRefs.filter((ref) => {
+      return ref && !patientLinks.includes(ref);
+    }) as string[];
+    if (refsToFetch.length > 0) {
+      const promises = refsToFetch.map((ref) => fetchSanteMpiPatientLinks(ref, patientLinks));
+      await Promise.all(promises);
+    }
+  }
+}
+
+/**
+ * Express middleware in order to perform MDM expansion requests using Sante MPI
+ * So that :
+ *  >> GET http://example.com:8000/Observation?subject:mdm=Patient/1
+ * Becomes
+ *  >> GET http://example.com:8000/Observation?subject=Patient/1,Patient/2,Patient/3
+ *
+ * @param {Request} req
+ * @param {Response} res
+ * @param {Function} next
+ */
+export const santeMpiMdmMiddleware: RequestHandler = async (
+  req,
+  res,
+  next
+) => {
+  const mdmParam = Object.keys(req.query).find((q) => q.endsWith(':mdm'));
+  if (!mdmParam) {
+    // No MDM expansion, we forward request as it is directly to hapi fhir
+    return next();
+  }
+  // MDM expansion requested
+  try {
+    const patientRef = req.query[mdmParam] as string;
+    const searchParam = mdmParam.replace(':mdm', '');
+    const patientRefs: string[] = [];
+    await fetchSanteMpiPatientLinks(patientRef, patientRefs);
+    // Substitue the mdm search param and expand the list of patients
+    req.query[searchParam] = patientRefs.join(',');
+    delete req.query[mdmParam];
+    next();
+  } catch (e) {
+    const error = e as OAuth2Error | Error;
+    logger.error(e, 'Unable to perform an MDM expansion request');
+    const status = 500;
+    const body = buildOpenhimResponseObject(status.toString(), status, error);
+    res.status(status).send(body);
+  }
+};
+
+/**
  * Helper function to filter out the requests that needs to be proxied to HAPI FHIR
  * @param {String} pathname
  * @param {Request} req
@@ -136,17 +216,16 @@ export const createFhirAccessProxy = () => {
     fhirDatastoreProtocol: protocol,
     fhirDatastoreHost: host,
     fhirDatastorePort: port,
-    logLevel,
   } = config;
 
   // Create a proxy to HAPI FHIR
   const target = new URL(`${protocol}://${host}:${port}`);
   const proxyMiddleWare = createProxyMiddleware(filterFhirRequests, {
     target,
-    logLevel,
+    logLevel: 'debug',
     logProvider,
-    onProxyRes(proxyRes, req, res) {
-      // @todo : Request SanteMPI MDM whenever $mdm query param is provided 
+    onError(err, _req, _res) {
+      logger.error(err);
     },
   });
 

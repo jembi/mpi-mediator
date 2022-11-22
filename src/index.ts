@@ -3,6 +3,7 @@ import {
   createSanteMpiAccessProxy,
   santeMpiAuthMiddleware,
   createFhirAccessProxy,
+  santeMpiMdmMiddleware,
 } from './routes/handlers/access-proxy';
 import { getConfig } from './config/config';
 import logger from './logger';
@@ -20,9 +21,12 @@ app.use(
   createSanteMpiAccessProxy()
 );
 
-app.use(express.json({ type: 'application/fhir+json' }));
+app.use('/fhir', 
+  santeMpiMdmMiddleware,
+  createFhirAccessProxy()
+);
 
-app.use('/fhir', createFhirAccessProxy());
+app.use(express.json({ type: 'application/fhir+json' }));
 
 app.use('/', routes);
 
