@@ -10,12 +10,12 @@ const config = getConfig();
 describe('Utils', (): void => {
   describe('*buildOpenhimResponseObject', (): void => {
     it('should return Object', (): void => {
-      const transactionStatus: string = 'Success';
-      const httpStatus: number = 200;
+      const transactionStatus = 'Success';
+      const httpStatus = 200;
       const body: object = {
         message: 'Success',
       };
-      const contentType: string = 'application/json';
+      const contentType = 'application/json';
 
       const returnedObect: OpenHimResponseObject = buildOpenhimResponseObject(
         transactionStatus,
@@ -50,11 +50,11 @@ describe('Utils', (): void => {
     });
 
     it('should post data', async (): Promise<void> => {
-      const protocol: string = 'http';
-      const host: string = 'example';
-      const port: number = 3000;
-      const path: string = 'fhir';
-      const contentType: string = 'application/json';
+      const protocol = 'http';
+      const host = 'example';
+      const port = 3000;
+      const path = 'fhir';
+      const contentType = 'application/json';
       const data = JSON.stringify({
         data: 'data',
       });

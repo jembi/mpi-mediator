@@ -31,27 +31,32 @@ const resolveOpenhimConfig = (urn: string): RequestOptions => {
 };
 
 export const mediatorSetup = (mediatorConfigFilePath: string) => {
-  const mediatorConfig = resolveMediatorConfig(mediatorConfigFilePath);
-  const openhimConfig = resolveOpenhimConfig(mediatorConfig.urn);
+  try {
+    const mediatorConfig = resolveMediatorConfig(mediatorConfigFilePath);
+    const openhimConfig = resolveOpenhimConfig(mediatorConfig.urn);
 
-  registerMediator(openhimConfig, mediatorConfig, (error: Error) => {
-    if (error) {
-      logger.error(`Failed to register mediator: ${JSON.stringify(error)}`);
-      throw error;
-    }
-
-    logger.info('Successfully registered mediator!');
-
-    fetchConfig(openhimConfig, (err: Error) => {
-      if (err) {
-        logger.error(`Failed to fetch initial config: ${JSON.stringify(err)}`);
-        throw err;
+    registerMediator(openhimConfig, mediatorConfig, (error: Error) => {
+      if (error) {
+        logger.error(`Failed to register mediator: ${JSON.stringify(error)}`);
+        throw error;
       }
 
-      const emitter = activateHeartbeat(openhimConfig);
-      emitter.on('error', (err2: Error) => {
-        logger.error(`Heartbeat failed: ${JSON.stringify(err2)}`);
+      logger.info('Successfully registered mediator!');
+
+      fetchConfig(openhimConfig, (err: Error) => {
+        if (err) {
+          logger.error(`Failed to fetch initial config: ${JSON.stringify(err)}`);
+          throw err;
+        }
+
+        const emitter = activateHeartbeat(openhimConfig);
+
+        emitter.on('error', (err: Error) => {
+          logger.error(`Heartbeat failed: ${JSON.stringify(err)}`);
+        });
       });
     });
-  });
+  } catch (err) {
+    logger.error('Unable to register mediator', err);
+  }
 };

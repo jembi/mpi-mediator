@@ -11,6 +11,6 @@ export const getConfig = () => {
     fhirDatastorePort: process.env.FHIR_DATASTORE_PORT || 8080,
     fhirDatastoreProtocol: process.env.FHIR_DATASTORE_PROTOCOL || 'http',
     mediatorUrn: process.env.MEDIATOR_URN || 'urn:mediator:mpi-mediator',
-    runningMode: process.env.MODE || 'testing',
+    runningMode: process.env.MODE || '',
   });
 };

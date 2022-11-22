@@ -2,8 +2,14 @@ FROM node:16
 
 WORKDIR /usr/src/app
 
-RUN yarn
+COPY package*.json ./
 
-COPY . .
+RUN npm install -omit=dev
 
-CMD [ "yarn", "start" ]
+COPY . ./
+
+RUN npm run build
+
+EXPOSE 3000
+
+CMD [ "node", "dist/index.js" ]

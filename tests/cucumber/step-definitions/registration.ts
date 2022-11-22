@@ -20,7 +20,7 @@ const httpsAgent = new https.Agent({
 
 const openhimModule = rewire(path.resolve(__dirname, '../../../src/openhim/openhim.ts'));
 
-const DeleteMediator = async () => {
+const deleteMediator = async () => {
   const headers = {} as { [key: string]: string };
   headers.Authorization =
     'Basic ' +
@@ -84,5 +84,5 @@ Then('the OpenHIM Core service should have a registered mediator', async () => {
 });
 
 Then('the registered mediator should be deleted', async () => {
-  expect(async () => await DeleteMediator()).to.not.throw();
+  expect(async () => await deleteMediator()).to.not.throw();
 });

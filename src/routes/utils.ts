@@ -1,4 +1,4 @@
-import moment from 'moment';
+import format from 'date-fns/format';
 import fetch from 'node-fetch';
 
 import { getConfig } from '../config/config';
@@ -15,7 +15,7 @@ export const postData = async (
   data: string
 ): Promise<PostResponseObject> => {
   let body: object = {};
-  let status: number = 500;
+  let status = 500;
 
   try {
     const response = await fetch(`${protocol}://${host}:${port}/${path}`, {
@@ -46,13 +46,13 @@ export const buildOpenhimResponseObject = (
   openhimTransactionStatus: string,
   httpResponseStatusCode: number,
   responseBody: object,
-  contentType: string = 'application/json'
+  contentType = 'application/json'
 ): OpenHimResponseObject => {
   const response: Response = {
     status: httpResponseStatusCode,
     headers: { 'content-type': contentType },
     body: responseBody,
-    timestamp: moment().format(),
+    timestamp: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
   };
 
   return {
