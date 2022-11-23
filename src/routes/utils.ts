@@ -2,7 +2,7 @@ import moment from 'moment';
 import fetch from 'node-fetch';
 
 import { getConfig } from '../config/config';
-import { OpenHimResponseObject, PostResponseObject, Response } from '../types/response';
+import { OpenHimResponseObject, ResponseObject, Response } from '../types/response';
 
 const config = getConfig();
 
@@ -13,7 +13,7 @@ export const postData = async (
   path: string,
   contentType: string,
   data: string
-) : Promise<PostResponseObject> => {
+) : Promise<ResponseObject> => {
   let body: object = {};
   let status: number = 500;
 

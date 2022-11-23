@@ -3,7 +3,7 @@ import nock from 'nock';
 
 import { getConfig } from '../../src/config/config';
 import { buildOpenhimResponseObject, postData } from '../../src/routes/utils';
-import { OpenHimResponseObject, PostResponseObject } from '../../src/types/response';
+import { OpenHimResponseObject, ResponseObject } from '../../src/types/response';
 
 const config = getConfig();
 
@@ -36,7 +36,7 @@ describe('Utils', () : void => {
 
   describe('*postData', () : void => {
     it('should fail to post when service being posted to is down', async () : Promise<void> => {
-      const response : PostResponseObject = await postData('http', 'test', 2000, '', 'application/json', 'data')
+      const response : ResponseObject = await postData('http', 'test', 2000, '', 'application/json', 'data')
 
       expect(response.status).to.equal(500);
       expect(response.body).to.have.property('error');
@@ -61,7 +61,7 @@ describe('Utils', () : void => {
           message: 'Success'
         });
       
-      const response : PostResponseObject = await postData(protocol, host, port, path, contentType, data);
+      const response : ResponseObject = await postData(protocol, host, port, path, contentType, data);
 
       expect(response.status).to.equal(200);
       expect(response.body).to.deep.equal(dataReturned);
