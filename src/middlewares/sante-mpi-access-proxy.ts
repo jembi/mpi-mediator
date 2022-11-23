@@ -1,7 +1,7 @@
-import { Request, RequestHandler } from "express";
-import { createProxyMiddleware } from "http-proxy-middleware";
-import { getConfig } from "../config/config";
-import logger from "../logger";
+import { Request, RequestHandler } from 'express';
+import { createProxyMiddleware } from 'http-proxy-middleware';
+import { getConfig } from '../config/config';
+import logger from '../logger';
 
 const logProvider = () => {
   return {
@@ -18,7 +18,7 @@ const logProvider = () => {
  */
 const filterSanteMpiRequests = (pathname: string, req: Request): boolean => {
   return (
-    req.method === "POST" && !!pathname.match(/^\/fhir\/Patient\/\$match/i)
+    req.method === 'POST' && !!pathname.match(/^\/fhir\/Patient\/\$match/i)
   );
 };
 
@@ -36,7 +36,7 @@ const createSanteMpiAccessProxy = (): RequestHandler => {
   // Create a proxy to SanteMPI
   const proxyMiddleWare = createProxyMiddleware(filterSanteMpiRequests, {
     target: new URL(`${protocol}://${host}:${port}`),
-    logLevel: "debug",
+    logLevel: 'debug',
     logProvider,
     onError(err, _req, _res) {
       logger.error(err);
