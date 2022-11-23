@@ -103,9 +103,6 @@ export class OAuth2Token {
 
   /**
    * General purpose client token generator.
-   *
-   * @param {Object} client
-   * @param {Object} data
    */
   constructor(client: ClientOAuth2, data: Data) {
     this.client = client;
@@ -119,11 +116,8 @@ export class OAuth2Token {
 
   /**
    * Expire the token after some time.
-   *
-   * @param  {number|Date} duration Seconds from now to expire, or a date to expire on.
-   * @return {Date}
    */
-  expiresIn(duration: number | Date) {
+  expiresIn(duration: number | Date): Date {
     if (typeof duration === 'number') {
       this.expires = new Date();
       this.expires.setSeconds(this.expires.getSeconds() + duration);
@@ -138,11 +132,8 @@ export class OAuth2Token {
 
   /**
    * Refresh a user access token with the supplied token.
-   *
-   * @param  {Object}  opts
-   * @return {Promise}
    */
-  async refresh(opts?: ClientOAuth2Options) {
+  async refresh(opts?: ClientOAuth2Options): Promise<OAuth2Token> {
     const options = opts
       ? { ...this.client.options, ...opts }
       : this.client.options;
@@ -172,20 +163,17 @@ export class OAuth2Token {
 
   /**
    * Check whether the token has expired.
-   *
-   * @return {boolean}
    */
-  expired() {
-    return this.expires && Date.now() > this.expires.getTime();
+  expired(): boolean {
+    return !!this.expires && Date.now() > this.expires.getTime();
   }
 }
 
 export class ClientOAuth2 {
   public options: ClientOAuth2Options;
+
   /**
    * Construct an object that can handle the credentials OAuth 2.0 flow.
-   *
-   * @param {Object} options
    */
   constructor(options: ClientOAuth2Options) {
     this.options = options;
@@ -193,21 +181,15 @@ export class ClientOAuth2 {
 
   /**
    * Sanitize the scopes option to be a string.
-   *
-   * @param  {Array}  scopes
-   * @return {string}
    */
-  sanitizeScope(scopes: string[]) {
+  sanitizeScope(scopes: string[]): string {
     return Array.isArray(scopes) ? scopes.join(' ') : '';
   }
 
   /**
    * Request an access token using the client credentials.
-   *
-   * @param  {Object}  [opts]
-   * @return {Promise}
    */
-  async getToken(opts?: ClientOAuth2Options) {
+  async getToken(opts?: ClientOAuth2Options): Promise<OAuth2Token> {
     const options = opts ? { ...this.options, ...opts } : this.options;
 
     const body: any = {
@@ -237,22 +219,16 @@ export class ClientOAuth2 {
 
   /**
    * Create a new token from existing data.
-   *
-   * @param  {Object} [data]
-   * @return {Object}
    */
-  createToken(data: Data) {
+  createToken(data: Data): OAuth2Token {
     return new OAuth2Token(this, data);
   }
 
   /**
    * Pull an authentication error from the response data.
-   *
-   * @param  {Object} data
-   * @return {string}
    */
-  getAuthError(body: any) {
-    var message =
+  getAuthError(body: any): OAuth2Error | undefined {
+    const message =
       body.error in ERROR_RESPONSES || body.error_description || body.error;
 
     if (message) {
@@ -286,11 +262,8 @@ export class ClientOAuth2 {
   /**
    * Using the node-fetch request method, we'll automatically attempt to parse
    * the response.
-   *
-   * @param  {Object}  options
-   * @return {Promise}
    */
-  async request(options: OAuth2RequestOptions) {
+  async request(options: OAuth2RequestOptions): Promise<Data> {
     var url = options.url;
     var body = Querystring.stringify(options.body);
     var query = Querystring.stringify(options.query);

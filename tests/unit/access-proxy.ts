@@ -3,12 +3,12 @@ import nock from 'nock';
 
 import { getConfig } from '../../src/config/config';
 import {
+  santeMpiAuthMiddleware,
+} from '../../src/middlewares/sante-mpi-auth';
+import {
   santeMpiToken,
   getSanteMpiAuthToken,
 } from '../../src/utils/sante-mpi';
-import {
-  santeMpiAuthMiddleware,
-} from '../../src/middlewares/sante-mpi-auth';
 
 const config = getConfig();
 

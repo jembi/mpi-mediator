@@ -5,7 +5,6 @@ import { santeMpiAccessProxyMiddleware } from '../middlewares/sante-mpi-access-p
 import { santeMpiAuthMiddleware } from '../middlewares/sante-mpi-auth';
 import { santeMpiMdmEverythingMiddleware } from '../middlewares/sante-mpi-mdm-everything';
 import { santeMpiMdmQueryLinksMiddleware } from '../middlewares/sante-mpi-mdm-query-links';
-
 import { validate } from './handlers/validation';
 
 const routes = express.Router();

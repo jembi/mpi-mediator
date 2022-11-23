@@ -6,9 +6,7 @@ import { MpiMediatorResponseObject } from '../../types/response';
 
 const config = getConfig();
 
-export const validate = async (
-  bundle: Bundle
-): Promise<MpiMediatorResponseObject> => {
+export const validate = async (bundle: Bundle) : Promise<MpiMediatorResponseObject> => {
   logger.info('Validating Fhir Resources');
 
   const response = await postData(

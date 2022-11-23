@@ -1,7 +1,7 @@
-import { Request } from 'express';
-import { createProxyMiddleware } from 'http-proxy-middleware';
-import { getConfig } from '../config/config';
-import logger from '../logger';
+import { Request, RequestHandler } from "express";
+import { createProxyMiddleware } from "http-proxy-middleware";
+import { getConfig } from "../config/config";
+import logger from "../logger";
 
 const logProvider = () => {
   return {
@@ -15,21 +15,17 @@ const logProvider = () => {
 
 /**
  * Helper function to filter out the requests that needs to be proxied to SanteMPI
- * @param {String} pathname
- * @param {Request} req
- * @returns {Boolean}
  */
-const filterSanteMpiRequests = (pathname: string, req: Request) => {
+const filterSanteMpiRequests = (pathname: string, req: Request): boolean => {
   return (
-    req.method === 'POST' && !!pathname.match(/^\/fhir\/Patient\/\$match/i)
+    req.method === "POST" && !!pathname.match(/^\/fhir\/Patient\/\$match/i)
   );
 };
 
 /**
  * Creates a request handler that will handle API interactions for FHIR Patients
- * @returns {RequestHandler}
  */
-const createSanteMpiAccessProxy = () => {
+const createSanteMpiAccessProxy = (): RequestHandler => {
   const config = getConfig();
   const {
     santeMpiProtocol: protocol,
@@ -37,11 +33,10 @@ const createSanteMpiAccessProxy = () => {
     santeMpiPort: port,
   } = config;
 
-  // Create a proxy to SanteMPIssss
-  const target = new URL(`${protocol}://${host}:${port}`);
+  // Create a proxy to SanteMPI
   const proxyMiddleWare = createProxyMiddleware(filterSanteMpiRequests, {
-    target,
-    logLevel: 'debug',
+    target: new URL(`${protocol}://${host}:${port}`),
+    logLevel: "debug",
     logProvider,
     onError(err, _req, _res) {
       logger.error(err);
