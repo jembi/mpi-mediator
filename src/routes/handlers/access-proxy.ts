@@ -125,8 +125,8 @@ export const fetchResourceByRefFromSanteMpi = async <T extends Resource>(ref: st
     santeMpiPort: port,
   } = config;
   const token = await getSanteMpiAuthToken();
-  const response = await getData(protocol, host, port, ref, {
-    'authorization': `Bearer ${token.accessToken}`,
+  const response = await getData(protocol, host, port, `fhir/${ref}`, {
+    'Authorization': `Bearer ${token.accessToken}`,
     'Content-Type': 'application/fhir+json',
   });
   return response.status === 200 ? response.body as T : undefined;
@@ -139,7 +139,7 @@ export const fetchResourceByRefFromSanteMpi = async <T extends Resource>(ref: st
  */
 export const fetchSanteMpiPatientLinks = async (patientRef: string, patientLinks: string[]) => {
   patientLinks.push(patientRef);
-  const patient = await fetchResourceByRefFromSanteMpi<Patient>(patientRef);
+  const patient = await fetchResourceByRefFromSanteMpi<Patient>(patientRef);  
   if (patient?.link) {
     const linkedRefs = patient.link.map(({ other }) => other.reference);
     const refsToFetch = linkedRefs.filter((ref) => {
@@ -170,6 +170,7 @@ export const santeMpiMdmMiddleware: RequestHandler = async (
 ) => {
   const mdmParam = Object.keys(req.query).find((q) => q.endsWith(':mdm'));
   if (!mdmParam) {
+    logger.info(`${req.method} ${req.path} request to SanteMPI MDM Middleware - No MDM expansion taking place`);
     // No MDM expansion, we forward request as it is directly to hapi fhir
     return next();
   }
@@ -178,10 +179,12 @@ export const santeMpiMdmMiddleware: RequestHandler = async (
     const patientRef = req.query[mdmParam] as string;
     const searchParam = mdmParam.replace(':mdm', '');
     const patientRefs: string[] = [];
+    logger.info(`${req.method} ${req.path} request - MDM expansion ${patientRef} using ${mdmParam}`);
     await fetchSanteMpiPatientLinks(patientRef, patientRefs);
     // Substitue the mdm search param and expand the list of patients
     req.query[searchParam] = patientRefs.join(',');
     delete req.query[mdmParam];
+    logger.debug(`${req.method} ${req.path} request - MDM expanded ${searchParam}=${req.query[searchParam]}`);
     next();
   } catch (e) {
     const error = e as OAuth2Error | Error;
