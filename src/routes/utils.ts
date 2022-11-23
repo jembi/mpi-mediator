@@ -49,7 +49,7 @@ export const getData = async (
   host: string,
   port: number | string,
   path: string,
-  headers: HeadersInit,
+  headers?: HeadersInit,
 ) : Promise<ResponseObject> => {
   return sendRequest('GET', protocol, host, port, path, headers);
 };

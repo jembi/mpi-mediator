@@ -20,7 +20,7 @@ export interface ResponseObject {
   body: object;
 }
 
-export interface ValidateResponseObject {
+export interface MpiMediatorResponseObject {
   body: OpenHimResponseObject;
   status: number;
 }

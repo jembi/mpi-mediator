@@ -1,10 +1,4 @@
 import express from 'express';
-import {
-  createSanteMpiAccessProxy,
-  santeMpiAuthMiddleware,
-  createFhirAccessProxy,
-  santeMpiMdmMiddleware,
-} from './routes/handlers/access-proxy';
 import { getConfig } from './config/config';
 import logger from './logger';
 
@@ -14,19 +8,6 @@ const config = getConfig();
 const port = config.port;
 
 const app = express();
-
-app.use(
-  '/fhir/Patient/\\$match',
-  santeMpiAuthMiddleware,
-  createSanteMpiAccessProxy()
-);
-
-app.use('/fhir', 
-  santeMpiMdmMiddleware,
-  createFhirAccessProxy()
-);
-
-app.use(express.json({ type: 'application/fhir+json' }));
 
 app.use('/', routes);
 
