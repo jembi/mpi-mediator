@@ -1,16 +1,24 @@
 import express from 'express';
-import asyncHandler from "express-async-handler";
+import asyncHandler from 'express-async-handler';
+import { santeMpiAccessProxyMiddleware } from '../middlewares/sante-mpi-access-proxy';
+import { santeMpiAuthMiddleware } from '../middlewares/sante-mpi-auth';
 
 import { validate } from './handlers/validation';
 
 const routes = express.Router();
 
-routes.post('/fhir/validate', asyncHandler(async (req, res) => {
+const jsonBodyParser = express.json({ type: 'application/fhir+json' });
+
+routes.post('/fhir/validate', jsonBodyParser, asyncHandler(async (req, res) => {
+  const { status, body } = await validate(req.body);
   res.set('Content-Type', 'application/openhim+json');
-
-  const result = await validate(req.body);
-
-  res.status(result.status).send(result.body);
+  res.status(status).send(body);
 }));
+
+routes.post(
+  '/fhir/Patient/\\$match',
+  santeMpiAuthMiddleware,
+  santeMpiAccessProxyMiddleware,
+);
 
 export default routes;
