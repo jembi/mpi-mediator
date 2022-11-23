@@ -6,9 +6,6 @@ import { getSanteMpiAuthToken } from '../utils/sante-mpi';
 
 /**
  * Express middleware in order to authenticate requests proxied to SanteMPI
- * @param {Request} req
- * @param {Response} res
- * @param {Function} next
  */
  export const santeMpiAuthMiddleware: RequestHandler = async (
   req,

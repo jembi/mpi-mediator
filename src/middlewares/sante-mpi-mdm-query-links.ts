@@ -7,13 +7,9 @@ import { fetchSanteMpiPatientLinks } from '../utils/sante-mpi';
 /**
  * Express middleware in order to perform MDM expansion requests using Sante MPI
  * So that :
- *  >> GET http://example.com:8000/Observation?subject:mdm=Patient/1
+ *  >> GET http://example.com:3000/Observation?subject:mdm=Patient/1
  * Becomes
- *  >> GET http://example.com:8000/Observation?subject=Patient/1,Patient/2,Patient/3
- *
- * @param {Request} req
- * @param {Response} res
- * @param {Function} next
+ *  >> GET http://example.com:3447/Observation?subject=Patient/1,Patient/2,Patient/3
  */
 export const santeMpiMdmQueryLinksMiddleware: RequestHandler = async (req, res, next) => {
   const mdmParam = Object.keys(req.query).find((q) => q.endsWith(':mdm'));

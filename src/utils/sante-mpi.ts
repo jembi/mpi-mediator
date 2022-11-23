@@ -38,7 +38,6 @@ export const getSanteMpiAuthToken = async (): Promise<OAuth2Token> => {
 
 /**
  * Fetch resource by ref from Sante MPI
- * @param {String} ref
  */
 export const fetchResourceByRefFromSanteMpi = async <T extends Resource>(
   ref: string
@@ -59,8 +58,6 @@ export const fetchResourceByRefFromSanteMpi = async <T extends Resource>(
 
 /**
  * Recusively fetch linked patient refs from Sante MPI
- * @param {String} patientRef
- * @param {String} patientLinks
  */
 export const fetchSanteMpiPatientLinks = async (
   patientRef: string,

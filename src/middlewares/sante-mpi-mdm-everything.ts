@@ -7,8 +7,7 @@ import { fetchAllPatientResourcesFromFhirDatastore } from '../utils/fhir-datasto
 import { fetchSanteMpiPatientLinks } from '../utils/sante-mpi';
 
 /**
- * Get all patient related resources ($everything) from HAPI FHIR using MDM Expansion 
- * @param patientId
+ * Get all patient related resources ($everything) from HAPI FHIR using MDM Expansion
  */
  const fetchAllLinkedPatientResources = async (patientId: string): Promise<MpiMediatorResponseObject> => {
   try {
@@ -56,15 +55,11 @@ import { fetchSanteMpiPatientLinks } from '../utils/sante-mpi';
  *  Patient/2 --> Patient/3
  * 
  * Where performing the following request :
- *  >> GET http://example.com:8000/Patient/1/$everything?_mdm=true
+ *  >> GET http://example.com:3000/Patient/1/$everything?_mdm=true
  * Would combine the results of the following requests in a single bundle :
  *  >> GET http://example.com:3447/Patient/1/$everything
  *  >> GET http://example.com:3447/Patient/2/$everything
  *  >> GET http://example.com:3447/Patient/3/$everything
- *
- * @param {Request} req
- * @param {Response} res
- * @param {Function} next
  */
 export const santeMpiMdmEverythingMiddleware: RequestHandler = async (req, res, next) => {
   const isMdmEnabled = req.query._mdm === 'true';

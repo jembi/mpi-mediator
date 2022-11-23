@@ -4,7 +4,6 @@ import { getData } from '../routes/utils';
 
 /**
  * Fetch all patient related resources ($everything operation)
- * @param {String} ref
  */
 export const fetchAllPatientResourcesFromFhirDatastore = async (
   ref: string
