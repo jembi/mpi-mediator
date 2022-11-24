@@ -20,7 +20,10 @@ import { fetchSanteMpiPatientLinks } from '../utils/sante-mpi';
     const fhirBundles = (await Promise.all(fhirRequests)).filter((bundle) => !!bundle) as Bundle[];
     // Combine all bundles into a single one
     const bundle = fhirBundles.reduce((acc, curr) => {
-      acc.entry = acc.entry?.concat(curr.entry || []);
+      if (Array.isArray(curr.entry)) {
+        acc.entry = (acc.entry || []).concat(curr.entry || []);
+        acc.total = (acc.total || 0) + curr.entry.length;
+      }
       return acc;
     }, {
       resourceType: 'Bundle',
@@ -29,7 +32,7 @@ import { fetchSanteMpiPatientLinks } from '../utils/sante-mpi';
         lastUpdated: (new Date()).toISOString(),
       },
       type: 'searchset',
-      total: fhirBundles.length,
+      total: 0,
       entry: []
     } as Bundle);
 
@@ -71,6 +74,9 @@ export const santeMpiMdmEverythingMiddleware: RequestHandler = async (req, res, 
     return next();
   }
   // MDM expansion requested
+  logger.info(
+    `${req.method} ${req.path} request to SanteMPI MDM Middleware - MDM expanding $everything operation`
+  );
   const { status, body } = await fetchAllLinkedPatientResources(req.params.patientId);
   res.set('Content-Type', 'application/openhim+json');
   res.status(status).send(body);

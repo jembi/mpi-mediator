@@ -23,7 +23,7 @@ routes.post(
   santeMpiAccessProxyMiddleware,
 );
 
-routes.get('/fhir/Patient/:patientId/$everything', 
+routes.get('/fhir/Patient/:patientId/\\$everything', 
   santeMpiMdmEverythingMiddleware,
   fhirDatastoreAccessProxyMiddleware
 );

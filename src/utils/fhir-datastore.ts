@@ -14,6 +14,6 @@ export const fetchAllPatientResourcesFromFhirDatastore = async (
     fhirDatastoreHost: host,
     fhirDatastorePort: port,
   } = config;
-  const response = await getData(protocol, host, port, `fhir/${ref}`);
+  const response = await getData(protocol, host, port, `fhir/${ref}/$everything`);
   return response.status === 200 ? (response.body as Bundle) : undefined;
 };
