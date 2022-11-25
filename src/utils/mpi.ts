@@ -1,11 +1,11 @@
 import { getConfig } from '../config/config';
 import { ClientOAuth2, OAuth2Token } from './client-oauth2';
 
-// Singleton instance of SanteMPI Token stored in memory
+// Singleton instance of MPI Token stored in memory
 export let mpiToken: OAuth2Token | null = null;
 
 /**
- * Returns an instance of SanteMPI token, it does renew the token when expired.
+ * Returns an instance of MPI token, it does renew the token when expired.
  */
 export const getMpiAuthToken = async (): Promise<OAuth2Token> => {
   const config = getConfig();
