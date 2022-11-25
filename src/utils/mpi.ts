@@ -39,7 +39,7 @@ export const getMpiAuthToken = async (): Promise<OAuth2Token> => {
 /**
  * Fetch resource by ref from the MPI
  */
- export const fetchResourceByRefFromMpi = async <T extends Resource>(
+ export const fetchMpiResourceByRef = async <T extends Resource>(
   ref: string
 ): Promise<T | undefined> => {
   const config = getConfig();
@@ -64,7 +64,7 @@ export const fetchMpiPatientLinks = async (
   patientLinks: string[]
 ) => {
   patientLinks.push(patientRef);
-  const patient = await fetchResourceByRefFromMpi<Patient>(patientRef);
+  const patient = await fetchMpiResourceByRef<Patient>(patientRef);
   if (patient?.link) {
     const linkedRefs = patient.link.map(({ other }) => other.reference);
     const refsToFetch = linkedRefs.filter((ref) => {

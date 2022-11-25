@@ -6,7 +6,7 @@ import { getConfig } from '../../src/config/config';
 import {
   mpiToken,
   getMpiAuthToken,
-  fetchResourceByRefFromMpi,
+  fetchMpiResourceByRef,
   fetchMpiPatientLinks,
 } from '../../src/utils/mpi';
 
@@ -139,16 +139,16 @@ describe('MPI', (): void => {
     });
   });
 
-  describe('*fetchResourceByRefFromMpi', async (): Promise<void> => {
+  describe('*fetchMpiResourceByRef', async (): Promise<void> => {
     it('should return undefined when we get a 404 from MPI', async (): Promise<void> => {
       nock(mpiUrl).get('/fhir/Patient/1').reply(404);
-      const patient = await fetchResourceByRefFromMpi(`Patient/1`);
+      const patient = await fetchMpiResourceByRef(`Patient/1`);
       expect(patient).to.equal(undefined);
       nock.cleanAll();
     });
     it('should fetch a MPI fhir resource by ref', async (): Promise<void> => {
       nock(mpiUrl).get('/fhir/Patient/1').reply(200, patientFhirResource1);
-      const patient = await fetchResourceByRefFromMpi(`Patient/1`);
+      const patient = await fetchMpiResourceByRef(`Patient/1`);
       expect(patient).to.deep.equal(patientFhirResource1);
       nock.cleanAll();
     });
