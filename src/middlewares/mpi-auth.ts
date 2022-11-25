@@ -2,21 +2,18 @@ import { RequestHandler } from 'express';
 import logger from '../logger';
 import { buildOpenhimResponseObject } from '../routes/utils';
 import { OAuth2Error } from '../utils/client-oauth2';
-import { getSanteMpiAuthToken } from '../utils/sante-mpi';
+import { getMpiAuthToken } from '../utils/mpi';
 
 /**
- * Express middleware in order to authenticate requests proxied to SanteMPI
- * @param {Request} req
- * @param {Response} res
- * @param {Function} next
+ * Express middleware in order to authenticate requests proxied to the MPI
  */
- export const santeMpiAuthMiddleware: RequestHandler = async (
+ export const mpiAuthMiddleware: RequestHandler = async (
   req,
   res,
   next
 ) => {
   try {
-    const token = await getSanteMpiAuthToken();
+    const token = await getMpiAuthToken();
     req.headers['authorization'] = `Bearer ${token.accessToken}`;
     next();
   } catch (e) {

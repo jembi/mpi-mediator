@@ -1,7 +1,7 @@
 import express from 'express';
 import asyncHandler from 'express-async-handler';
-import { santeMpiAccessProxyMiddleware } from '../middlewares/sante-mpi-access-proxy';
-import { santeMpiAuthMiddleware } from '../middlewares/sante-mpi-auth';
+import { mpiAccessProxyMiddleware } from '../middlewares/mpi-access-proxy';
+import { mpiAuthMiddleware } from '../middlewares/mpi-auth';
 
 import { validate } from './handlers/validation';
 
@@ -17,8 +17,8 @@ routes.post('/fhir/validate', jsonBodyParser, asyncHandler(async (req, res) => {
 
 routes.post(
   '/fhir/Patient/\\$match',
-  santeMpiAuthMiddleware,
-  santeMpiAccessProxyMiddleware,
+  mpiAuthMiddleware,
+  mpiAccessProxyMiddleware,
 );
 
 export default routes;

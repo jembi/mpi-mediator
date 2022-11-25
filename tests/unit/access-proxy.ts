@@ -3,18 +3,18 @@ import nock from 'nock';
 
 import { getConfig } from '../../src/config/config';
 import {
-  santeMpiAuthMiddleware,
-} from '../../src/middlewares/sante-mpi-auth';
+  mpiAuthMiddleware,
+} from '../../src/middlewares/mpi-auth';
 import {
-  santeMpiToken,
-  getSanteMpiAuthToken,
-} from '../../src/utils/sante-mpi';
+  mpiToken,
+  getMpiAuthToken,
+} from '../../src/utils/mpi';
 
 const config = getConfig();
 
-const { santeMpiProtocol, santeMpiHost, santeMpiPort } = config;
+const { mpiProtocol, mpiHost, mpiPort } = config;
 
-const mpiUrl = `${santeMpiProtocol}://${santeMpiHost}:${santeMpiPort}`;
+const mpiUrl = `${mpiProtocol}://${mpiHost}:${mpiPort}`;
 
 const newOauth2TokenGenerated = {
   token_type: 'bearer',
@@ -24,19 +24,19 @@ const newOauth2TokenGenerated = {
 };
 
 describe('Access proxy', (): void => {
-  describe('*getSanteMpiAuthToken', async (): Promise<void> => {
+  describe('*getMpiAuthToken', async (): Promise<void> => {
     it('should generate access token', async (): Promise<void> => {
       nock(mpiUrl)
         .post('/auth/oauth2_token')
         .reply(200, newOauth2TokenGenerated);
 
-      const response = await getSanteMpiAuthToken();
+      const response = await getMpiAuthToken();
 
       expect(response.accessToken).to.equal(
         newOauth2TokenGenerated.access_token
       );
       // Should be saved in the memory
-      expect(santeMpiToken?.accessToken).to.equal(
+      expect(mpiToken?.accessToken).to.equal(
         newOauth2TokenGenerated.access_token
       );
       nock.cleanAll();
@@ -45,13 +45,13 @@ describe('Access proxy', (): void => {
     it('should get saved access token', async (): Promise<void> => {
       nock(mpiUrl).post('/auth/oauth2_token').reply(200, {});
 
-      const response = await getSanteMpiAuthToken();
+      const response = await getMpiAuthToken();
 
       expect(response.accessToken).to.equal(
         newOauth2TokenGenerated.access_token
       );
       // Should be saved in the memory
-      expect(santeMpiToken?.accessToken).to.equal(
+      expect(mpiToken?.accessToken).to.equal(
         newOauth2TokenGenerated.access_token
       );
       nock.cleanAll();
@@ -75,13 +75,13 @@ describe('Access proxy', (): void => {
         )
         .reply(200, newOauth2TokenRefreshed);
 
-      const response = await getSanteMpiAuthToken();
+      const response = await getMpiAuthToken();
 
       expect(response.accessToken).to.equal(
         newOauth2TokenRefreshed.access_token
       );
       // Should be saved in the memory
-      expect(santeMpiToken?.accessToken).to.equal(
+      expect(mpiToken?.accessToken).to.equal(
         newOauth2TokenRefreshed.access_token
       );
 
@@ -89,7 +89,7 @@ describe('Access proxy', (): void => {
     });
   });
 
-  describe('*santeMpiAuthMiddleware', (): void => {
+  describe('*mpiAuthMiddleware', (): void => {
     it('should build the header with bearer token', async (): Promise<void> => {
       // Wait for expiration
       await new Promise((resolve) => setTimeout(resolve, 3000));
@@ -103,7 +103,7 @@ describe('Access proxy', (): void => {
         headers: {},
       };
 
-      await santeMpiAuthMiddleware(requestExample as any, {} as any, () => {
+      await mpiAuthMiddleware(requestExample as any, {} as any, () => {
         const req = requestExample as any;
         expect(req.headers.authorization).to.equal(
           `Bearer ${newOauth2TokenGenerated.access_token}`
@@ -123,7 +123,7 @@ describe('Access proxy', (): void => {
         headers: {},
       };
       try {
-        await santeMpiAuthMiddleware(
+        await mpiAuthMiddleware(
           requestExample as any,
           {} as any,
           () => {}

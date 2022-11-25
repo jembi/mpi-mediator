@@ -18,11 +18,11 @@ npm run test:cucumber  // Integration tests
 
 ### SYNC - Query for registered patients
 
-Requests sent to this endpoint will be forwarded as a OAuth2 authenticated GET request to the SanteMPI endpoint (http://santedb-mpi/fhir/Patient).
+Requests sent to this endpoint will be forwarded as a OAuth2 authenticated GET request to the MPI endpoint (eg. http://santedb-mpi/fhir/Patient).
 
 | Endpoint      | POST /fhir/Patient/$match                                                                                                                                                                                                                                                                                                                   |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Body          | FHIR Parameters object - [see here](https://www.hl7.org/fhir/patient-operation-match.html)                                                                                                                                                                                                                                                  |
 | Response      | FHIR bundle with matched master patients                                                                                                                                                                                                                                                                                                    |
-| Details       | This query is authenticated by the OpenHIM and passed directly to the active MPI system. The SanteMPI API requires OAuth access token authentication. An auth mediator is therefore needed that creates the access token from configured credentials already authenticated via OpenHIM. |
+| Details       | This query is authenticated by the OpenHIM and passed directly to the active MPI system. If the MPI API requires OAuth access token authentication then an auth mediator is therefore needed that creates the access token from configured credentials already authenticated via OpenHIM. |
 | Justification | To allow client to find existing registered patient from other facilities so they may pull down their demographics for use in their registration process.                                                                                                                                                                                   |
