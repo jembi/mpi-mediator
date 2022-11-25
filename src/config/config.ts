@@ -18,6 +18,7 @@ export const getConfig = () => {
     mpiHost: process.env.MPI_HOST || 'santedb-mpi',
     mpiPort: process.env.MPI_PORT || 8080,
     mpiProtocol: process.env.MPI_PROTOCOL || 'http',
+    mpiAuthEnabled: (process.env.MPI_AUTH_ENABLED === 'true') || true,
     mpiClientId: process.env.MPI_CLIENT_ID || '',
     mpiClientSecret: process.env.MPI_CLIENT_SECRET || '',
   });
