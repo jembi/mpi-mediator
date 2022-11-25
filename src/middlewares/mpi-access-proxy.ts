@@ -14,9 +14,9 @@ const logProvider = () => {
 };
 
 /**
- * Helper function to filter out the requests that needs to be proxied to SanteMPI
+ * Helper function to filter out the requests that needs to be proxied to the MPI
  */
-const filterSanteMpiRequests = (pathname: string, req: Request): boolean => {
+const filterMpiRequests = (pathname: string, req: Request): boolean => {
   return (
     req.method === 'POST' && !!pathname.match(/^\/fhir\/Patient\/\$match/i)
   );
@@ -25,16 +25,16 @@ const filterSanteMpiRequests = (pathname: string, req: Request): boolean => {
 /**
  * Creates a request handler that will handle API interactions for FHIR Patients
  */
-const createSanteMpiAccessProxy = (): RequestHandler => {
+const createMpiAccessProxy = (): RequestHandler => {
   const config = getConfig();
   const {
-    santeMpiProtocol: protocol,
-    santeMpiHost: host,
-    santeMpiPort: port,
+    mpiProtocol: protocol,
+    mpiHost: host,
+    mpiPort: port,
   } = config;
 
-  // Create a proxy to SanteMPI
-  const proxyMiddleWare = createProxyMiddleware(filterSanteMpiRequests, {
+  // Create a proxy to the MPI
+  const proxyMiddleWare = createProxyMiddleware(filterMpiRequests, {
     target: new URL(`${protocol}://${host}:${port}`),
     logLevel: 'debug',
     logProvider,
@@ -46,4 +46,4 @@ const createSanteMpiAccessProxy = (): RequestHandler => {
   return proxyMiddleWare;
 };
 
-export const santeMpiAccessProxyMiddleware = createSanteMpiAccessProxy();
+export const mpiAccessProxyMiddleware = createMpiAccessProxy();

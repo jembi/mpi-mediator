@@ -13,10 +13,10 @@ const config = getConfig();
 let server: any, request: any, responseBody: any;
 
 Given(
-  'SanteMPI client registry service is up and running',
+  'MPI client registry service is up and running',
   async (): Promise<void> => {
     const response = await fetch(
-      `${config.santeMpiProtocol}://${config.santeMpiHost}:${config.santeMpiPort}/auth`
+      `${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}/auth`
     );
     expect(response.status).to.equal(200);
     server = app.listen(3003);

@@ -2,20 +2,20 @@ import { RequestHandler } from 'express';
 import logger from '../logger';
 import { buildOpenhimResponseObject } from '../routes/utils';
 import { OAuth2Error } from '../utils/client-oauth2';
-import { fetchSanteMpiPatientLinks } from '../utils/sante-mpi';
+import { fetchMpiPatientLinks } from '../utils/mpi';
 
 /**
- * Express middleware in order to perform MDM expansion requests using Sante MPI
+ * Express middleware in order to perform MDM expansion requests using the MPI
  * So that :
  *  >> GET http://example.com:3000/Observation?subject:mdm=Patient/1
  * Becomes
  *  >> GET http://example.com:3447/Observation?subject=Patient/1,Patient/2,Patient/3
  */
-export const santeMpiMdmQueryLinksMiddleware: RequestHandler = async (req, res, next) => {
+export const mpiMdmQueryLinksMiddleware: RequestHandler = async (req, res, next) => {
   const mdmParam = Object.keys(req.query).find((q) => q.endsWith(':mdm'));
   if (!mdmParam) {
     logger.info(
-      `${req.method} ${req.path} request to SanteMPI MDM Middleware - No MDM expansion taking place`
+      `${req.method} ${req.path} request to the MPI MDM Middleware - No MDM expansion taking place`
     );
     // No MDM expansion, we forward request as it is directly to FHIR Datastore
     return next();
@@ -28,7 +28,7 @@ export const santeMpiMdmQueryLinksMiddleware: RequestHandler = async (req, res, 
     logger.info(
       `${req.method} ${req.path} request - MDM expansion ${patientRef} using ${mdmParam}`
     );
-    await fetchSanteMpiPatientLinks(patientRef, patientRefs);
+    await fetchMpiPatientLinks(patientRef, patientRefs);
     // Substitue the mdm search param and expand the list of patients
     req.query[searchParam] = patientRefs.join(',');
     delete req.query[mdmParam];

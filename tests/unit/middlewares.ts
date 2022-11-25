@@ -4,14 +4,14 @@ import { Bundle, Observation, Patient } from 'fhir/r2';
 import nock from 'nock';
 
 import { getConfig } from '../../src/config/config';
-import { santeMpiMdmQueryLinksMiddleware } from '../../src/middlewares/sante-mpi-mdm-query-links';
-import { santeMpiMdmEverythingMiddleware } from '../../src/middlewares/sante-mpi-mdm-everything';
-import { santeMpiAuthMiddleware } from '../../src/middlewares/sante-mpi-auth';
+import { mpiMdmQueryLinksMiddleware } from '../../src/middlewares/mpi-mdm-query-links';
+import { mpiMdmEverythingMiddleware } from '../../src/middlewares/mpi-mdm-everything';
+import { mpiAuthMiddleware } from '../../src/middlewares/mpi-auth';
 
 const config = getConfig();
 
-const { santeMpiProtocol, santeMpiHost, santeMpiPort } = config;
-const mpiUrl = `${santeMpiProtocol}://${santeMpiHost}:${santeMpiPort}`;
+const { mpiProtocol, mpiHost, mpiPort } = config;
+const mpiUrl = `${mpiProtocol}://${mpiHost}:${mpiPort}`;
 
 const { fhirDatastoreProtocol, fhirDatastoreHost, fhirDatastorePort } = config;
 const fhirDatastoreUrl = `${fhirDatastoreProtocol}://${fhirDatastoreHost}:${fhirDatastorePort}`;
@@ -94,7 +94,7 @@ const fhirBundle2: Bundle = {
 };
 
 describe('Middlewares', (): void => {
-  describe('*santeMpiAuthMiddleware', (): void => {
+  describe('*mpiAuthMiddleware', (): void => {
     it('should build the header with bearer token', async (): Promise<void> => {
       // Wait for expiration
       await new Promise((resolve) => setTimeout(resolve, 3000));
@@ -108,7 +108,7 @@ describe('Middlewares', (): void => {
         headers: {},
       };
 
-      await santeMpiAuthMiddleware(requestExample as any, {} as any, () => {
+      await mpiAuthMiddleware(requestExample as any, {} as any, () => {
         const req = requestExample as any;
         expect(req.headers.authorization).to.equal(
           `Bearer ${newOauth2TokenGenerated.access_token}`
@@ -128,7 +128,7 @@ describe('Middlewares', (): void => {
         headers: {},
       };
       try {
-        await santeMpiAuthMiddleware(
+        await mpiAuthMiddleware(
           requestExample as any,
           {} as any,
           () => {}
@@ -139,14 +139,14 @@ describe('Middlewares', (): void => {
     });
   });
   
-  describe('*santeMpiMdmQueryLinksMiddleware', (): void => {
+  describe('*mpiMdmQueryLinksMiddleware', (): void => {
     it('should forward request when mdm param is not supplied', async () => {
       const request = {
         body: {},
         headers: {},
         query: { subject: 'Patient/1' },
       } as any as Request;
-      await santeMpiMdmQueryLinksMiddleware(request, {} as any, () => {});
+      await mpiMdmQueryLinksMiddleware(request, {} as any, () => {});
       expect(request.query).to.deep.equal({ subject: 'Patient/1' });
     });
 
@@ -167,20 +167,20 @@ describe('Middlewares', (): void => {
           return this;
         },
       } as any as Response;
-      await santeMpiMdmQueryLinksMiddleware(request, response, () => {});
+      await mpiMdmQueryLinksMiddleware(request, response, () => {});
       expect(request.query).to.deep.equal({ subject: 'Patient/1,Patient/2' });
       nock.cleanAll();
     });
   });
 
-  describe('*santeMpiMdmEverythingMiddleware', (): void => {
+  describe('*mpiMdmEverythingMiddleware', (): void => {
     it('should forward request when mdm param is not supplied', async () => {
       const request = {
         body: {},
         headers: {},
         query: {},
       } as any as Request;
-      await santeMpiMdmEverythingMiddleware(request, {} as any, () => {});
+      await mpiMdmEverythingMiddleware(request, {} as any, () => {});
       expect(request.query).to.deep.equal({});
     });
 
@@ -213,7 +213,7 @@ describe('Middlewares', (): void => {
         },
         set: () => {},
       } as any as Response;
-      await santeMpiMdmEverythingMiddleware(request, response, () => {});
+      await mpiMdmEverythingMiddleware(request, response, () => {});
       expect(statusCode).to.equal(200);
       expect(result.status).to.equal('200');
       expect(result.response.body.total).to.equal(2);

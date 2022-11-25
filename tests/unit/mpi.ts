@@ -4,17 +4,17 @@ import nock from 'nock';
 
 import { getConfig } from '../../src/config/config';
 import {
-  santeMpiToken,
-  getSanteMpiAuthToken,
-  fetchResourceByRefFromSanteMpi,
-  fetchSanteMpiPatientLinks,
-} from '../../src/utils/sante-mpi';
+  mpiToken,
+  getMpiAuthToken,
+  fetchResourceByRefFromMpi,
+  fetchMpiPatientLinks,
+} from '../../src/utils/mpi';
 
 const config = getConfig();
 
-const { santeMpiProtocol, santeMpiHost, santeMpiPort } = config;
+const { mpiProtocol, mpiHost, mpiPort } = config;
 
-const mpiUrl = `${santeMpiProtocol}://${santeMpiHost}:${santeMpiPort}`;
+const mpiUrl = `${mpiProtocol}://${mpiHost}:${mpiPort}`;
 
 const newOauth2TokenGenerated = {
   token_type: 'bearer',
@@ -73,20 +73,20 @@ const patientFhirResource2: Patient = {
   ],
 };
 
-describe('SanteMPI', (): void => {
-  describe('*getSanteMpiAuthToken', async (): Promise<void> => {
+describe('MPI', (): void => {
+  describe('*getMpiAuthToken', async (): Promise<void> => {
     it('should generate access token', async (): Promise<void> => {
       nock(mpiUrl)
         .post('/auth/oauth2_token')
         .reply(200, newOauth2TokenGenerated);
 
-      const response = await getSanteMpiAuthToken();
+      const response = await getMpiAuthToken();
 
       expect(response.accessToken).to.equal(
         newOauth2TokenGenerated.access_token
       );
       // Should be saved in the memory
-      expect(santeMpiToken?.accessToken).to.equal(
+      expect(mpiToken?.accessToken).to.equal(
         newOauth2TokenGenerated.access_token
       );
       nock.cleanAll();
@@ -95,13 +95,13 @@ describe('SanteMPI', (): void => {
     it('should get saved access token', async (): Promise<void> => {
       nock(mpiUrl).post('/auth/oauth2_token').reply(200, {});
 
-      const response = await getSanteMpiAuthToken();
+      const response = await getMpiAuthToken();
 
       expect(response.accessToken).to.equal(
         newOauth2TokenGenerated.access_token
       );
       // Should be saved in the memory
-      expect(santeMpiToken?.accessToken).to.equal(
+      expect(mpiToken?.accessToken).to.equal(
         newOauth2TokenGenerated.access_token
       );
       nock.cleanAll();
@@ -125,13 +125,13 @@ describe('SanteMPI', (): void => {
         )
         .reply(200, newOauth2TokenRefreshed);
 
-      const response = await getSanteMpiAuthToken();
+      const response = await getMpiAuthToken();
 
       expect(response.accessToken).to.equal(
         newOauth2TokenRefreshed.access_token
       );
       // Should be saved in the memory
-      expect(santeMpiToken?.accessToken).to.equal(
+      expect(mpiToken?.accessToken).to.equal(
         newOauth2TokenRefreshed.access_token
       );
 
@@ -139,27 +139,27 @@ describe('SanteMPI', (): void => {
     });
   });
 
-  describe('*fetchResourceByRefFromSanteMpi', async (): Promise<void> => {
-    it('should return undefined when we get a 404 from SanteMPI', async (): Promise<void> => {
+  describe('*fetchResourceByRefFromMpi', async (): Promise<void> => {
+    it('should return undefined when we get a 404 from MPI', async (): Promise<void> => {
       nock(mpiUrl).get('/fhir/Patient/1').reply(404);
-      const patient = await fetchResourceByRefFromSanteMpi(`Patient/1`);
+      const patient = await fetchResourceByRefFromMpi(`Patient/1`);
       expect(patient).to.equal(undefined);
       nock.cleanAll();
     });
-    it('should fetch a SanteMPI fhir resource by ref', async (): Promise<void> => {
+    it('should fetch a MPI fhir resource by ref', async (): Promise<void> => {
       nock(mpiUrl).get('/fhir/Patient/1').reply(200, patientFhirResource1);
-      const patient = await fetchResourceByRefFromSanteMpi(`Patient/1`);
+      const patient = await fetchResourceByRefFromMpi(`Patient/1`);
       expect(patient).to.deep.equal(patientFhirResource1);
       nock.cleanAll();
     });
   });
 
-  describe('*fetchSanteMpiPatientLinks', async (): Promise<void> => {
-    it('should fetch patient links from SanteMPI fhir', async (): Promise<void> => {
+  describe('*fetchMpiPatientLinks', async (): Promise<void> => {
+    it('should fetch patient links from MPI fhir', async (): Promise<void> => {
       nock(mpiUrl).get('/fhir/Patient/1').reply(200, patientFhirResource1);
       nock(mpiUrl).get('/fhir/Patient/2').reply(200, patientFhirResource2);
       const refs: string[] = [];
-      await fetchSanteMpiPatientLinks(`Patient/1`, refs);
+      await fetchMpiPatientLinks(`Patient/1`, refs);
       expect(refs).to.deep.equal(['Patient/1', 'Patient/2']);
       nock.cleanAll();
     });

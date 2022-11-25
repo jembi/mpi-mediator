@@ -15,10 +15,11 @@ export const getConfig = () => {
     fhirDatastoreProtocol: process.env.FHIR_DATASTORE_PROTOCOL || 'http',
     mediatorUrn: process.env.MEDIATOR_URN || 'urn:mediator:mpi-mediator',
     runningMode: process.env.MODE || '',
-    santeMpiHost: process.env.SANTE_MPI_HOST || 'santedb-mpi',
-    santeMpiPort: process.env.SANTE_MPI_PORT || 8080,
-    santeMpiProtocol: process.env.SANTE_MPI_PROTOCOL || 'http',
-    santeMpiClientId: process.env.SANTE_MPI_CLIENT_ID || '',
-    santeMpiClientSecret: process.env.SANTE_MPI_CLIENT_SECRET || '',
+    mpiHost: process.env.MPI_HOST || 'santedb-mpi',
+    mpiPort: process.env.MPI_PORT || 8080,
+    mpiProtocol: process.env.MPI_PROTOCOL || 'http',
+    mpiAuthEnabled: (process.env.MPI_AUTH_ENABLED === 'true') || true,
+    mpiClientId: process.env.MPI_CLIENT_ID || '',
+    mpiClientSecret: process.env.MPI_CLIENT_SECRET || '',
   });
 };

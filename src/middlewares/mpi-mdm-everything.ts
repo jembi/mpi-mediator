@@ -4,7 +4,7 @@ import logger from '../logger';
 import { buildOpenhimResponseObject } from '../routes/utils';
 import { MpiMediatorResponseObject } from '../types/response';
 import { fetchAllPatientResourcesFromFhirDatastore } from '../utils/fhir-datastore';
-import { fetchSanteMpiPatientLinks } from '../utils/sante-mpi';
+import { fetchMpiPatientLinks } from '../utils/mpi';
 
 /**
  * Get all patient related resources ($everything) from HAPI FHIR using MDM Expansion
@@ -13,8 +13,8 @@ import { fetchSanteMpiPatientLinks } from '../utils/sante-mpi';
   try {
     const patientRef = `Patient/${patientId}`
     const patientRefs: string[] = [];
-    // Fetch all linked patients refs from SanteMPI
-    await fetchSanteMpiPatientLinks(patientRef, patientRefs);
+    // Fetch all linked patients refs from the MPI
+    await fetchMpiPatientLinks(patientRef, patientRefs);
     // Perform requests to HAPI FHIR to get everything for each patient ref
     const fhirRequests = patientRefs.map(fetchAllPatientResourcesFromFhirDatastore);
     const fhirBundles = (await Promise.all(fhirRequests)).filter((bundle) => !!bundle) as Bundle[];
@@ -50,9 +50,9 @@ import { fetchSanteMpiPatientLinks } from '../utils/sante-mpi';
 }
 
 /**
- * Express middleware in order to perform MDM expansion on $everything requests operation using Sante MPI
+ * Express middleware in order to perform MDM expansion on $everything requests operation using the MPI
  * 
- * Let's say you have the following MDM links in Sante MPI where both Patient/1 and Patient/2 are MDM-matched
+ * Let's say you have the following MDM links in the MPI where both Patient/1 and Patient/2 are MDM-matched
  * to the same golden resource (Patient/3) :
  *  Patient/1 --> Patient/3
  *  Patient/2 --> Patient/3
@@ -64,18 +64,18 @@ import { fetchSanteMpiPatientLinks } from '../utils/sante-mpi';
  *  >> GET http://example.com:3447/Patient/2/$everything
  *  >> GET http://example.com:3447/Patient/3/$everything
  */
-export const santeMpiMdmEverythingMiddleware: RequestHandler = async (req, res, next) => {
+export const mpiMdmEverythingMiddleware: RequestHandler = async (req, res, next) => {
   const isMdmEnabled = req.query._mdm === 'true';
   if (!isMdmEnabled) {
     logger.info(
-      `${req.method} ${req.path} request to SanteMPI MDM Middleware - No MDM expansion taking place`
+      `${req.method} ${req.path} request to the MPI MDM Middleware - No MDM expansion taking place`
     );
     // No MDM expansion, we forward request as it is directly to FHIR Datastore
     return next();
   }
   // MDM expansion requested
   logger.info(
-    `${req.method} ${req.path} request to SanteMPI MDM Middleware - MDM expanding $everything operation`
+    `${req.method} ${req.path} request to the MPI MDM Middleware - MDM expanding $everything operation`
   );
   const { status, body } = await fetchAllLinkedPatientResources(req.params.patientId);
   res.set('Content-Type', 'application/openhim+json');
