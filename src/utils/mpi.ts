@@ -47,12 +47,16 @@ export const getMpiAuthToken = async (): Promise<OAuth2Token> => {
     mpiProtocol: protocol,
     mpiHost: host,
     mpiPort: port,
+    mpiAuthEnabled,
   } = config;
-  const token = await getMpiAuthToken();
-  const response = await getData(protocol, host, port, `fhir/${ref}`, {
-    Authorization: `Bearer ${token.accessToken}`,
+  const headers: HeadersInit = {
     'Content-Type': 'application/fhir+json',
-  });
+  };
+  if (mpiAuthEnabled) {
+    const token = await getMpiAuthToken();
+    headers['Authorization'] = `Bearer ${token.accessToken}`;
+  }
+  const response = await getData(protocol, host, port, `fhir/${ref}`, headers);
   return response.status === 200 ? (response.body as T) : undefined;
 };
 
