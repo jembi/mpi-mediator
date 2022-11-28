@@ -30,7 +30,7 @@ const resolveOpenhimConfig = (urn: string): RequestOptions => {
   };
 };
 
-export const mediatorSetup = (mediatorConfigFilePath: string) => {
+export const setupMediator = (mediatorConfigFilePath: string) => {
   try {
     const mediatorConfig = resolveMediatorConfig(mediatorConfigFilePath);
     const openhimConfig = resolveOpenhimConfig(mediatorConfig.urn);

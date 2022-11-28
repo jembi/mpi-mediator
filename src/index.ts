@@ -4,7 +4,7 @@ import path from 'path';
 import { getConfig } from './config/config';
 import logger from './logger';
 import routes from './routes';
-import { mediatorSetup } from './openhim/openhim';
+import { setupMediator } from './openhim/openhim';
 
 const config = getConfig();
 const app = express();
@@ -18,7 +18,7 @@ if (config.runningMode !== 'testing') {
     logger.info(`Server is running on port - ${config.port}`);
 
     if (config.registerMediator) {
-      mediatorSetup(path.resolve(__dirname, './openhim/mediatorConfig.json'));
+      setupMediator(path.resolve(__dirname, './openhim/mediatorConfig.json'));
     }
   });
 }

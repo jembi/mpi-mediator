@@ -8,7 +8,7 @@ import https from 'https';
 
 import { getConfig } from '../../../src/config/config';
 import { MediatorConfig } from '../../../src/types/mediatorConfig';
-import { mediatorSetup } from '../../../src/openhim/openhim';
+import { setupMediator } from '../../../src/openhim/openhim';
 
 process.env.TRUST_SELF_SIGNED = 'true';
 process.env.REGISTER_MEDIATOR = 'true';
@@ -53,9 +53,9 @@ Given('the OpenHIM Core service is up and running', async (): Promise<void> => {
   expect(response.status).to.equal(200);
 });
 
-When('the mediatorSetup function is run', () => {
+When('the setupMediator function is run', () => {
   expect(() =>
-    mediatorSetup(path.resolve(__dirname, '../../unit/mediatorConfig-test.json'))
+    setupMediator(path.resolve(__dirname, '../../unit/mediatorConfig-test.json'))
   ).to.not.throw();
 });
 
