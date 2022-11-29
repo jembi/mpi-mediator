@@ -1,20 +1,24 @@
-import express from "express";
+import express from 'express';
+import path from 'path';
 
 import { getConfig } from './config/config';
 import logger from './logger';
-import routes from './routes/index';
+import routes from './routes';
+import { setupMediator } from './openhim/openhim';
 
 const config = getConfig();
-const port = config.port;
-
 const app = express();
 
-app.use(express.json({type: 'application/fhir+json'}));
+app.use(express.json({ type: 'application/fhir+json' }));
 
 app.use('/', routes);
 
 if (config.runningMode !== 'testing') {
-  app.listen(port, () => {
-    logger.info(`Server is running on port - ${port}`);
+  app.listen(config.port, () => {
+    logger.info(`Server is running on port - ${config.port}`);
+
+    if (config.registerMediator) {
+      setupMediator(path.resolve(__dirname, './openhim/mediatorConfig.json'));
+    }
   });
 }

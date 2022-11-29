@@ -7,9 +7,9 @@ import { ValidateResponseObect } from '../../src/types/response';
 
 const config = getConfig();
 
-describe('Validation handler', () : void => {
-  describe('*validate', () : void => {
-    it('should return error when validating server is unavalaible', async () : Promise<void> => {
+describe('Validation handler', (): void => {
+  describe('*validate', (): void => {
+    it('should return error when validating server is unavalaible', async (): Promise<void> => {
       const bundle = {
         resourceType: 'Bundle',
         id: 'testBundle',
@@ -20,25 +20,25 @@ describe('Validation handler', () : void => {
             resource: {
               resourceType: 'Patient',
               id: '123',
-              tr: 12
+              tr: 12,
             },
             request: {
               method: 'PUT',
-              url: 'Patient/testPatient'
-            }
-          }
-        ]
+              url: 'Patient/testPatient',
+            },
+          },
+        ],
       };
       nock(`http://${config.fhirDatastoreHost}:${config.fhirDatastorePort}`)
-      .post('/fhir/Bundle/$validate')
-      .reply(500, {});
+        .post('/fhir/Bundle/$validate')
+        .reply(500, {});
 
-      const result : ValidateResponseObect = await validate(bundle);
+      const result: ValidateResponseObect = await validate(bundle);
 
       expect(result.status).to.equal(500);
     });
 
-    it('should succesfully validate', async () : Promise<void> => {
+    it('should succesfully validate', async (): Promise<void> => {
       const bundle = {
         resourceType: 'Bundle',
         id: 'testBundle',
@@ -49,24 +49,24 @@ describe('Validation handler', () : void => {
             resource: {
               resourceType: 'Patient',
               id: '123',
-              tr: 12
+              tr: 12,
             },
             request: {
               method: 'PUT',
-              url: 'Patient/testPatient'
-            }
-          }
-        ]
+              url: 'Patient/testPatient',
+            },
+          },
+        ],
       };
 
       nock(`http://${config.fhirDatastoreHost}:${config.fhirDatastorePort}`)
         .post('/fhir/Bundle/$validate')
         .reply(200, {
-          message: 'Success'
+          message: 'Success',
         });
 
-      const result : ValidateResponseObect = await validate(bundle);
-      
+      const result: ValidateResponseObect = await validate(bundle);
+
       expect(result.status).to.equal(200);
     });
   });

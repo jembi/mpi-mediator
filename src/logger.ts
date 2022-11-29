@@ -6,12 +6,12 @@ export default pino({
   timestamp: pino.stdTimeFunctions.isoTime,
   level: getConfig().logLevel,
   serializers: {
-    err: stdSerializers.err
+    err: stdSerializers.err,
   },
   transport: {
     target: 'pino-pretty',
     options: {
-        colorize: true
-    }
-  }
+      colorize: true,
+    },
+  },
 });
