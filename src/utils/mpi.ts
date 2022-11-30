@@ -11,17 +11,10 @@ export let mpiToken: OAuth2Token | null = null;
  */
 export const getMpiAuthToken = async (): Promise<OAuth2Token> => {
   const config = getConfig();
-  const {
-    mpiProtocol,
-    mpiHost,
-    mpiPort,
-    mpiClientId,
-    mpiClientSecret,
-  } = config;
+  const { mpiProtocol, mpiHost, mpiPort, mpiClientId, mpiClientSecret } =
+    config;
   if (!mpiToken) {
-    const mpiApiUrl = new URL(
-      `${mpiProtocol}://${mpiHost}:${mpiPort}`
-    );
+    const mpiApiUrl = new URL(`${mpiProtocol}://${mpiHost}:${mpiPort}`);
     const mpiAuth = new ClientOAuth2({
       clientId: mpiClientId,
       clientSecret: mpiClientSecret,
@@ -39,7 +32,7 @@ export const getMpiAuthToken = async (): Promise<OAuth2Token> => {
 /**
  * Fetch resource by ref from the MPI
  */
- export const fetchMpiResourceByRef = async <T extends Resource>(
+export const fetchMpiResourceByRef = async <T extends Resource>(
   ref: string
 ): Promise<T | undefined> => {
   const config = getConfig();
@@ -61,7 +54,7 @@ export const getMpiAuthToken = async (): Promise<OAuth2Token> => {
 };
 
 /**
- * Recusively fetch linked patient refs from the MPI
+ * Recursively fetch linked patient refs from the MPI
  */
 export const fetchMpiPatientLinks = async (
   patientRef: string,
