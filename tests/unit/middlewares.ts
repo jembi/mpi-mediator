@@ -5,6 +5,7 @@ import nock from 'nock';
 
 import { getConfig } from '../../src/config/config';
 import { mpiMdmEverythingMiddleware } from '../../src/middlewares/mpi-mdm-everything';
+import { mpiMdmQueryLinksMiddleware } from '../../src/middlewares/mpi-mdm-query-links';
 import { mpiAuthMiddleware } from '../../src/middlewares/mpi-auth';
 
 const config = getConfig();
@@ -176,6 +177,40 @@ describe('Middlewares', (): void => {
       expect(result.response.body.total).to.equal(2);
       expect(result.response.body.entry.length).to.equal(2);
       expect(result.response.body.link.length).to.equal(2);
+      nock.cleanAll();
+    });
+  });
+
+  describe('*mpiMdmQueryLinksMiddleware', (): void => {
+    it('should forward request when mdm param is not supplied', async () => {
+      const request = {
+        body: {},
+        headers: {},
+        query: { subject: 'Patient/1' },
+      } as any as Request;
+      await mpiMdmQueryLinksMiddleware(request, {} as any, () => {});
+      expect(request.query).to.deep.equal({ subject: 'Patient/1' });
+    });
+
+    it('should perform MDM expansion when mdm param is supplied', async () => {
+      nock(mpiUrl).post('/auth/oauth2_token').reply(200, {});
+      nock(mpiUrl).get('/fhir/Patient/1').reply(200, patientFhirResource1);
+      nock(mpiUrl).get('/fhir/Patient/2').reply(200, patientFhirResource2);
+      const request = {
+        body: {},
+        headers: {},
+        query: { 'subject:mdm': 'Patient/1' },
+      } as any as Request;
+      const response = {
+        send: function () {
+          return this;
+        },
+        status: function () {
+          return this;
+        },
+      } as any as Response;
+      await mpiMdmQueryLinksMiddleware(request, response, () => {});
+      expect(request.query).to.deep.equal({ subject: 'Patient/1,Patient/2' });
       nock.cleanAll();
     });
   });
