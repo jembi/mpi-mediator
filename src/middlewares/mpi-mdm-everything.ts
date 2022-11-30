@@ -1,3 +1,4 @@
+import format from 'date-fns/format';
 import { RequestHandler } from 'express';
 import { Bundle, BundleLink } from 'fhir/r2';
 import logger from '../logger';
@@ -46,8 +47,7 @@ const fetchAllLinkedPatientResources = async (
       {
         resourceType: 'Bundle',
         meta: {
-          // @TODO : Update this using the new format lib
-          lastUpdated: new Date().toISOString(),
+          timestamp: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"),
         },
         type: 'searchset',
         total: 0,
