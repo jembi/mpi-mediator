@@ -1,7 +1,9 @@
 import express from 'express';
 import asyncHandler from 'express-async-handler';
+import { fhirDatastoreAccessProxyMiddleware } from '../middlewares/fhir-datastore-access-proxy';
 import { mpiAccessProxyMiddleware } from '../middlewares/mpi-access-proxy';
 import { mpiAuthMiddleware } from '../middlewares/mpi-auth';
+import { mpiMdmEverythingMiddleware } from '../middlewares/mpi-mdm-everything';
 
 import { validate } from './handlers/validation';
 
@@ -21,5 +23,11 @@ routes.post(
 );
 
 routes.post('/fhir/Patient/\\$match', mpiAuthMiddleware, mpiAccessProxyMiddleware);
+
+routes.get(
+  '/fhir/Patient/:patientId/\\$everything',
+  mpiMdmEverythingMiddleware,
+  fhirDatastoreAccessProxyMiddleware
+);
 
 export default routes;
