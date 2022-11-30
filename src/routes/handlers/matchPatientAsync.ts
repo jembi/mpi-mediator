@@ -18,12 +18,12 @@ export const matchAsyncHandler = async (bundle: Bundle): Promise<HandlerResponse
     return validateResponse;
   }
 
-  const kafkaResponse = await sendToKafka(bundle, config.kafkaAsyncBundleTopic);
+  const kafkaError = await sendToKafka(bundle, config.kafkaAsyncBundleTopic);
 
-  if (kafkaResponse) {
+  if (kafkaError) {
     return createHandlerResponseObject('Failed', {
       body: {
-        error: kafkaResponse.message
+        error: kafkaError.message
       },
       status: 500
     });

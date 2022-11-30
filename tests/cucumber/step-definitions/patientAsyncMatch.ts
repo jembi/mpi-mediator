@@ -1,13 +1,11 @@
 // @ts-nocheck
 import { Given, When, Then } from "cucumber";
 import { expect } from "chai";
-import sinon from "sinon";
 import rewire from "rewire";
 import path from 'path';
 import supertest from 'supertest';
 import fetch from 'node-fetch';
 
-import * as KafkaFhir from "../../../src/routes/kafkaFhir";
 import { getConfig } from '../../../src/config/config';
 
 const config = getConfig();

@@ -3,7 +3,7 @@ import express from "express";
 import { getConfig } from './config/config';
 import logger from './logger';
 import routes from './routes/index';
-import { asyncPatientMatchHandler } from './routes/kafkaFhir';
+import { asyncPatientMatchHandler } from "./routes/kafkaAsyncPatientHandler";
 
 const config = getConfig();
 const port = config.port;
