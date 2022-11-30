@@ -16,21 +16,18 @@ export const sendRequest = async (
   data?: string
 ): Promise<ResponseObject> => {
   let body: object = {};
-  let status = 500;
+  let status: number = 500;
 
   try {
     const options = {
       headers,
       method,
     } as RequestInit;
-
     if (method === 'POST') {
       options.body = data;
     }
-
     const url = new URL(`${protocol}://${host}:${port}/${path}`);
     const response = await fetch(url, options);
-
     body = await response.json();
     status = response.status;
   } catch (err) {
@@ -39,7 +36,6 @@ export const sendRequest = async (
     } else if (err instanceof Error) {
       body = { error: err.message };
     }
-
     status = 500;
   }
 
@@ -68,7 +64,6 @@ export const postData = async (
   data: string
 ): Promise<ResponseObject> => {
   const headers = { 'Content-Type': contentType };
-
   return sendRequest('POST', protocol, host, port, path, headers, data);
 };
 
@@ -76,7 +71,7 @@ export const buildOpenhimResponseObject = (
   openhimTransactionStatus: string,
   httpResponseStatusCode: number,
   responseBody: object,
-  contentType = 'application/json'
+  contentType: string = 'application/json'
 ): OpenHimResponseObject => {
   const response: Response = {
     status: httpResponseStatusCode,
