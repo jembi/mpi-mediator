@@ -76,6 +76,7 @@ const fhirBundle1: Bundle = {
   },
   type: 'searchset',
   total: 1,
+  link: [{ relation: 'self', url: 'http://hapi-fhir/bundle-example-1' }],
   entry: [
     {
       resource: fhirObservation1,
@@ -86,6 +87,7 @@ const fhirBundle1: Bundle = {
 const fhirBundle2: Bundle = {
   ...fhirBundle1,
   id: 'bundle-example-2',
+  link: [{ relation: 'self', url: 'http://hapi-fhir/bundle-example-2' }],
   entry: [
     {
       resource: fhirObservation2,
@@ -128,17 +130,13 @@ describe('Middlewares', (): void => {
         headers: {},
       };
       try {
-        await mpiAuthMiddleware(
-          requestExample as any,
-          {} as any,
-          () => {}
-        );
+        await mpiAuthMiddleware(requestExample as any, {} as any, () => {});
       } catch (err) {
         expect(err).to.not.be.undefined;
       }
     });
   });
-  
+
   describe('*mpiMdmQueryLinksMiddleware', (): void => {
     it('should forward request when mdm param is not supplied', async () => {
       const request = {
@@ -218,6 +216,7 @@ describe('Middlewares', (): void => {
       expect(result.status).to.equal('200');
       expect(result.response.body.total).to.equal(2);
       expect(result.response.body.entry.length).to.equal(2);
+      expect(result.response.body.link.length).to.equal(2);
       nock.cleanAll();
     });
   });
