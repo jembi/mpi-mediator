@@ -51,7 +51,7 @@ const fetchAllLinkedPatientResources = async (
       {
         resourceType: 'Bundle',
         meta: {
-          timestamp: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"),
+          lastUpdated: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"),
         },
         type: 'searchset',
         total: 0,
