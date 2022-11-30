@@ -24,20 +24,17 @@ const filterMpiRequests = (pathname: string, req: Request): boolean => {
  * Creates a request handler that will handle API interactions for FHIR Patients
  */
 const createMpiAccessProxy = (): RequestHandler => {
-  const config = getConfig();
-  const { mpiProtocol: protocol, mpiHost: host, mpiPort: port } = config;
+  const { mpiProtocol: protocol, mpiHost: host, mpiPort: port, logLevel } = getConfig();
 
   // Create a proxy to the MPI
-  const proxyMiddleWare = createProxyMiddleware(filterMpiRequests, {
+  return createProxyMiddleware(filterMpiRequests, {
     target: new URL(`${protocol}://${host}:${port}`),
-    logLevel: 'debug',
+    logLevel,
     logProvider,
     onError(err, _req, _res) {
       logger.error(err);
     },
   });
-
-  return proxyMiddleWare;
 };
 
 export const mpiAccessProxyMiddleware = createMpiAccessProxy();

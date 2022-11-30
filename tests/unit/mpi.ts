@@ -1,9 +1,14 @@
 import { expect } from 'chai';
+import { Patient } from 'fhir/r2';
 import nock from 'nock';
 
 import { getConfig } from '../../src/config/config';
-import { mpiAuthMiddleware } from '../../src/middlewares/mpi-auth';
-import { mpiToken, getMpiAuthToken } from '../../src/utils/mpi';
+import {
+  mpiToken,
+  getMpiAuthToken,
+  fetchMpiResourceByRef,
+  fetchMpiPatientLinks,
+} from '../../src/utils/mpi';
 
 const config = getConfig();
 
@@ -18,7 +23,55 @@ const newOauth2TokenGenerated = {
   expires_in: 3, // 3s
 };
 
-describe('Access proxy', (): void => {
+const patientFhirResource1: Patient = {
+  resourceType: 'Patient',
+  id: '1',
+  name: [
+    {
+      use: 'official',
+      given: ['Peter', 'James'],
+    },
+    {
+      use: 'usual',
+      given: ['Jim'],
+    },
+    {
+      use: 'maiden',
+      given: ['Peter', 'James'],
+      period: {
+        end: '2002',
+      },
+    },
+  ],
+  gender: 'male',
+  birthDate: '1974-12-25',
+  managingOrganization: {
+    reference: 'Organization/1',
+  },
+  link: [
+    {
+      other: {
+        reference: 'Patient/2',
+      },
+      type: 'refer',
+    },
+  ],
+};
+
+const patientFhirResource2: Patient = {
+  ...patientFhirResource1,
+  id: '2',
+  link: [
+    {
+      other: {
+        reference: 'Patient/1',
+      },
+      type: 'seealso',
+    },
+  ],
+};
+
+describe('MPI', (): void => {
   describe('*getMpiAuthToken', async (): Promise<void> => {
     it('should generate access token', async (): Promise<void> => {
       nock(mpiUrl).post('/auth/oauth2_token').reply(200, newOauth2TokenGenerated);
@@ -70,42 +123,29 @@ describe('Access proxy', (): void => {
     });
   });
 
-  describe('*mpiAuthMiddleware', (): void => {
-    it('should build the header with bearer token', async (): Promise<void> => {
-      // Wait for expiration
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-
-      nock(mpiUrl).post('/auth/oauth2_token').reply(200, newOauth2TokenGenerated);
-
-      const requestExample = {
-        body: {},
-        headers: {},
-      };
-
-      await mpiAuthMiddleware(requestExample as any, {} as any, () => {
-        const req = requestExample as any;
-        expect(req.headers.authorization).to.equal(
-          `Bearer ${newOauth2TokenGenerated.access_token}`
-        );
-      });
-
+  describe('*fetchMpiResourceByRef', async (): Promise<void> => {
+    it('should return undefined when we get a 404 from MPI', async (): Promise<void> => {
+      nock(mpiUrl).get('/fhir/Patient/1').reply(404);
+      const patient = await fetchMpiResourceByRef(`Patient/1`);
+      expect(patient).to.equal(undefined);
       nock.cleanAll();
     });
+    it('should fetch a MPI fhir resource by ref', async (): Promise<void> => {
+      nock(mpiUrl).get('/fhir/Patient/1').reply(200, patientFhirResource1);
+      const patient = await fetchMpiResourceByRef(`Patient/1`);
+      expect(patient).to.deep.equal(patientFhirResource1);
+      nock.cleanAll();
+    });
+  });
 
-    it('should fail if no token was found', async (): Promise<void> => {
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-
-      nock(mpiUrl).post('/auth/oauth2_token').reply(400, {});
-
-      const requestExample = {
-        body: {},
-        headers: {},
-      };
-      try {
-        await mpiAuthMiddleware(requestExample as any, {} as any, () => {});
-      } catch (err) {
-        expect(err).to.not.be.undefined;
-      }
+  describe('*fetchMpiPatientLinks', async (): Promise<void> => {
+    it('should fetch patient links from MPI fhir', async (): Promise<void> => {
+      nock(mpiUrl).get('/fhir/Patient/1').reply(200, patientFhirResource1);
+      nock(mpiUrl).get('/fhir/Patient/2').reply(200, patientFhirResource2);
+      const refs: string[] = [];
+      await fetchMpiPatientLinks(`Patient/1`, refs);
+      expect(refs).to.deep.equal(['Patient/1', 'Patient/2']);
+      nock.cleanAll();
     });
   });
 });
