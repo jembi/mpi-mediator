@@ -18,7 +18,7 @@ npm run test:cucumber  // Integration tests
 
 ### SYNC - Query for registered patients
 
-Requests sent to this endpoint will be forwarded as a OAuth2 authenticated GET request to the MPI endpoint (eg. http://santedb-mpi/fhir/Patient).
+Requests sent to this endpoint will be forwarded as an OAuth2 authenticated POST request to the MPI endpoint (eg. http://santedb-mpi/fhir/Patient).
 
 | Endpoint      | POST /fhir/Patient/$match                                                                                                                                                                                                                                                                                                                   |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
