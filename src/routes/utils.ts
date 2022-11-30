@@ -16,7 +16,7 @@ export const sendRequest = async (
   data?: string
 ): Promise<ResponseObject> => {
   let body: object = {};
-  let status: number = 500;
+  let status = 500;
 
   try {
     const options = {
@@ -68,6 +68,7 @@ export const postData = async (
   data: string
 ): Promise<ResponseObject> => {
   const headers = { 'Content-Type': contentType };
+
   return sendRequest('POST', protocol, host, port, path, headers, data);
 };
 
@@ -75,7 +76,7 @@ export const buildOpenhimResponseObject = (
   openhimTransactionStatus: string,
   httpResponseStatusCode: number,
   responseBody: object,
-  contentType: string = 'application/json'
+  contentType = 'application/json'
 ): OpenHimResponseObject => {
   const response: Response = {
     status: httpResponseStatusCode,

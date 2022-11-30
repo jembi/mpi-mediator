@@ -16,8 +16,10 @@ const fetchAllLinkedPatientResources = async (
   try {
     const patientRef = `Patient/${patientId}`;
     const patientRefs: string[] = [];
+
     // Fetch all linked patients refs from the MPI
     await fetchMpiPatientLinks(patientRef, patientRefs);
+
     // Perform requests to HAPI FHIR to get everything for each patient ref
     const fhirRequests = patientRefs.map(fetchAllPatientResourcesFromFhirDatastore);
     const fhirBundles = (await Promise.all(fhirRequests)).filter(
@@ -31,6 +33,7 @@ const fetchAllLinkedPatientResources = async (
           acc.entry = (acc.entry || []).concat(curr.entry);
           acc.total = (acc.total || 0) + curr.entry.length;
         }
+
         // Concat links
         if (curr.link && Array.isArray(curr.link)) {
           acc.link = (acc.link || []).concat(
@@ -42,6 +45,7 @@ const fetchAllLinkedPatientResources = async (
             })
           );
         }
+
         return acc;
       },
       {
@@ -62,6 +66,7 @@ const fetchAllLinkedPatientResources = async (
     };
   } catch (e) {
     logger.error('Unable to fetch all linked patient resources (MDM expansion)', e);
+
     return {
       status: 500,
       body: buildOpenhimResponseObject('500', 500, e as Error),
@@ -86,18 +91,23 @@ const fetchAllLinkedPatientResources = async (
  */
 export const mpiMdmEverythingMiddleware: RequestHandler = async (req, res, next) => {
   const isMdmEnabled = req.query._mdm === 'true';
+
   if (!isMdmEnabled) {
     logger.info(
       `${req.method} ${req.path} request to the MPI MDM Middleware - No MDM expansion taking place`
     );
+
     // No MDM expansion, we forward request as it is directly to FHIR Datastore
     return next();
   }
+
   // MDM expansion requested
   logger.info(
     `${req.method} ${req.path} request to the MPI MDM Middleware - MDM expanding $everything operation`
   );
+
   const { status, body } = await fetchAllLinkedPatientResources(req.params.patientId);
+
   res.set('Content-Type', 'application/openhim+json');
   res.status(status).send(body);
 };

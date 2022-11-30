@@ -39,11 +39,15 @@ export const fetchMpiResourceByRef = async <T extends Resource>(
   const headers: HeadersInit = {
     'Content-Type': 'application/fhir+json',
   };
+
   if (mpiAuthEnabled) {
     const token = await getMpiAuthToken();
+
     headers['Authorization'] = `Bearer ${token.accessToken}`;
   }
+
   const response = await getData(protocol, host, port, `fhir/${ref}`, headers);
+
   return response.status === 200 ? (response.body as T) : undefined;
 };
 
@@ -52,14 +56,18 @@ export const fetchMpiResourceByRef = async <T extends Resource>(
  */
 export const fetchMpiPatientLinks = async (patientRef: string, patientLinks: string[]) => {
   patientLinks.push(patientRef);
+
   const patient = await fetchMpiResourceByRef<Patient>(patientRef);
+
   if (patient?.link) {
     const linkedRefs = patient.link.map(({ other }) => other.reference);
     const refsToFetch = linkedRefs.filter((ref) => {
       return ref && !patientLinks.includes(ref);
     }) as string[];
+
     if (refsToFetch.length > 0) {
       const promises = refsToFetch.map((ref) => fetchMpiPatientLinks(ref, patientLinks));
+
       await Promise.all(promises);
     }
   }
