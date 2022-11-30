@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon --config restart.json",
     "start": "ts-node -r dotenv/config src/index.ts",
-    "format": "prettier --check --write 'src/**/*.ts'",
+    "format": "prettier --check --write '{src,tests}/**/*.ts'",
     "lint": "eslint . --ext .ts,.js --fix",
     "docker:build": "docker build -t jembi/mpi-mediator:0.1.0 .",
     "build": "tsc -p tsconfig.build.json",

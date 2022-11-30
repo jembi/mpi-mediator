@@ -2,13 +2,8 @@ import { expect } from 'chai';
 import nock from 'nock';
 
 import { getConfig } from '../../src/config/config';
-import {
-  mpiAuthMiddleware,
-} from '../../src/middlewares/mpi-auth';
-import {
-  mpiToken,
-  getMpiAuthToken,
-} from '../../src/utils/mpi';
+import { mpiAuthMiddleware } from '../../src/middlewares/mpi-auth';
+import { mpiToken, getMpiAuthToken } from '../../src/utils/mpi';
 
 const config = getConfig();
 
@@ -26,19 +21,13 @@ const newOauth2TokenGenerated = {
 describe('Access proxy', (): void => {
   describe('*getMpiAuthToken', async (): Promise<void> => {
     it('should generate access token', async (): Promise<void> => {
-      nock(mpiUrl)
-        .post('/auth/oauth2_token')
-        .reply(200, newOauth2TokenGenerated);
+      nock(mpiUrl).post('/auth/oauth2_token').reply(200, newOauth2TokenGenerated);
 
       const response = await getMpiAuthToken();
 
-      expect(response.accessToken).to.equal(
-        newOauth2TokenGenerated.access_token
-      );
+      expect(response.accessToken).to.equal(newOauth2TokenGenerated.access_token);
       // Should be saved in the memory
-      expect(mpiToken?.accessToken).to.equal(
-        newOauth2TokenGenerated.access_token
-      );
+      expect(mpiToken?.accessToken).to.equal(newOauth2TokenGenerated.access_token);
       nock.cleanAll();
     });
 
@@ -47,13 +36,9 @@ describe('Access proxy', (): void => {
 
       const response = await getMpiAuthToken();
 
-      expect(response.accessToken).to.equal(
-        newOauth2TokenGenerated.access_token
-      );
+      expect(response.accessToken).to.equal(newOauth2TokenGenerated.access_token);
       // Should be saved in the memory
-      expect(mpiToken?.accessToken).to.equal(
-        newOauth2TokenGenerated.access_token
-      );
+      expect(mpiToken?.accessToken).to.equal(newOauth2TokenGenerated.access_token);
       nock.cleanAll();
     });
 
@@ -77,13 +62,9 @@ describe('Access proxy', (): void => {
 
       const response = await getMpiAuthToken();
 
-      expect(response.accessToken).to.equal(
-        newOauth2TokenRefreshed.access_token
-      );
+      expect(response.accessToken).to.equal(newOauth2TokenRefreshed.access_token);
       // Should be saved in the memory
-      expect(mpiToken?.accessToken).to.equal(
-        newOauth2TokenRefreshed.access_token
-      );
+      expect(mpiToken?.accessToken).to.equal(newOauth2TokenRefreshed.access_token);
 
       nock.cleanAll();
     });
@@ -94,9 +75,7 @@ describe('Access proxy', (): void => {
       // Wait for expiration
       await new Promise((resolve) => setTimeout(resolve, 3000));
 
-      nock(mpiUrl)
-        .post('/auth/oauth2_token')
-        .reply(200, newOauth2TokenGenerated);
+      nock(mpiUrl).post('/auth/oauth2_token').reply(200, newOauth2TokenGenerated);
 
       const requestExample = {
         body: {},
@@ -123,11 +102,7 @@ describe('Access proxy', (): void => {
         headers: {},
       };
       try {
-        await mpiAuthMiddleware(
-          requestExample as any,
-          {} as any,
-          () => {}
-        );
+        await mpiAuthMiddleware(requestExample as any, {} as any, () => {});
       } catch (err) {
         expect(err).to.not.be.undefined;
       }

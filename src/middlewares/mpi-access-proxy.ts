@@ -17,9 +17,7 @@ const logProvider = () => {
  * Helper function to filter out the requests that needs to be proxied to the MPI
  */
 const filterMpiRequests = (pathname: string, req: Request): boolean => {
-  return (
-    req.method === 'POST' && !!pathname.match(/^\/fhir\/Patient\/\$match/i)
-  );
+  return req.method === 'POST' && !!pathname.match(/^\/fhir\/Patient\/\$match/i);
 };
 
 /**
@@ -27,11 +25,7 @@ const filterMpiRequests = (pathname: string, req: Request): boolean => {
  */
 const createMpiAccessProxy = (): RequestHandler => {
   const config = getConfig();
-  const {
-    mpiProtocol: protocol,
-    mpiHost: host,
-    mpiPort: port,
-  } = config;
+  const { mpiProtocol: protocol, mpiHost: host, mpiPort: port } = config;
 
   // Create a proxy to the MPI
   const proxyMiddleWare = createProxyMiddleware(filterMpiRequests, {

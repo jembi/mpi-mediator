@@ -4,7 +4,7 @@ import fetch, { HeadersInit } from 'node-fetch';
 /**
  * Default headers for executing OAuth 2.0 flows.
  */
-var DEFAULT_HEADERS = {
+const DEFAULT_HEADERS = {
   Accept: 'application/json, application/x-www-form-urlencoded',
   'Content-Type': 'application/x-www-form-urlencoded',
 };
@@ -14,7 +14,7 @@ var DEFAULT_HEADERS = {
  *
  * Reference: http://tools.ietf.org/html/rfc6749#section-4.1.2.1
  */
-var ERROR_RESPONSES = {
+const ERROR_RESPONSES = {
   invalid_request: [
     'The request is missing a required parameter, includes an',
     'invalid parameter value, includes a parameter more than',
@@ -40,16 +40,12 @@ var ERROR_RESPONSES = {
     'The authorization grant type is not supported by the',
     'authorization server.',
   ].join(' '),
-  access_denied: [
-    'The resource owner or authorization server denied the request.',
-  ].join(' '),
+  access_denied: ['The resource owner or authorization server denied the request.'].join(' '),
   unsupported_response_type: [
     'The authorization server does not support obtaining',
     'an authorization code using this method.',
   ].join(' '),
-  invalid_scope: [
-    'The requested scope is invalid, unknown, or malformed.',
-  ].join(' '),
+  invalid_scope: ['The requested scope is invalid, unknown, or malformed.'].join(' '),
   server_error: [
     'The authorization server encountered an unexpected',
     'condition that prevented it from fulfilling the request.',
@@ -134,9 +130,7 @@ export class OAuth2Token {
    * Refresh a user access token with the supplied token.
    */
   async refresh(opts?: ClientOAuth2Options): Promise<OAuth2Token> {
-    const options = opts
-      ? { ...this.client.options, ...opts }
-      : this.client.options;
+    const options = opts ? { ...this.client.options, ...opts } : this.client.options;
 
     if (!this.refreshToken) {
       return Promise.reject(new Error('No refresh token'));
@@ -228,8 +222,7 @@ export class ClientOAuth2 {
    * Pull an authentication error from the response data.
    */
   getAuthError(body: any): OAuth2Error | undefined {
-    const message =
-      body.error in ERROR_RESPONSES || body.error_description || body.error;
+    const message = body.error in ERROR_RESPONSES || body.error_description || body.error;
 
     if (message) {
       const err = new OAuth2Error(message);
@@ -264,9 +257,9 @@ export class ClientOAuth2 {
    * the response.
    */
   async request(options: OAuth2RequestOptions): Promise<Data> {
-    var url = options.url;
-    var body = Querystring.stringify(options.body);
-    var query = Querystring.stringify(options.query);
+    let url = options.url;
+    const body = Querystring.stringify(options.body);
+    const query = Querystring.stringify(options.query);
 
     if (query) {
       url += (url.indexOf('?') === -1 ? '?' : '&') + query;

@@ -8,16 +8,12 @@ import { getMpiAuthToken } from '../utils/mpi';
 /**
  * Express middleware in order to authenticate requests proxied to the MPI
  */
- export const mpiAuthMiddleware: RequestHandler = async (
-  req,
-  res,
-  next
-) => {
+export const mpiAuthMiddleware: RequestHandler = async (req, res, next) => {
   try {
     const config = getConfig();
     if (config.mpiAuthEnabled) {
       const token = await getMpiAuthToken();
-      req.headers['authorization'] = `Bearer ${token.accessToken}`;  
+      req.headers['authorization'] = `Bearer ${token.accessToken}`;
     }
     next();
   } catch (e) {
