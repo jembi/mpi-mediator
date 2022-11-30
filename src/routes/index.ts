@@ -4,6 +4,7 @@ import { fhirDatastoreAccessProxyMiddleware } from '../middlewares/fhir-datastor
 import { mpiAccessProxyMiddleware } from '../middlewares/mpi-access-proxy';
 import { mpiAuthMiddleware } from '../middlewares/mpi-auth';
 import { mpiMdmEverythingMiddleware } from '../middlewares/mpi-mdm-everything';
+import { mpiMdmQueryLinksMiddleware } from '../middlewares/mpi-mdm-query-links';
 
 import { validate } from './handlers/validation';
 
@@ -27,6 +28,12 @@ routes.post('/fhir/Patient/\\$match', mpiAuthMiddleware, mpiAccessProxyMiddlewar
 routes.get(
   '/fhir/Patient/:patientId/\\$everything',
   mpiMdmEverythingMiddleware,
+  fhirDatastoreAccessProxyMiddleware
+);
+
+routes.get(
+  /^\/fhir\/[A-z]+(\/.+)?$/,
+  mpiMdmQueryLinksMiddleware,
   fhirDatastoreAccessProxyMiddleware
 );
 
