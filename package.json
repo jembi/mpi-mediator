@@ -6,12 +6,12 @@
   "scripts": {
     "dev": "nodemon --config restart.json",
     "start": "ts-node -r dotenv/config src/index.ts",
-    "format": "prettier --check --write 'src/**/*.ts'",
+    "format": "prettier --check --write '{src,tests}/**/*.ts'",
     "lint": "eslint . --ext .ts,.js --fix",
     "docker:build": "docker build -t jembi/mpi-mediator:0.1.0 .",
     "build": "tsc -p tsconfig.build.json",
-    "test:unit": "LOG_LEVEL='fatal' mocha -r ts-node/register 'tests/unit/*.ts'",
-    "test:cucumber": "LOG_LEVEL='fatal' MODE='testing' cucumber-js tests/cucumber/features/*.feature --no-color --exit --logLevel=error --require 'tests/cucumber/step-definitions/*.ts' --require-module ts-node/register --format-options \"{\\\"snippetInterface\\\": \\\"async-await\\\"}\" --format summary --format progress-bar"
+    "test:unit": "LOG_LEVEL='fatal' mocha -r ts-node/register 'tests/unit/*.ts' --timeout 15000",
+    "test:cucumber": "LOG_LEVEL='error' MODE='testing' cucumber-js 'tests/cucumber/features/*.feature' --no-color --exit --logLevel='error' --require 'tests/cucumber/step-definitions/*.ts' --require-module 'ts-node/register' --require-module 'dotenv/config' --format-options \"{\\\"snippetInterface\\\": \\\"async-await\\\"}\" --format summary --format progress-bar"
   },
   "repository": {
     "type": "git",
@@ -56,6 +56,7 @@
     "date-fns": "^2.29.3",
     "express": "^4.18.2",
     "express-async-handler": "^1.2.0",
+    "http-proxy-middleware": "^2.0.6",
     "node-fetch": "^2.6.7",
     "openhim-mediator-utils": "^0.2.4",
     "pino": "^8.7.0",

@@ -2,7 +2,7 @@ import format from 'date-fns/format';
 import fetch from 'node-fetch';
 
 import { getConfig } from '../config/config';
-import { OpenHimResponseObject, PostResponseObject, Response } from '../types/response';
+import { OpenHimResponseObject, ResponseObject, Response } from '../types/response';
 
 const config = getConfig();
 
@@ -13,7 +13,7 @@ export const postData = async (
   path: string,
   contentType: string,
   data: string
-): Promise<PostResponseObject> => {
+): Promise<ResponseObject> => {
   let body: object = {};
   let status = 500;
 
@@ -52,7 +52,7 @@ export const buildOpenhimResponseObject = (
     status: httpResponseStatusCode,
     headers: { 'content-type': contentType },
     body: responseBody,
-    timestamp: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+    timestamp: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"),
   };
 
   return {

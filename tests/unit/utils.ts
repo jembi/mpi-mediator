@@ -3,7 +3,7 @@ import nock from 'nock';
 
 import { getConfig } from '../../src/config/config';
 import { buildOpenhimResponseObject, postData } from '../../src/routes/utils';
-import { OpenHimResponseObject, PostResponseObject } from '../../src/types/response';
+import { OpenHimResponseObject, ResponseObject } from '../../src/types/response';
 
 const config = getConfig();
 
@@ -15,28 +15,28 @@ describe('Utils', (): void => {
       const body: object = {
         message: 'Success',
       };
-      const contentType = 'application/json';
+      const contentType: string = 'application/json';
 
-      const returnedObect: OpenHimResponseObject = buildOpenhimResponseObject(
+      const returnedObject: OpenHimResponseObject = buildOpenhimResponseObject(
         transactionStatus,
         httpStatus,
         body,
         contentType
       );
 
-      expect(returnedObect['x-mediator-urn']).to.equal(config.mediatorUrn);
-      expect(returnedObect.status).to.equal(transactionStatus);
-      expect(returnedObect.response).to.have.property('timestamp');
-      expect(returnedObect.response.headers).to.deep.equal({
+      expect(returnedObject['x-mediator-urn']).to.equal(config.mediatorUrn);
+      expect(returnedObject.status).to.equal(transactionStatus);
+      expect(returnedObject.response).to.have.property('timestamp');
+      expect(returnedObject.response.headers).to.deep.equal({
         'content-type': contentType,
       });
-      expect(returnedObect.response.body).to.deep.equal(body);
+      expect(returnedObject.response.body).to.deep.equal(body);
     });
   });
 
   describe('*postData', (): void => {
     it('should fail to post when service being posted to is down', async (): Promise<void> => {
-      const response: PostResponseObject = await postData(
+      const response: ResponseObject = await postData(
         'http',
         'test',
         2000,
@@ -62,11 +62,11 @@ describe('Utils', (): void => {
         message: 'Success',
       };
 
-      nock(`http://${host}:${port}`).post(`/${path}`).reply(200, {
+      nock(`${protocol}://${host}:${port}`).post(`/${path}`).reply(200, {
         message: 'Success',
       });
 
-      const response: PostResponseObject = await postData(
+      const response: ResponseObject = await postData(
         protocol,
         host,
         port,
