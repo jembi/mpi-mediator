@@ -10,6 +10,7 @@ export let mpiToken: OAuth2Token | null = null;
 export const getMpiAuthToken = async (): Promise<OAuth2Token> => {
   const config = getConfig();
   const { mpiProtocol, mpiHost, mpiPort, mpiClientId, mpiClientSecret } = config;
+
   if (!mpiToken) {
     const mpiApiUrl = new URL(`${mpiProtocol}://${mpiHost}:${mpiPort}`);
     const mpiAuth = new ClientOAuth2({
@@ -23,5 +24,6 @@ export const getMpiAuthToken = async (): Promise<OAuth2Token> => {
   } else if (mpiToken.expired()) {
     mpiToken = await mpiToken.refresh();
   }
+
   return mpiToken;
 };

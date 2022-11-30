@@ -11,16 +11,22 @@ import { getMpiAuthToken } from '../utils/mpi';
 export const mpiAuthMiddleware: RequestHandler = async (req, res, next) => {
   try {
     const config = getConfig();
+
     if (config.mpiAuthEnabled) {
       const token = await getMpiAuthToken();
+
       req.headers['authorization'] = `Bearer ${token.accessToken}`;
     }
+
     next();
   } catch (e) {
     const error = e as OAuth2Error;
+
     logger.error(e, 'Unable to fetch OAuth2 access token and set auth header');
+
     const status = error.status || 500;
     const body = buildOpenhimResponseObject(status.toString(), status, error);
+
     res.status(status).send(body);
   }
 };

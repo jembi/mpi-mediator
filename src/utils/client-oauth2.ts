@@ -152,6 +152,7 @@ export class OAuth2Token {
     );
 
     const data: Data = await this.client.request(reqOptions);
+
     return this.client.createToken({ ...this.data, ...data });
   }
 
@@ -208,6 +209,7 @@ export class ClientOAuth2 {
     );
 
     const data: Data = await this.request(reqOptions);
+
     return this.createToken(data);
   }
 
@@ -226,8 +228,10 @@ export class ClientOAuth2 {
 
     if (message) {
       const err = new OAuth2Error(message);
+
       err.body = body;
       err.code = 'EAUTH';
+
       return err;
     }
   }
@@ -279,6 +283,7 @@ export class ClientOAuth2 {
 
     if (res.status < 200 || res.status >= 399) {
       const statusErr = new OAuth2Error('HTTP status ' + res.status);
+
       statusErr.status = res.status;
       statusErr.body = res.body;
       statusErr.code = 'ESTATUS';
