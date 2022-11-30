@@ -8,6 +8,7 @@ import { activateHeartbeat, fetchConfig, registerMediator } from 'openhim-mediat
 
 const resolveMediatorConfig = (mediatorConfigFilePath: string): MediatorConfig => {
   let mediatorConfigFile;
+
   try {
     mediatorConfigFile = require(mediatorConfigFilePath);
   } catch (error) {

@@ -14,6 +14,7 @@ routes.post(
   jsonBodyParser,
   asyncHandler(async (req, res) => {
     const { status, body } = await validate(req.body);
+
     res.set('Content-Type', 'application/openhim+json');
     res.status(status).send(body);
   })

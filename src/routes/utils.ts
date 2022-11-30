@@ -25,6 +25,7 @@ export const postData = async (
       body: data,
       method: 'POST',
     });
+
     body = await response.json();
     status = response.status;
   } catch (err) {
@@ -33,6 +34,7 @@ export const postData = async (
     } else if (err instanceof Error) {
       body = { error: err.message };
     }
+
     status = 500;
   }
 
