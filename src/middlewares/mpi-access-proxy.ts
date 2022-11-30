@@ -30,12 +30,13 @@ const createMpiAccessProxy = (): RequestHandler => {
     mpiProtocol: protocol,
     mpiHost: host,
     mpiPort: port,
+    logLevel,
   } = getConfig();
 
   // Create a proxy to the MPI
   return createProxyMiddleware(filterMpiRequests, {
     target: new URL(`${protocol}://${host}:${port}`),
-    logLevel: 'debug',
+    logLevel,
     logProvider,
     onError(err, _req, _res) {
       logger.error(err);

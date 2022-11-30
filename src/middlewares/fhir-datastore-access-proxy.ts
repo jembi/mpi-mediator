@@ -31,13 +31,14 @@ const createFhirAccessProxy = (): RequestHandler => {
     fhirDatastoreProtocol: protocol,
     fhirDatastoreHost: host,
     fhirDatastorePort: port,
+    logLevel,
   } = getConfig();
 
   // Create a proxy to HAPI FHIR
   const target = new URL(`${protocol}://${host}:${port}`);
   return createProxyMiddleware(filterFhirRequests, {
     target,
-    logLevel: 'debug',
+    logLevel,
     logProvider,
     onError(err, _req, _res) {
       logger.error(err);
