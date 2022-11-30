@@ -8,12 +8,11 @@ import { getData } from '../routes/utils';
 export const fetchAllPatientResourcesFromFhirDatastore = async (
   ref: string
 ): Promise<Bundle | undefined> => {
-  const config = getConfig();
   const {
     fhirDatastoreProtocol: protocol,
     fhirDatastoreHost: host,
     fhirDatastorePort: port,
-  } = config;
+  } = getConfig();
   const response = await getData(protocol, host, port, `fhir/${ref}/$everything`);
   return response.status === 200 ? (response.body as Bundle) : undefined;
 };

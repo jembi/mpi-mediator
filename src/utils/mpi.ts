@@ -10,9 +10,7 @@ export let mpiToken: OAuth2Token | null = null;
  * Returns an instance of MPI token, it does renew the token when expired.
  */
 export const getMpiAuthToken = async (): Promise<OAuth2Token> => {
-  const config = getConfig();
-  const { mpiProtocol, mpiHost, mpiPort, mpiClientId, mpiClientSecret } =
-    config;
+  const { mpiProtocol, mpiHost, mpiPort, mpiClientId, mpiClientSecret } = getConfig();
   if (!mpiToken) {
     const mpiApiUrl = new URL(`${mpiProtocol}://${mpiHost}:${mpiPort}`);
     const mpiAuth = new ClientOAuth2({
@@ -35,13 +33,12 @@ export const getMpiAuthToken = async (): Promise<OAuth2Token> => {
 export const fetchMpiResourceByRef = async <T extends Resource>(
   ref: string
 ): Promise<T | undefined> => {
-  const config = getConfig();
   const {
     mpiProtocol: protocol,
     mpiHost: host,
     mpiPort: port,
     mpiAuthEnabled,
-  } = config;
+  } = getConfig();
   const headers: HeadersInit = {
     'Content-Type': 'application/fhir+json',
   };

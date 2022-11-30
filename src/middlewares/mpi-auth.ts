@@ -14,8 +14,8 @@ import { getMpiAuthToken } from '../utils/mpi';
   next
 ) => {
   try {
-    const config = getConfig();
-    if (config.mpiAuthEnabled) {
+    const { mpiAuthEnabled } = getConfig();
+    if (mpiAuthEnabled) {
       const token = await getMpiAuthToken();
       req.headers['authorization'] = `Bearer ${token.accessToken}`;  
     }

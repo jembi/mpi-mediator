@@ -27,16 +27,15 @@ const filterFhirRequests = (pathname: string, req: Request): boolean => {
  * Creates a request handler that will handle API interactions for other FHIR resources
  */
 const createFhirAccessProxy = (): RequestHandler => {
-  const config = getConfig();
   const {
     fhirDatastoreProtocol: protocol,
     fhirDatastoreHost: host,
     fhirDatastorePort: port,
-  } = config;
+  } = getConfig();
 
   // Create a proxy to HAPI FHIR
   const target = new URL(`${protocol}://${host}:${port}`);
-  const proxyMiddleWare = createProxyMiddleware(filterFhirRequests, {
+  return createProxyMiddleware(filterFhirRequests, {
     target,
     logLevel: 'debug',
     logProvider,
@@ -44,8 +43,6 @@ const createFhirAccessProxy = (): RequestHandler => {
       logger.error(err);
     },
   });
-
-  return proxyMiddleWare;
 };
 
 export const fhirDatastoreAccessProxyMiddleware = createFhirAccessProxy();
