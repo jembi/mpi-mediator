@@ -9,8 +9,6 @@ import { setupMediator } from './openhim/openhim';
 const config = getConfig();
 const app = express();
 
-app.use(express.json({type: 'application/fhir+json'}))
-
 app.use('/', routes);
 
 if (config.runningMode !== 'testing') {

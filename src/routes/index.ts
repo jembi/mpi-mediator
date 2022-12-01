@@ -11,8 +11,11 @@ import { validate } from './handlers/validation';
 
 const routes = express.Router();
 
+const jsonBodyParser = express.json({ type: 'application/fhir+json' });
+
 routes.post(
   '/fhir/validate',
+  jsonBodyParser,
   asyncHandler(async (req, res) => {
     const { status, body } = await validate(req.body);
 
@@ -29,20 +32,28 @@ routes.get(
   fhirDatastoreAccessProxyMiddleware
 );
 
-routes.post('/fhir', asyncHandler(async (req, res) => {
-  res.set('Content-Type', 'application/openhim+json');
+routes.post(
+  '/fhir',
+  jsonBodyParser,
+  asyncHandler(async (req, res) => {
+    res.set('Content-Type', 'application/openhim+json');
 
-  const result = await matchSyncHandler(req.body);
+    const result = await matchSyncHandler(req.body);
 
-  res.status(result.status).send(result.body);
-}));
+    res.status(result.status).send(result.body);
+  })
+);
 
-routes.post('/async/fhir', asyncHandler(async (req, res) => {
-  res.set('Content-Type', 'application/openhim+json');
+routes.post(
+  '/async/fhir',
+  jsonBodyParser,
+  asyncHandler(async (req, res) => {
+    res.set('Content-Type', 'application/openhim+json');
 
-  const result = await matchAsyncHandler(req.body);
+    const result = await matchAsyncHandler(req.body);
 
-  res.status(result.status).send(result.body);
-}));
+    res.status(result.status).send(result.body);
+  })
+);
 
 export default routes;
