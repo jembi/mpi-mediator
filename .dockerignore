@@ -1,0 +1,28 @@
+# node-modules
+node-modules/
+
+# git 
+.git
+.gitignore
+
+# env
+.env
+.env.*
+
+# tests & logs 
+tests/
+*.log
+
+# format
+.vscode/
+.prettierrc
+.eslintrc
+
+
+LICENSE
+
+*.md
+
+Dockerfile
+
+dist/

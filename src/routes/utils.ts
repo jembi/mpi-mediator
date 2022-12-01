@@ -1,5 +1,5 @@
-import moment from 'moment';
-import fetch from 'node-fetch';
+import format from 'date-fns/format';
+import fetch, { RequestInit } from 'node-fetch';
 
 import { getConfig } from '../config/config';
 import logger from "../logger";
@@ -26,35 +26,60 @@ export const sendRequest = async (req : RequestDetails) : Promise<ResponseObject
     status = response.status;
   } catch (err) {
     if (typeof err === 'string') {
-      body = {error: err};
+      body = { error: err };
     } else if (err instanceof Error) {
-      body = {error: err.message};
+      body = { error: err.message };
     }
+
     status = 500;
   }
 
   return {
-    status, body
+    status,
+    body,
   };
+};
+
+export const getData = async (
+  protocol: string,
+  host: string,
+  port: number | string,
+  path: string,
+  headers?: HeadersInit
+): Promise<ResponseObject> => {
+  return sendRequest({
+    method: 'GET', protocol, host, port, path
+  });
+};
+
+export const postData = async (
+  protocol: string,
+  host: string,
+  port: number | string,
+  path: string,
+  contentType: string,
+  data: string
+): Promise<ResponseObject> => {
+  return sendRequest({method: 'POST', protocol, host, port, path, contentType, data});
 };
 
 export const buildOpenhimResponseObject = (
   openhimTransactionStatus: string,
   httpResponseStatusCode: number,
   responseBody: object,
-  contentType: string = 'application/json'
-) : OpenHimResponseObject => {
-  const response : Response = {
+  contentType = 'application/json'
+): OpenHimResponseObject => {
+  const response: Response = {
     status: httpResponseStatusCode,
-    headers: { 'content-type': contentType},
+    headers: { 'content-type': contentType },
     body: responseBody,
-    timestamp: moment().format()
+    timestamp: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"),
   };
 
   return {
     'x-mediator-urn': config.mediatorUrn,
     status: openhimTransactionStatus,
-    response
+    response,
   };
 };
 

@@ -1,7 +1,7 @@
 export interface Resource {
   resourceType: string;
   id: string;
-};
+}
 
 export interface Request {
   method: string;
@@ -19,4 +19,4 @@ export interface Bundle {
   id: string;
   type: string;
   entry: Entry[];
-};
+}

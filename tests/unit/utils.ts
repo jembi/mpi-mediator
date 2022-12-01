@@ -18,30 +18,30 @@ import { RequestDetails } from '../../src/types/request';
 
 const config = getConfig();
 
-describe('Utils', () : void => {
-  describe('*buildOpenhimResponseObject', () : void => {
-    it('should return Object', () : void => {
-      const transactionStatus : string = 'Success';
-      const httpStatus : number = 200;
-      const body : object = {
-        message: 'Success'
+describe('Utils', (): void => {
+  describe('*buildOpenhimResponseObject', (): void => {
+    it('should return Object', (): void => {
+      const transactionStatus: string = 'Success';
+      const httpStatus: number = 200;
+      const body: object = {
+        message: 'Success',
       };
-      const contentType : string = 'application/json';
-      
-      const returnedObect : OpenHimResponseObject = buildOpenhimResponseObject(
+      const contentType: string = 'application/json';
+
+      const returnedObject: OpenHimResponseObject = buildOpenhimResponseObject(
         transactionStatus,
         httpStatus,
         body,
         contentType
       );
 
-      expect(returnedObect['x-mediator-urn']).to.equal(config.mediatorUrn);
-      expect(returnedObect.status).to.equal(transactionStatus);
-      expect(returnedObect.response).to.have.property('timestamp');
-      expect(returnedObect.response.headers).to.deep.equal({
-        'content-type': contentType
+      expect(returnedObject['x-mediator-urn']).to.equal(config.mediatorUrn);
+      expect(returnedObject.status).to.equal(transactionStatus);
+      expect(returnedObject.response).to.have.property('timestamp');
+      expect(returnedObject.response.headers).to.deep.equal({
+        'content-type': contentType,
       });
-      expect(returnedObect.response.body).to.deep.equal(body);
+      expect(returnedObject.response.body).to.deep.equal(body);
     });
   });
 
@@ -68,10 +68,10 @@ describe('Utils', () : void => {
       const path : string = '/fhir';
       const contentType : string = 'application/json';
       const data = JSON.stringify({
-        data: 'data'
+        data: 'data',
       });
-      const dataReturned : object = {
-        message: 'Success'
+      const dataReturned: object = {
+        message: 'Success',
       };
       const reqDetails : RequestDetails = {
         protocol,

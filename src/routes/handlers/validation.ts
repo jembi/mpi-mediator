@@ -22,10 +22,10 @@ export const validate = async (bundle: Bundle) : Promise<HandlerResponseObect> =
 
   const response = await sendRequest(reqDetails);
 
-  let transactionStatus : string;
+  let transactionStatus: string;
 
   if (response.status === 200) {
-    logger.info('Successfully validated bundle!')
+    logger.info('Successfully validated bundle!');
     transactionStatus = 'Success';
   } else {
     logger.error(`Error in validating: ${JSON.stringify(response.body)}!`);
@@ -40,6 +40,6 @@ export const validate = async (bundle: Bundle) : Promise<HandlerResponseObect> =
 
   return {
     body: responseBody,
-    status: response.status
+    status: response.status,
   };
 };
