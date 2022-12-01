@@ -46,7 +46,7 @@ export const fetchMpiResourceByRef = async <T extends Resource>(
     headers['Authorization'] = `Bearer ${token.accessToken}`;
   }
 
-  const response = await getData(protocol, host, port, `fhir/${ref}`, headers);
+  const response = await getData(protocol, host, port, `/fhir/${ref}`, headers);
 
   return response.status === 200 ? (response.body as T) : undefined;
 };
