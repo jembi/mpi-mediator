@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - "*.*.*"
+    branches:
+      - main
 
 jobs:
   build-and-push:
@@ -20,5 +22,13 @@ jobs:
 
       - uses: actions/checkout@v3
       - run: npm run build
-      - run: docker build -t jembi/mpi-mediator:${{ github.ref_name }} .
-      - run: docker push jembi/mpi-mediator:${{ github.ref_name }}
+
+      - name: Build and push tag
+        if: ${{ github.ref_name != 'main' }}
+        run: 'docker build -t jembi/mpi-mediator:${{ github.ref_name }} .;
+              docker push jembi/mpi-mediator:${{ github.ref_name }}'
+
+      - name: Build and push latest
+        if: ${{ github.ref_name == 'main' }}
+        run: 'docker build -t jembi/mpi-mediator:latest .;
+              docker push jembi/mpi-mediator:latest'
