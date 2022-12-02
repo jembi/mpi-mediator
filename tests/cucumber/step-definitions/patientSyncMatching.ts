@@ -8,8 +8,8 @@ import path from "path";
 import fetch from "node-fetch";
 
 import { getConfig } from "../../../src/config/config";
-import { createAuthHeaderToken } from "../../../src/routes/utils";
-import * as KafkaFhir from "../../../src/routes/kafkaFhir";
+import { createAuthHeaderToken } from "../../../src/utils/utils";
+import * as KafkaFhir from "../../../src/utils/kafkaFhir";
 
 const app = rewire("../../../src/index").__get__("app");
 const config = getConfig();

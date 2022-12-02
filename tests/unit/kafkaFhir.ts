@@ -4,7 +4,7 @@ import sinon from "sinon";
 
 import { getConfig } from "../../src/config/config";
 
-import * as kafkaFhir from "../../src/routes/kafkaFhir";
+import * as kafkaFhir from "../../src/utils/kafkaFhir";
 import { Bundle, Resource } from "../../src/types/bundle";
 import { RequestDetails } from "../../src/types/request";
 

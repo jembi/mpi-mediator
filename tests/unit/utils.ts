@@ -11,7 +11,7 @@ import {
   createAuthHeaderToken,
   createNewPatientRef,
   createHandlerResponseObject
-} from '../../src/routes/utils';
+} from '../../src/utils/utils';
 import { HandlerResponseObect, OpenHimResponseObject, ResponseObject } from '../../src/types/response';
 import { Bundle, Resource } from '../../src/types/bundle';
 import { RequestDetails } from '../../src/types/request';

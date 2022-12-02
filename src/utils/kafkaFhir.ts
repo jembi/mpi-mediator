@@ -1,13 +1,9 @@
-import { Kafka, logLevel } from "kafkajs";
+import { Kafka, logLevel } from 'kafkajs';
 
-import { Bundle, Entry, Resource } from "../types/bundle";
-import { getConfig } from "../config/config";
-import { RequestDetails } from "../types/request";
-import {
-  AuthHeader,
-  HandlerResponseObect,
-  ResponseObject,
-} from "../types/response";
+import { Bundle, Entry, Resource } from '../types/bundle';
+import { getConfig } from '../config/config';
+import { RequestDetails } from '../types/request';
+import { AuthHeader, HandlerResponseObect, ResponseObject } from '../types/response';
 import {
   createAuthHeaderToken,
   createHandlerResponseObject,
@@ -16,22 +12,19 @@ import {
   extractPatientResource,
   modifyBundle,
   sendRequest,
-} from "./utils";
-import logger from "../logger";
+} from './utils';
+import logger from '../logger';
 
 const config = getConfig();
 
 const kafka = new Kafka({
   logLevel: logLevel.ERROR,
   clientId: config.mpiKafkaClientId,
-  brokers: config.kafkaBrokers.split(","),
+  brokers: config.kafkaBrokers.split(','),
 });
 const producer = kafka.producer();
 
-export const sendToKafka = async (
-  bundle: Bundle,
-  topic: string
-): Promise<Error | null> => {
+export const sendToKafka = async (bundle: Bundle, topic: string): Promise<Error | null> => {
   try {
     await producer.connect();
     await producer.send({
@@ -43,7 +36,7 @@ export const sendToKafka = async (
       ],
     });
   } catch (error) {
-    if (typeof error === "string") {
+    if (typeof error === 'string') {
       return new Error(error);
     } else if (error instanceof Error) {
       return error;
@@ -56,7 +49,7 @@ export const sendToFhirAndKafka = async (
   requestDetails: RequestDetails,
   bundle: Bundle,
   patient: object | null = null,
-  newPatientRef: string = ""
+  newPatientRef: string = ''
 ): Promise<HandlerResponseObect> => {
   requestDetails.data = JSON.stringify(bundle);
 
@@ -65,22 +58,22 @@ export const sendToFhirAndKafka = async (
   let transactionStatus: string;
 
   if (response.status === 200) {
-    logger.info("Successfully sent Fhir bundle to the Fhir Datastore!");
+    logger.info('Successfully sent Fhir bundle to the Fhir Datastore!');
 
-    transactionStatus = "Success";
+    transactionStatus = 'Success';
 
     if (patient) {
       const patientEntry: Entry = {
         fullUrl: newPatientRef,
         resource: Object.assign(
           {
-            id: "",
-            resourceType: "",
+            id: '',
+            resourceType: '',
           },
           patient
         ),
         request: {
-          method: "PUT",
+          method: 'PUT',
           url: newPatientRef,
         },
       };
@@ -98,24 +91,20 @@ export const sendToFhirAndKafka = async (
 
     if (kafkaResponseError) {
       logger.error(
-        `Sending Fhir bundle to Kafka failed: ${JSON.stringify(
-          kafkaResponseError
-        )}`
+        `Sending Fhir bundle to Kafka failed: ${JSON.stringify(kafkaResponseError)}`
       );
 
-      transactionStatus = "Failed";
+      transactionStatus = 'Failed';
       response.body = { kafkaResponseError };
       response.status = 500;
     } else {
-      logger.info("Successfully sent Fhir bundle to Kafka");
+      logger.info('Successfully sent Fhir bundle to Kafka');
     }
   } else {
     logger.error(
-      `Error in sending Fhir bundle to Fhir Datastore: ${JSON.stringify(
-        response.body
-      )}!`
+      `Error in sending Fhir bundle to Fhir Datastore: ${JSON.stringify(response.body)}!`
     );
-    transactionStatus = "Failed";
+    transactionStatus = 'Failed';
   }
 
   return createHandlerResponseObject(transactionStatus, response);
@@ -128,7 +117,7 @@ const clientRegistryRequestDetailsOrg: RequestDetails = {
   path: '/fhir/Patient',
   method: 'POST',
   contentType: 'application/fhir+json',
-  authToken: ''
+  authToken: '',
 };
 const fhirDatastoreRequestDetailsOrg: RequestDetails = {
   protocol: config.fhirDatastoreProtocol,
@@ -137,19 +126,28 @@ const fhirDatastoreRequestDetailsOrg: RequestDetails = {
   contentType: 'application/fhir+json',
   method: 'POST',
   path: '/fhir',
-  data: ''
+  data: '',
 };
 
 export const processBundle = async (bundle: Bundle): Promise<HandlerResponseObect> => {
-  const fhirDatastoreRequestDetails: RequestDetails = Object.assign({}, fhirDatastoreRequestDetailsOrg);
-  const clientRegistryRequestDetails: RequestDetails = Object.assign({}, clientRegistryRequestDetailsOrg);
+  const fhirDatastoreRequestDetails: RequestDetails = Object.assign(
+    {},
+    fhirDatastoreRequestDetailsOrg
+  );
+  const clientRegistryRequestDetails: RequestDetails = Object.assign(
+    {},
+    clientRegistryRequestDetailsOrg
+  );
   const patientResource: Resource | null = extractPatientResource(bundle);
   const patientId: string | null = extractPatientId(bundle);
 
   if (!(patientResource || patientId)) {
     logger.info('No Patient resource or Patient reference was found in Fhir Bundle!');
 
-    const handlerResponse: HandlerResponseObect = await sendToFhirAndKafka(fhirDatastoreRequestDetails, modifyBundle(bundle));
+    const handlerResponse: HandlerResponseObect = await sendToFhirAndKafka(
+      fhirDatastoreRequestDetails,
+      modifyBundle(bundle)
+    );
     return handlerResponse;
   }
 
@@ -161,16 +159,26 @@ export const processBundle = async (bundle: Bundle): Promise<HandlerResponseObec
     clientRegistryRequestDetails.method = 'GET';
     delete clientRegistryRequestDetails.data;
   } else {
-    clientRegistryRequestDetails.data = JSON.stringify(patientResource)
+    clientRegistryRequestDetails.data = JSON.stringify(patientResource);
   }
 
-  const clientRegistryResponse: ResponseObject = await sendRequest(clientRegistryRequestDetails);
+  const clientRegistryResponse: ResponseObject = await sendRequest(
+    clientRegistryRequestDetails
+  );
 
   if (!(clientRegistryResponse.status === 201 || clientRegistryResponse.status === 200)) {
     if (patientResource) {
-      logger.error(`Patient resource creation in Client Registry failed: ${JSON.stringify(clientRegistryResponse.body)}`);
+      logger.error(
+        `Patient resource creation in Client Registry failed: ${JSON.stringify(
+          clientRegistryResponse.body
+        )}`
+      );
     } else {
-      logger.error(`Checking of patient with id ${patientId} failed in Client Registry: ${JSON.stringify(clientRegistryResponse.body)}`);
+      logger.error(
+        `Checking of patient with id ${patientId} failed in Client Registry: ${JSON.stringify(
+          clientRegistryResponse.body
+        )}`
+      );
     }
     return createHandlerResponseObject('Failed', clientRegistryResponse);
   }
@@ -179,7 +187,10 @@ export const processBundle = async (bundle: Bundle): Promise<HandlerResponseObec
   const modifiedBundle: Bundle = modifyBundle(bundle, `Patient/${patientId}`, newPatientRef);
 
   const handlerResponse: HandlerResponseObect = await sendToFhirAndKafka(
-    fhirDatastoreRequestDetails, modifiedBundle, clientRegistryResponse.body, newPatientRef
+    fhirDatastoreRequestDetails,
+    modifiedBundle,
+    clientRegistryResponse.body,
+    newPatientRef
   );
 
   return handlerResponse;

@@ -1,20 +1,20 @@
-import { Kafka, logLevel } from "kafkajs";
+import { Kafka, logLevel } from 'kafkajs';
 
-import { getConfig } from "../config/config";
-import logger from "../logger";
-import { Bundle } from "../types/bundle";
-import { HandlerResponseObect } from "../types/response";
-import { processBundle, sendToKafka } from "./kafkaFhir";
+import { getConfig } from '../config/config';
+import logger from '../logger';
+import { Bundle } from '../types/bundle';
+import { HandlerResponseObect } from '../types/response';
+import { processBundle, sendToKafka } from '../utils/kafkaFhir';
 
 const config = getConfig();
 
 const kafka = new Kafka({
   logLevel: logLevel.ERROR,
   clientId: config.mpiKafkaClientId,
-  brokers: config.kafkaBrokers.split(","),
+  brokers: config.kafkaBrokers.split(','),
 });
 
-const consumer = kafka.consumer({ groupId: "mpi-mediator" });
+const consumer = kafka.consumer({ groupId: 'mpi-mediator' });
 
 export const asyncPatientMatchHandler = async (): Promise<void> => {
   await consumer.connect();
@@ -27,14 +27,14 @@ export const asyncPatientMatchHandler = async (): Promise<void> => {
 
   await consumer.run({
     eachMessage: async ({ message }) => {
-      logger.info('Fhir bundle received from queue')
+      logger.info('Fhir bundle received from queue');
 
       consumer.pause([{ topic: config.kafkaAsyncBundleTopic }]);
       const bundleString: string | undefined = message.value?.toString();
       let bundle: Bundle;
 
       if (!bundleString) {
-        logger.error("Invalid Fhir bundle received from Kafka");
+        logger.error('Invalid Fhir bundle received from Kafka');
         consumer.resume([{ topic: config.kafkaAsyncBundleTopic }]);
         return;
       } else {

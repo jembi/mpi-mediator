@@ -1,6 +1,6 @@
 import { Bundle } from 'fhir/r2';
 import { getConfig } from '../config/config';
-import { getData } from '../routes/utils';
+import { getData } from './utils';
 
 /**
  * Fetch all patient related resources ($everything operation)

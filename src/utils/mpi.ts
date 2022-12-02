@@ -1,6 +1,6 @@
 import { Patient, Resource } from 'fhir/r2';
 import { getConfig } from '../config/config';
-import { getData } from '../routes/utils';
+import { getData } from './utils';
 import { ClientOAuth2, OAuth2Token } from './client-oauth2';
 
 // Singleton instance of MPI Token stored in memory

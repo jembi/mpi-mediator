@@ -2,7 +2,7 @@ import { expect } from "chai";
 import nock from "nock";
 import sinon from "sinon";
 
-import * as kafkaFhir from "../../src/routes/kafkaFhir";
+import * as kafkaFhir from "../../src/utils/kafkaFhir";
 import { Bundle } from "../../src/types/bundle";
 import { getConfig } from "../../src/config/config";
 import { HandlerResponseObect } from "../../src/types/response";

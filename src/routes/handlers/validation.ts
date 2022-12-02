@@ -1,24 +1,24 @@
-import { buildOpenhimResponseObject, sendRequest } from '../utils';
-import { getConfig } from "../../config/config";
-import logger from "../../logger";
-import { Bundle } from "../../types/bundle";
+import { buildOpenhimResponseObject, sendRequest } from '../../utils/utils';
+import { getConfig } from '../../config/config';
+import logger from '../../logger';
+import { Bundle } from '../../types/bundle';
 import { HandlerResponseObect } from '../../types/response';
-import {  RequestDetails } from '../../types/request';
+import { RequestDetails } from '../../types/request';
 
 const config = getConfig();
 
-export const validate = async (bundle: Bundle) : Promise<HandlerResponseObect> => {
+export const validate = async (bundle: Bundle): Promise<HandlerResponseObect> => {
   logger.info('Validating Fhir Resources');
 
-  const reqDetails : RequestDetails = {
+  const reqDetails: RequestDetails = {
     protocol: config.fhirDatastoreProtocol,
     host: config.fhirDatastoreHost,
     port: config.fhirDatastorePort,
     path: '/fhir/Bundle/$validate',
     contentType: 'application/fhir+json',
     method: 'POST',
-    data: JSON.stringify(bundle)
-  }
+    data: JSON.stringify(bundle),
+  };
 
   const response = await sendRequest(reqDetails);
 
