@@ -1,0 +1,27 @@
+version: '3.9'
+
+services:
+  hapi-fhir:
+    container_name: hapi-fhir
+    image: jembi/hapi:v5.7.0-wget
+    ports:
+      - target: 8080
+        published: 3447
+        mode: host
+    environment:
+      - spring.datasource.url=jdbc:postgresql://postgres-1:5432/hapi?targetServerType=primary
+      - spring.datasource.username=admin
+      - spring.datasource.password=instant101
+      - spring.datasource.driverClassName=org.postgresql.Driver
+      - spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQL95Dialect
+      - hapi.fhir.allow_external_references=true
+      - hapi.fhir.bulk_export_enabled=true
+      - hapi.fhir.enable_repository_validating_interceptor=true
+      - JAVA_TOOL_OPTIONS=-Xmx2g
+      - CATALINA_OPTS=-Xmx2g
+    healthcheck:
+      test: /bin/wget --no-verbose --tries=1 --spider http://localhost:8080
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 2m
