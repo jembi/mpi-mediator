@@ -8,7 +8,6 @@ import {
   extractPatientResource,
   extractPatientId,
   modifyBundle,
-  createAuthHeaderToken,
   createNewPatientRef,
   createHandlerResponseObject,
 } from '../../src/utils/utils';
@@ -396,38 +395,6 @@ describe('Utils', (): void => {
       expect(modifyBundle(bundle, tempPatientRef, clientRegistryPatientRef)).to.be.deep.equal(
         expectedBundle
       );
-    });
-  });
-
-  describe('*createAuthHeaderToken', (): void => {
-    it('should return error when server error occurs', async (): Promise<void> => {
-      const errorMessage = {
-        message: 'Server down!',
-      };
-
-      nock(
-        `${config.clientRegistryProtocol}://${config.clientRegistryHost}:${config.clientRegistryPort}`
-      )
-        .post(`${config.clientRegistryAuthPath}`)
-        .reply(500, errorMessage);
-
-      const response = await createAuthHeaderToken();
-      expect(response.error).to.be.equal(JSON.stringify(errorMessage));
-    });
-
-    it('should return error when server error occurs', async (): Promise<void> => {
-      const successMessage = {
-        access_token: 'test',
-      };
-
-      nock(
-        `${config.clientRegistryProtocol}://${config.clientRegistryHost}:${config.clientRegistryPort}`
-      )
-        .post(`${config.clientRegistryAuthPath}`)
-        .reply(200, successMessage);
-
-      const response = await createAuthHeaderToken();
-      expect(response.token).to.be.equal(`${config.clientRegistryAuthHeaderType} test`);
     });
   });
 

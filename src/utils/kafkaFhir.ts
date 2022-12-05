@@ -3,9 +3,8 @@ import { Kafka, logLevel } from 'kafkajs';
 import { Bundle, Entry, Resource } from '../types/bundle';
 import { getConfig } from '../config/config';
 import { RequestDetails } from '../types/request';
-import { AuthHeader, MpiMediatorResponseObject, ResponseObject } from '../types/response';
+import { MpiMediatorResponseObject, ResponseObject } from '../types/response';
 import {
-  createAuthHeaderToken,
   createHandlerResponseObject,
   createNewPatientRef,
   extractPatientId,
@@ -14,6 +13,8 @@ import {
   sendRequest,
 } from './utils';
 import logger from '../logger';
+import { getMpiAuthToken } from './mpi';
+import { OAuth2Token } from './client-oauth2';
 
 const config = getConfig();
 
@@ -151,8 +152,8 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
     return handlerResponse;
   }
 
-  const auth: AuthHeader = await createAuthHeaderToken();
-  clientRegistryRequestDetails.authToken = auth.token;
+  const auth: OAuth2Token = await getMpiAuthToken();
+  clientRegistryRequestDetails.authToken = `Bearer ${auth.accessToken}`;
 
   if (!patientResource && patientId) {
     clientRegistryRequestDetails.path = `/fhir/Patient/${patientId}`;

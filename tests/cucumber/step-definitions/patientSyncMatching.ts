@@ -8,8 +8,8 @@ import path from "path";
 import fetch from "node-fetch";
 
 import { getConfig } from "../../../src/config/config";
-import { createAuthHeaderToken } from "../../../src/utils/utils";
 import * as KafkaFhir from "../../../src/utils/kafkaFhir";
+import { getMpiAuthToken } from "../../../src/utils/mpi";
 
 const app = rewire("../../../src/index").__get__("app");
 const config = getConfig();
@@ -32,13 +32,13 @@ Given(
     );
     expect(fhirResponse.status).to.equal(200);
 
-    const auth = await createAuthHeaderToken();
+    const auth = await getMpiAuthToken();
 
     const clientRegistryResponse = await fetch(
       `${config.clientRegistryProtocol}://${config.clientRegistryHost}:${config.clientRegistryPort}/fhir/Patient`,
       {
         headers: {
-          Authorization: auth.token,
+          Authorization: `Bearer ${auth.accessToken}`,
         },
         method: "GET",
       }
@@ -77,12 +77,12 @@ When(
 When(
   "a fhir bundle with a valid patient reference is send to the MPI mediator",
   async (): Promise<void> => {
-    const auth = await createAuthHeaderToken();
+    const auth = await getMpiAuthToken();
     const clientRegResponse = await fetch(
       `${config.clientRegistryProtocol}://${config.clientRegistryHost}:${config.clientRegistryPort}/fhir/Patient`,
       {
         headers: {
-          Authorization: auth.token,
+          Authorization: `Bearer ${auth.accessToken}`,
           'Content-Type': 'application/fhir+json'
         },
         method: "POST",
@@ -108,7 +108,7 @@ When(
 Then(
   "a patient should be created on the client registry",
   async (): Promise<void> => {
-    const auth = await createAuthHeaderToken();
+    const auth = await getMpiAuthToken();
     let patientId: string;
 
     for (
@@ -129,7 +129,7 @@ Then(
       `${config.clientRegistryProtocol}://${config.clientRegistryHost}:${config.clientRegistryPort}/fhir/Patient/${patientId}`,
       {
         headers: {
-          Authorization: auth.token,
+          Authorization: `Bearer ${auth.accessToken}`,
         },
         method: "GET",
       }
@@ -142,14 +142,14 @@ Then(
 Then(
   `it's clinical data should be stored in the fhir datastore`,
   async (): Promise<void> => {
-    const auth = await createAuthHeaderToken();
+    const auth = await getMpiAuthToken();
     const observationId = "testObservation";
 
     const response = await fetch(
       `${config.fhirDatastoreProtocol}://${config.fhirDatastoreHost}:${config.fhirDatastorePort}/fhir/Observation/${observationId}`,
       {
         headers: {
-          Authorization: auth.token,
+          Authorization: `Bearer ${auth.accessToken}`,
         },
         method: "GET",
       }

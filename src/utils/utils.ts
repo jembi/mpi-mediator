@@ -162,35 +162,6 @@ export const modifyBundle = (
   return modifiedBundle;
 };
 
-export const createAuthHeaderToken = async (): Promise<AuthHeader> => {
-  const authHeader: AuthHeader = {
-    token: '',
-    error: '',
-  };
-  const reqDetails: RequestDetails = {
-    protocol: config.clientRegistryProtocol,
-    host: config.clientRegistryHost,
-    port: config.clientRegistryPort,
-    path: config.clientRegistryAuthPath,
-    method: 'POST',
-    data: config.clientRegistryAuthCredentials,
-    contentType: config.clientRegistryAuthCredentialsContentType,
-  };
-
-  const response: ResponseObject = await sendRequest(reqDetails);
-
-  if (response.status === 200) {
-    authHeader.token = `${config.clientRegistryAuthHeaderType} ${
-      JSON.parse(JSON.stringify(response.body)).access_token
-    }`;
-  } else {
-    authHeader.token = '';
-    authHeader.error = JSON.stringify(response.body);
-  }
-
-  return authHeader;
-};
-
 export const createNewPatientRef = (body: object): string => {
   return `${config.clientRegistryProtocol}://${config.clientRegistryHost}:${
     config.clientRegistryPort
