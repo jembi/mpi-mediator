@@ -6,6 +6,7 @@ import { mpiAuthMiddleware } from '../middlewares/mpi-auth';
 import { mpiMdmEverythingMiddleware } from '../middlewares/mpi-mdm-everything';
 import { matchAsyncHandler } from './handlers/matchPatientAsync';
 import { matchSyncHandler } from './handlers/matchPatientSync';
+import { mpiMdmQueryLinksMiddleware } from '../middlewares/mpi-mdm-query-links';
 
 import { validate } from './handlers/validation';
 
@@ -54,6 +55,12 @@ routes.post(
 
     res.status(result.status).send(result.body);
   })
+);
+
+routes.get(
+  /^\/fhir\/[A-z]+(\/.+)?$/,
+  mpiMdmQueryLinksMiddleware,
+  fhirDatastoreAccessProxyMiddleware
 );
 
 export default routes;

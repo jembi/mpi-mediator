@@ -1,5 +1,6 @@
 import { Request, RequestHandler } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
+import qs from 'qs';
 import { getConfig } from '../config/config';
 import logger from '../logger';
 
@@ -31,6 +32,10 @@ const createMpiAccessProxy = (): RequestHandler => {
     target: new URL(`${protocol}://${host}:${port}`),
     logLevel,
     logProvider,
+    pathRewrite(_path, req) {
+      // Re-compute the path, since http-proxy-middleware relies on req.originalUrl
+      return `${req.path}?${qs.stringify(req.query)}`;
+    },
     onError(err, _req, _res) {
       logger.error(err);
     },
