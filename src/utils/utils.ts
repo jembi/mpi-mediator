@@ -7,7 +7,6 @@ import {
   OpenHimResponseObject,
   ResponseObject,
   Response,
-  AuthHeader,
   MpiMediatorResponseObject,
 } from '../types/response';
 import { Bundle, Resource, Entry } from '../types/bundle';
