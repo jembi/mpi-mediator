@@ -2,12 +2,12 @@ import { buildOpenhimResponseObject, sendRequest } from '../../utils/utils';
 import { getConfig } from '../../config/config';
 import logger from '../../logger';
 import { Bundle } from '../../types/bundle';
-import { HandlerResponseObect } from '../../types/response';
+import { MpiMediatorResponseObject } from '../../types/response';
 import { RequestDetails } from '../../types/request';
 
 const config = getConfig();
 
-export const validate = async (bundle: Bundle): Promise<HandlerResponseObect> => {
+export const validate = async (bundle: Bundle): Promise<MpiMediatorResponseObject> => {
   logger.info('Validating Fhir Resources');
 
   const reqDetails: RequestDetails = {

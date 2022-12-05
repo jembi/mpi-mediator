@@ -3,7 +3,7 @@ import { Kafka, logLevel } from 'kafkajs';
 import { Bundle, Entry, Resource } from '../types/bundle';
 import { getConfig } from '../config/config';
 import { RequestDetails } from '../types/request';
-import { AuthHeader, HandlerResponseObect, ResponseObject } from '../types/response';
+import { AuthHeader, MpiMediatorResponseObject, ResponseObject } from '../types/response';
 import {
   createAuthHeaderToken,
   createHandlerResponseObject,
@@ -50,7 +50,7 @@ export const sendToFhirAndKafka = async (
   bundle: Bundle,
   patient: object | null = null,
   newPatientRef: string = ''
-): Promise<HandlerResponseObect> => {
+): Promise<MpiMediatorResponseObject> => {
   requestDetails.data = JSON.stringify(bundle);
 
   const response: ResponseObject = await sendRequest(requestDetails);
@@ -129,7 +129,7 @@ const fhirDatastoreRequestDetailsOrg: RequestDetails = {
   data: '',
 };
 
-export const processBundle = async (bundle: Bundle): Promise<HandlerResponseObect> => {
+export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponseObject> => {
   const fhirDatastoreRequestDetails: RequestDetails = Object.assign(
     {},
     fhirDatastoreRequestDetailsOrg
@@ -144,7 +144,7 @@ export const processBundle = async (bundle: Bundle): Promise<HandlerResponseObec
   if (!(patientResource || patientId)) {
     logger.info('No Patient resource or Patient reference was found in Fhir Bundle!');
 
-    const handlerResponse: HandlerResponseObect = await sendToFhirAndKafka(
+    const handlerResponse: MpiMediatorResponseObject = await sendToFhirAndKafka(
       fhirDatastoreRequestDetails,
       modifyBundle(bundle)
     );
@@ -186,7 +186,7 @@ export const processBundle = async (bundle: Bundle): Promise<HandlerResponseObec
   const newPatientRef: string = createNewPatientRef(clientRegistryResponse.body);
   const modifiedBundle: Bundle = modifyBundle(bundle, `Patient/${patientId}`, newPatientRef);
 
-  const handlerResponse: HandlerResponseObect = await sendToFhirAndKafka(
+  const handlerResponse: MpiMediatorResponseObject = await sendToFhirAndKafka(
     fhirDatastoreRequestDetails,
     modifiedBundle,
     clientRegistryResponse.body,

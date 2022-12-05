@@ -3,7 +3,7 @@ import nock from 'nock';
 
 import { getConfig } from '../../src/config/config';
 import { validate } from '../../src/routes/handlers/validation';
-import { HandlerResponseObect } from '../../src/types/response';
+import { MpiMediatorResponseObject } from '../../src/types/response';
 
 const config = getConfig();
 
@@ -33,7 +33,7 @@ describe('Validation handler', (): void => {
         .post('/fhir/Bundle/$validate')
         .reply(500, {});
 
-      const result : HandlerResponseObect = await validate(bundle);
+      const result: MpiMediatorResponseObject = await validate(bundle);
 
       expect(result.status).to.equal(500);
     });
@@ -65,8 +65,8 @@ describe('Validation handler', (): void => {
           message: 'Success',
         });
 
-      const result : HandlerResponseObect = await validate(bundle);
-      
+      const result: MpiMediatorResponseObject = await validate(bundle);
+
       expect(result.status).to.equal(200);
     });
   });

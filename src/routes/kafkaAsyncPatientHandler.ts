@@ -3,7 +3,7 @@ import { Kafka, logLevel } from 'kafkajs';
 import { getConfig } from '../config/config';
 import logger from '../logger';
 import { Bundle } from '../types/bundle';
-import { HandlerResponseObect } from '../types/response';
+import { MpiMediatorResponseObject } from '../types/response';
 import { processBundle, sendToKafka } from '../utils/kafkaFhir';
 
 const config = getConfig();
@@ -41,7 +41,7 @@ export const asyncPatientMatchHandler = async (): Promise<void> => {
         bundle = JSON.parse(bundleString);
       }
 
-      const processingResult: HandlerResponseObect = await processBundle(bundle);
+      const processingResult: MpiMediatorResponseObject = await processBundle(bundle);
 
       if (processingResult.body.status === 'Failed') {
         sendToKafka(bundle, config.kafkaErrorTopic);

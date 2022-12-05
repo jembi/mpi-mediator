@@ -19,16 +19,10 @@ export interface ResponseObject {
   status: number;
   body: object;
 }
-
-export interface HandlerResponseObect {
-  body: OpenHimResponseObject;
-  status: number;
-};
-
 export interface AuthHeader {
   token: string;
   error: string | null;
-};
+}
 export interface MpiMediatorResponseObject {
   body: OpenHimResponseObject;
   status: number;

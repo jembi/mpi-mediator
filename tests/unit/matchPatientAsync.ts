@@ -6,7 +6,7 @@ import * as kafkaFhir from '../../src/utils/kafkaFhir';
 import { getConfig } from '../../src/config/config';
 import { Bundle } from '../../src/types/bundle';
 import { matchAsyncHandler } from '../../src/routes/handlers/matchPatientAsync';
-import { HandlerResponseObect } from '../../src/types/response';
+import { MpiMediatorResponseObject } from '../../src/types/response';
 
 const config = getConfig();
 
@@ -31,8 +31,8 @@ describe('MAtch Patient Asynchronously', (): void => {
       nock(`http://${config.fhirDatastoreHost}:${config.fhirDatastorePort}`)
         .post('/fhir/Bundle/$validate')
         .reply(500, {});
-      
-      const response: HandlerResponseObect = await matchAsyncHandler(bundle);
+
+      const response: MpiMediatorResponseObject = await matchAsyncHandler(bundle);
       expect(response.status).to.be.equal(500);
     });
 
@@ -48,8 +48,8 @@ describe('MAtch Patient Asynchronously', (): void => {
               resourceType: 'Encounter',
               id: '1233',
               subject: {
-                reference: `Patient/12333`
-              }
+                reference: `Patient/12333`,
+              },
             },
           },
           {
@@ -65,13 +65,13 @@ describe('MAtch Patient Asynchronously', (): void => {
       nock(`http://${config.fhirDatastoreHost}:${config.fhirDatastorePort}`)
         .post('/fhir/Bundle/$validate')
         .reply(200, {});
-      
+
       const stub = sinon.stub(kafkaFhir, 'sendToKafka');
       stub.callsFake(async (_n, _m): Promise<Error | null> => {
         return Error('Error');
       });
 
-      const response: HandlerResponseObect = await matchAsyncHandler(bundle);
+      const response: MpiMediatorResponseObject = await matchAsyncHandler(bundle);
       expect(response.status).to.be.equal(500);
       stub.restore();
     });
@@ -88,8 +88,8 @@ describe('MAtch Patient Asynchronously', (): void => {
               resourceType: 'Encounter',
               id: '1233',
               subject: {
-                reference: `Patient/12333`
-              }
+                reference: `Patient/12333`,
+              },
             },
           },
           {
@@ -105,13 +105,13 @@ describe('MAtch Patient Asynchronously', (): void => {
       nock(`http://${config.fhirDatastoreHost}:${config.fhirDatastorePort}`)
         .post('/fhir/Bundle/$validate')
         .reply(200, {});
-      
+
       const stub = sinon.stub(kafkaFhir, 'sendToKafka');
       stub.callsFake(async (_n, _m): Promise<Error | null> => {
         return null;
       });
 
-      const response: HandlerResponseObect = await matchAsyncHandler(bundle);
+      const response: MpiMediatorResponseObject = await matchAsyncHandler(bundle);
       expect(response.status).to.be.equal(204);
       stub.restore();
     });
