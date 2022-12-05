@@ -1,11 +1,13 @@
 // @ts-nocheck
-import { Given, When, Then } from 'cucumber';
+import { Given, When, Then, setDefaultTimeout } from 'cucumber';
 import { expect } from 'chai';
 import rewire from 'rewire';
 import supertest from 'supertest';
 import fetch from 'node-fetch';
 
 import { getConfig } from '../../../src/config/config';
+
+setDefaultTimeout(10000);
 
 const app = rewire('../../../src/index').__get__('app');
 const config = getConfig();

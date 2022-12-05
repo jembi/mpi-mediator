@@ -1,5 +1,5 @@
 // @ts-ignore
-import { Given, When, Then } from 'cucumber';
+import { Given, When, Then, setDefaultTimeout } from 'cucumber';
 import { expect } from 'chai';
 import path from 'path';
 import fetch from 'node-fetch';
@@ -9,6 +9,8 @@ import https from 'https';
 import { getConfig } from '../../../src/config/config';
 import { MediatorConfig } from '../../../src/types/mediatorConfig';
 import { setupMediator } from '../../../src/openhim/openhim';
+
+setDefaultTimeout(10000);
 
 process.env.TRUST_SELF_SIGNED = 'true';
 process.env.REGISTER_MEDIATOR = 'true';
