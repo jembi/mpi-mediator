@@ -400,7 +400,7 @@ describe('Utils', (): void => {
 
   describe('*createNewPatientRef', (): void => {
     it('should create new patient reference', (): void => {
-      const expectedRef: string = `${config.clientRegistryProtocol}://${config.clientRegistryHost}:${config.clientRegistryPort}/fhir/Patient/123`;
+      const expectedRef: string = `${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}/fhir/Patient/123`;
 
       const ref = createNewPatientRef({ id: '123' });
       expect(ref).to.equal(expectedRef);

@@ -1,5 +1,5 @@
 import format from 'date-fns/format';
-import fetch, { RequestInit } from 'node-fetch';
+import fetch from 'node-fetch';
 
 import { getConfig } from '../config/config';
 import logger from '../logger';
@@ -163,9 +163,9 @@ export const modifyBundle = (
 };
 
 export const createNewPatientRef = (body: object): string => {
-  return `${config.clientRegistryProtocol}://${config.clientRegistryHost}:${
-    config.clientRegistryPort
-  }/fhir/Patient/${JSON.parse(JSON.stringify(body)).id}`;
+  return `${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}/fhir/Patient/${
+    JSON.parse(JSON.stringify(body)).id
+  }`;
 };
 
 export const createHandlerResponseObject = (

@@ -112,9 +112,9 @@ export const sendToFhirAndKafka = async (
 };
 
 const clientRegistryRequestDetailsOrg: RequestDetails = {
-  protocol: config.clientRegistryProtocol,
-  host: config.clientRegistryHost,
-  port: config.clientRegistryPort,
+  protocol: config.mpiProtocol,
+  host: config.mpiHost,
+  port: config.mpiPort,
   path: '/fhir/Patient',
   method: 'POST',
   contentType: 'application/fhir+json',

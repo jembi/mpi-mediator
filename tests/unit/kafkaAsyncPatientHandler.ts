@@ -6,6 +6,8 @@ import * as kafkaFhir from '../../src/utils/kafkaFhir';
 import { Bundle } from '../../src/types/bundle';
 import { getConfig } from '../../src/config/config';
 import { MpiMediatorResponseObject } from '../../src/types/response';
+import * as Auth from '../../src/utils/mpi';
+import { ClientOAuth2, OAuth2Token } from '../../src/utils/client-oauth2';
 
 const config = getConfig();
 
@@ -91,11 +93,13 @@ describe('Kafka Async Patient Handler', (): void => {
         id: patientId,
       };
 
-      nock(
-        `${config.clientRegistryProtocol}://${config.clientRegistryHost}:${config.clientRegistryPort}`
-      )
+      nock(`${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}`)
         .post(`/fhir/Patient`)
         .reply(201, clientRegistryResponse);
+      
+      nock(`${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}`)
+        .post(`/auth/oauth2_token`)
+        .reply(200, {access_token: 'accessToken'});
 
       const stub = sinon.stub(kafkaFhir, 'sendToFhirAndKafka');
       stub.callsFake(async (_n, _m): Promise<MpiMediatorResponseObject> => {
@@ -115,10 +119,29 @@ describe('Kafka Async Patient Handler', (): void => {
           },
         };
       });
+      const stub1 = sinon.stub(Auth, 'getMpiAuthToken');
+      stub1.callsFake(async (): Promise<OAuth2Token> => {
+        const clientData = {
+          clientId: '',
+          clientSecret: 'secret',
+          accessTokenUri: 'test',
+          scopes: [],
+        };
+        const client = new ClientOAuth2(clientData);
+
+        const oauth2 = new OAuth2Token(client, {
+          token_type: 'bearer',
+          access_token: 'accessToken',
+          refresh_token: 'refreshToken',
+          expires_in: '3',
+        });
+        return oauth2;
+      });
       const result = await kafkaFhir.processBundle(bundle);
 
       expect(result.status).to.equal(200);
       stub.restore();
+      stub1.restore();
     });
 
     it('should process bundle with patient ref', async (): Promise<void> => {
@@ -145,12 +168,28 @@ describe('Kafka Async Patient Handler', (): void => {
         id: patientId,
       };
 
-      nock(
-        `${config.clientRegistryProtocol}://${config.clientRegistryHost}:${config.clientRegistryPort}`
-      )
+      nock(`${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}`)
         .get(`/fhir/Patient/${patientId}`)
         .reply(200, clientRegistryResponse);
 
+      const stub1 = sinon.stub(Auth, 'getMpiAuthToken');
+      stub1.callsFake(async (): Promise<OAuth2Token> => {
+        const clientData = {
+          clientId: '',
+          clientSecret: 'secret',
+          accessTokenUri: 'test',
+          scopes: [],
+        };
+        const client = new ClientOAuth2(clientData);
+
+        const oauth2 = new OAuth2Token(client, {
+          token_type: 'bearer',
+          access_token: 'accessToken',
+          refresh_token: 'refreshToken',
+          expires_in: '3',
+        });
+        return oauth2;
+      });
       const stub = sinon.stub(kafkaFhir, 'sendToFhirAndKafka');
       stub.callsFake(async (_n, _m): Promise<MpiMediatorResponseObject> => {
         return {
@@ -173,6 +212,8 @@ describe('Kafka Async Patient Handler', (): void => {
 
       expect(result.status).to.equal(200);
       stub.restore();
+      stub1.restore();
+      nock.cleanAll();
     });
   });
 });

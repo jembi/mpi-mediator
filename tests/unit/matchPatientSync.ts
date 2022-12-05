@@ -8,6 +8,8 @@ import { RequestDetails } from '../../src/types/request';
 import { Bundle } from '../../src/types/bundle';
 import { MpiMediatorResponseObject } from '../../src/types/response';
 import { matchSyncHandler } from '../../src/routes/handlers/matchPatientSync';
+import * as Auth from '../../src/utils/mpi';
+import { ClientOAuth2, OAuth2Token } from '../../src/utils/client-oauth2';
 
 const config = getConfig();
 
@@ -115,17 +117,35 @@ describe('Match Patient Synchronously', (): void => {
         error: 'Internal Server',
       };
 
-      nock(
-        `${config.clientRegistryProtocol}://${config.clientRegistryHost}:${config.clientRegistryPort}`
-      )
+      nock(`${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}`)
         .post('/fhir/Patient')
         .reply(500, error);
+      
+      const stub = sinon.stub(Auth, 'getMpiAuthToken');
+      stub.callsFake(async (): Promise<OAuth2Token> => {
+        const clientData = {
+          clientId: '',
+          clientSecret: 'secret',
+          accessTokenUri: 'test',
+          scopes: [],
+        };
+        const client = new ClientOAuth2(clientData);
+
+        const oauth2 = new OAuth2Token(client, {
+          token_type: 'bearer',
+          access_token: 'accessToken',
+          refresh_token: 'refreshToken',
+          expires_in: '3',
+        });
+        return oauth2;
+      });
 
       const handlerResponse = await matchSyncHandler(bundle);
 
       expect(handlerResponse.status).to.be.equal(500);
       expect(handlerResponse.body.status).to.be.equal('Failed');
       expect(handlerResponse.body.response.body).to.deep.equal(error);
+      stub.restore();
     });
 
     it('should return error response when patient referenced does not exist the in Client Registry', async (): Promise<void> => {
@@ -151,17 +171,34 @@ describe('Match Patient Synchronously', (): void => {
         error: 'Resource not found',
       };
 
-      nock(
-        `${config.clientRegistryProtocol}://${config.clientRegistryHost}:${config.clientRegistryPort}`
-      )
+      nock(`${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}`)
         .get(`/fhir/Patient/${patientId}`)
         .reply(404, error);
 
+      const stub = sinon.stub(Auth, 'getMpiAuthToken');
+      stub.callsFake(async (): Promise<OAuth2Token> => {
+        const clientData = {
+          clientId: '',
+          clientSecret: 'secret',
+          accessTokenUri: 'test',
+          scopes: [],
+        };
+        const client = new ClientOAuth2(clientData);
+
+        const oauth2 = new OAuth2Token(client, {
+          token_type: 'bearer',
+          access_token: 'accessToken',
+          refresh_token: 'refreshToken',
+          expires_in: '3',
+        });
+        return oauth2;
+      });
       const handlerResponse = await matchSyncHandler(bundle);
 
       expect(handlerResponse.status).to.be.equal(404);
       expect(handlerResponse.body.status).to.be.equal('Failed');
       expect(handlerResponse.body.response.body).to.deep.equal(error);
+      stub.restore();
     });
 
     it('should send to the FHir store and Kafka when patient exists in the Client Registry', async (): Promise<void> => {
@@ -195,7 +232,7 @@ describe('Match Patient Synchronously', (): void => {
               resourceType: 'Encounter',
               id: '1233',
               subject: {
-                reference: `${config.clientRegistryProtocol}://${config.clientRegistryHost}:${config.clientRegistryPort}/fhir/Patient/${patientId}`,
+                reference: `${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}/fhir/Patient/${patientId}`,
               },
             },
             request: {
@@ -210,9 +247,7 @@ describe('Match Patient Synchronously', (): void => {
         id: patientId,
       };
 
-      nock(
-        `${config.clientRegistryProtocol}://${config.clientRegistryHost}:${config.clientRegistryPort}`
-      )
+      nock(`${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}`)
         .get(`/fhir/Patient/${patientId}`)
         .reply(200, clientRegistryResponse);
 
@@ -241,11 +276,31 @@ describe('Match Patient Synchronously', (): void => {
         }
       );
 
+      const stub1 = sinon.stub(Auth, 'getMpiAuthToken');
+      stub1.callsFake(async (): Promise<OAuth2Token> => {
+        const clientData = {
+          clientId: '',
+          clientSecret: 'secret',
+          accessTokenUri: 'test',
+          scopes: [],
+        };
+        const client = new ClientOAuth2(clientData);
+
+        const oauth2 = new OAuth2Token(client, {
+          token_type: 'bearer',
+          access_token: 'accessToken',
+          refresh_token: 'refreshToken',
+          expires_in: '3',
+        });
+        return oauth2;
+      });
+
       const handlerResponse = await matchSyncHandler(bundle);
 
       expect(handlerResponse.status).to.be.equal(200);
       expect(handlerResponse.body.status).to.be.equal('Success');
       stub.restore();
+      stub1.restore();
     });
 
     it('should send to the FHir store and Kafka when patient is created in the Client Registry', async (): Promise<void> => {
@@ -274,7 +329,7 @@ describe('Match Patient Synchronously', (): void => {
           },
         ],
       };
-      const clientRegistryRef = `${config.clientRegistryProtocol}://${config.clientRegistryHost}:${config.clientRegistryPort}/fhir/Patient/${patientId}`;
+      const clientRegistryRef = `${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}/fhir/Patient/${patientId}`;
 
       const modifiedBundle = {
         resourceType: 'Bundle',
@@ -302,14 +357,30 @@ describe('Match Patient Synchronously', (): void => {
         id: patientId,
       };
 
-      nock(
-        `${config.clientRegistryProtocol}://${config.clientRegistryHost}:${config.clientRegistryPort}`
-      )
+      nock(`${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}`)
         .post(`/fhir/Patient`)
         .reply(201, clientRegistryResponse);
 
-      const stub = sinon.stub(kafkaFhir, 'sendToFhirAndKafka');
-      stub.callsFake(
+      const stub = sinon.stub(Auth, 'getMpiAuthToken');
+      stub.callsFake(async (): Promise<OAuth2Token> => {
+        const clientData = {
+          clientId: '',
+          clientSecret: 'secret',
+          accessTokenUri: 'test',
+          scopes: [],
+        };
+        const client = new ClientOAuth2(clientData);
+
+        const oauth2 = new OAuth2Token(client, {
+          token_type: 'bearer',
+          access_token: 'accessToken',
+          refresh_token: 'refreshToken',
+          expires_in: '3',
+        });
+        return oauth2;
+      });
+      const stub1 = sinon.stub(kafkaFhir, 'sendToFhirAndKafka');
+      stub1.callsFake(
         async (
           requestDetails,
           bundle,
@@ -341,6 +412,7 @@ describe('Match Patient Synchronously', (): void => {
 
       expect(handlerResponse.status).to.be.equal(200);
       expect(handlerResponse.body.status).to.be.equal('Success');
+      stub.restore();
       stub.restore();
     });
   });
