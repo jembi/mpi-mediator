@@ -97,7 +97,7 @@ export const extractPatientResource = (bundle: Bundle): Resource | null => {
     return null;
   }
 
-  const patientEntry: Entry | undefined = bundle.entry.find((val, i) => {
+  const patientEntry: Entry | undefined = bundle.entry.find((val) => {
     if (val.resource.resourceType === 'Patient') {
       return true;
     }

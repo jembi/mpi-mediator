@@ -19,6 +19,7 @@ export interface ResponseObject {
   status: number;
   body: object;
 }
+
 export interface MpiMediatorResponseObject {
   body: OpenHimResponseObject;
   status: number;

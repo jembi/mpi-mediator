@@ -7,7 +7,8 @@ export interface RequestDetails {
   method: string;
   data?: string;
   contentType?: string;
-};
+}
+
 export interface RequestOptions {
   username: string;
   password: string;
