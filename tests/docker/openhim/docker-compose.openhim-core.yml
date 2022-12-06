@@ -1,0 +1,17 @@
+version: "3"
+
+services:
+  openhim-core:
+    container_name: openhim-core
+    image: jembi/openhim-core:latest
+    environment:
+      mongo_url: "mongodb://mongo-db:27017/openhim"
+      mongo_atnaUrl: "mongodb://mongo-db:27017/openhim"
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: /usr/bin/wget --no-verbose --tries=1 --spider --no-check-certificate https://localhost:8080/heartbeat
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 2m
