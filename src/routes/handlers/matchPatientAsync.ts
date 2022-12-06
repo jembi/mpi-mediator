@@ -23,6 +23,8 @@ export const matchAsyncHandler = async (
   const kafkaError = await sendToKafka(bundle, config.kafkaAsyncBundleTopic);
 
   if (kafkaError) {
+    logger.error(`Error in sending bundle to Kafka patient topic: ${kafkaError.message}`);
+
     return createHandlerResponseObject('Failed', {
       body: {
         error: kafkaError.message,
@@ -30,6 +32,8 @@ export const matchAsyncHandler = async (
       status: 500,
     });
   }
+
+  logger.info('Fhir bundle successfully sent to Kafka');
 
   return createHandlerResponseObject('Success', {
     status: 204,
