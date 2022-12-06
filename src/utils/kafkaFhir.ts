@@ -131,14 +131,9 @@ const fhirDatastoreRequestDetailsOrg: RequestDetails = {
 };
 
 export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponseObject> => {
-  const fhirDatastoreRequestDetails: RequestDetails = Object.assign(
-    {},
-    fhirDatastoreRequestDetailsOrg
-  );
-  const clientRegistryRequestDetails: RequestDetails = Object.assign(
-    {},
-    clientRegistryRequestDetailsOrg
-  );
+  const fhirDatastoreRequestDetails: RequestDetails = {...fhirDatastoreRequestDetailsOrg};
+  const clientRegistryRequestDetails: RequestDetails = {...clientRegistryRequestDetailsOrg};
+
   const patientResource: Resource | null = extractPatientResource(bundle);
   const patientId: string | null = extractPatientId(bundle);
 
@@ -184,7 +179,7 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
     return createHandlerResponseObject('Failed', clientRegistryResponse);
   }
 
-  const newPatientRef: string = createNewPatientRef(clientRegistryResponse.body);
+  const newPatientRef: string = createNewPatientRef(JSON.parse(JSON.stringify(clientRegistryResponse.body))['id']);
   const modifiedBundle: Bundle = modifyBundle(bundle, `Patient/${patientId}`, newPatientRef);
 
   const handlerResponse: MpiMediatorResponseObject = await sendToFhirAndKafka(

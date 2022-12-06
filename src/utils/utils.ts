@@ -161,9 +161,9 @@ export const modifyBundle = (
   return modifiedBundle;
 };
 
-export const createNewPatientRef = (body: object): string => {
+export const createNewPatientRef = (patientId: string): string => {
   return `${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}/fhir/Patient/${
-    JSON.parse(JSON.stringify(body)).id
+    patientId
   }`;
 };
 

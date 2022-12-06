@@ -402,7 +402,7 @@ describe('Utils', (): void => {
     it('should create new patient reference', (): void => {
       const expectedRef: string = `${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}/fhir/Patient/123`;
 
-      const ref = createNewPatientRef({ id: '123' });
+      const ref = createNewPatientRef('123');
       expect(ref).to.equal(expectedRef);
     });
   });
