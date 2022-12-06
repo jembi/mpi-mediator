@@ -12,7 +12,7 @@ const config = getConfig();
 export const matchAsyncHandler = async (
   bundle: Bundle
 ): Promise<MpiMediatorResponseObject> => {
-  logger.info('Fhir bundle recieved for asynchronous matching of the patient!');
+  logger.info('Fhir bundle received for asynchronous matching of the patient!');
 
   const validateResponse = await validate(bundle);
 
