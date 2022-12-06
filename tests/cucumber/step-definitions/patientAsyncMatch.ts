@@ -12,11 +12,11 @@ const config = getConfig();
 const app = rewire("../../../src/index").__get__("app");
 
 const invalidFhirBundle = require(
-    path.resolve(__dirname, '..', 'data', 'invalidFhirBundle.json')
-  );
-  const validFhirBundle = require(
-    path.resolve(__dirname, '..', 'data', 'validFhirBundle.json')
-  );
+  path.resolve(__dirname, '..', 'data', 'invalidFhirBundle.json')
+);
+const validFhirBundle = require(
+  path.resolve(__dirname, '..', 'data', 'validFhirBundle.json')
+);
 
 let server: unknown, request: unknown, responseBody: unknown;
 
