@@ -92,3 +92,34 @@ util::await_container_ready() {
     util::await_container_healthy "$SERVICE_NAME"
   fi
 }
+
+# Waits for a container's startup logs to stabilize
+#
+# Arguments:
+# - $1 : service name (eg. hapi-fhir)
+# - $2 : stable time, if the logs remain stable for this time, the function passes
+#
+util::await_container_logs_stable() {
+  local -r SERVICE_NAME=${1:?"FATAL: await_container_logs_stable parameter not provided"}
+  local -r STABLE_TIME=${2:?"FATAL: await_container_logs_stable parameter not provided"}
+
+  local start_time
+  start_time=$(date +%s)
+  local tried_for=0
+  local prev_count=0
+  until [[ $tried_for -ge $STABLE_TIME ]]; do
+    local curr_count
+    curr_count=$(docker logs "$SERVICE_NAME" | wc | sed -e 's/^[ \t]*//' | sed -e 's/ .*//')
+
+    if [[ $curr_count -ne $prev_count ]]; then
+      tried_for=0
+    fi
+
+    util::timeout_check "${start_time}" "${SERVICE_NAME} logs to stabilize"
+
+    tried_for=$((tried_for + 1))
+    prev_count=$curr_count
+    
+    sleep 1
+  done
+}

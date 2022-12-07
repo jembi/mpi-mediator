@@ -18,6 +18,8 @@ main() {
   docker-compose -p mediator_tests -f "$FILE_PATH"/docker-compose.sante.yml up -d
   util::await_container_ready santedb-mpi running false
   util::await_container_ready santedb-www running false
+
+  util::await_container_logs_stable santedb-mpi 10
 }
 
 main "$@"
