@@ -1,0 +1,15 @@
+version: '3.9'
+
+services:
+  santempi-psql-1:
+    container_name: santempi-psql-1
+    image: bitnami/postgresql-repmgr:14
+    environment:
+      POSTGRESQL_PASSWORD: SanteDB123
+      REPMGR_PASSWORD: SanteDB123
+      REPMGR_PRIMARY_HOST: santempi-psql-1
+      REPMGR_NODE_NETWORK_NAME: santempi-psql-1
+      REPMGR_NODE_NAME: santempi-psql-1
+      REPMGR_PARTNER_NODES: santempi-psql-1
+      POSTGRESQL_USERNAME: santedb
+      REPMGR_RECONNECT_INTERVAL: 3
