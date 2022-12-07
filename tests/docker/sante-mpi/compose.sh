@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 export COMPOSE_IGNORE_ORPHANS=1
 
 FILE_PATH=$(
