@@ -9,8 +9,6 @@ jobs:
       - name: Install modules
         run: npm i
 
-      - uses: mxschmitt/action-tmate@v3
-
       - name: Start test services
         run: npm run test:prepare
 
