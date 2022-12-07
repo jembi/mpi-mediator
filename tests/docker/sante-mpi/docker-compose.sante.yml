@@ -17,7 +17,7 @@ services:
       - SDB_DATA_POLICY_RESOURCE=Patient
       - SDB_DELAY_START=5000
     ports:
-      - "8084:8080"
+      - "8083:8080"
       - "2100:2100"    
          
   santedb-www:
