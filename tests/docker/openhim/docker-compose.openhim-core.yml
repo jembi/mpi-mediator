@@ -11,7 +11,7 @@ services:
       - "8080:8080"
     healthcheck:
       test: /usr/bin/wget --no-verbose --tries=1 --spider --no-check-certificate https://localhost:8080/heartbeat
-      interval: 5s
+      interval: 3s
       timeout: 5s
       retries: 5
-      start_period: 2m
+      start_period: 1m

@@ -3,7 +3,7 @@ version: "3.9"
 services:
   postgres-1:
     container_name: postgres-1
-    image: bitnami/postgresql-repmgr:latest
+    image: bitnami/postgresql-repmgr:14
     environment:
       POSTGRESQL_PASSWORD: instant101
       REPMGR_PASSWORD: instant101

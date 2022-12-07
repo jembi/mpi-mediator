@@ -5,9 +5,7 @@ services:
     container_name: hapi-fhir
     image: jembi/hapi:v5.7.0-wget
     ports:
-      - target: 8080
-        published: 3447
-        mode: host
+      - "3447:8080"
     environment:
       - spring.datasource.url=jdbc:postgresql://postgres-1:5432/hapi?targetServerType=primary
       - spring.datasource.username=admin
@@ -21,7 +19,7 @@ services:
       - CATALINA_OPTS=-Xmx2g
     healthcheck:
       test: /bin/wget --no-verbose --tries=1 --spider http://localhost:8080
-      interval: 30s
+      interval: 3s
       timeout: 5s
       retries: 5
-      start_period: 2m
+      start_period: 1m

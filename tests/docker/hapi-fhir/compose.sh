@@ -8,7 +8,6 @@ FILE_PATH=$(
 )
 readonly FILE_PATH
 
-# shellcheck source=utils.sh
 ROOT_PATH="${FILE_PATH}/.."
 . "${ROOT_PATH}/utils/utils.sh"
 
