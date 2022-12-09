@@ -1,5 +1,5 @@
+import { Bundle } from 'fhir/r3';
 import logger from '../../logger';
-import { Bundle } from '../../types/bundle';
 import { MpiMediatorResponseObject } from '../../types/response';
 import { processBundle } from '../../utils/kafkaFhir';
 

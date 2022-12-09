@@ -1,10 +1,10 @@
 import { expect } from 'chai';
 import nock from 'nock';
 import sinon from 'sinon';
+import { Bundle } from 'fhir/r3';
 
 import * as kafkaFhir from '../../src/utils/kafkaFhir';
 import { getConfig } from '../../src/config/config';
-import { Bundle } from '../../src/types/bundle';
 import { matchAsyncHandler } from '../../src/routes/handlers/matchPatientAsync';
 import { MpiMediatorResponseObject } from '../../src/types/response';
 
@@ -23,6 +23,7 @@ describe('MAtch Patient Asynchronously', (): void => {
             resource: {
               resourceType: 'Encounter',
               id: '1233',
+              status: 'planned',
             },
           },
         ],
@@ -37,7 +38,7 @@ describe('MAtch Patient Asynchronously', (): void => {
     });
 
     it('should return error when sending to kafka fails', async (): Promise<void> => {
-      const bundle = {
+      const bundle: Bundle = {
         type: 'document',
         resourceType: 'Bundle',
         id: '12',
@@ -50,6 +51,7 @@ describe('MAtch Patient Asynchronously', (): void => {
               subject: {
                 reference: `Patient/12333`,
               },
+              status: 'planned',
             },
           },
           {
@@ -77,7 +79,7 @@ describe('MAtch Patient Asynchronously', (): void => {
     });
 
     it('should send to kafka successfully', async (): Promise<void> => {
-      const bundle = {
+      const bundle: Bundle = {
         type: 'document',
         resourceType: 'Bundle',
         id: '12',
@@ -90,6 +92,7 @@ describe('MAtch Patient Asynchronously', (): void => {
               subject: {
                 reference: `Patient/12333`,
               },
+              status: 'planned',
             },
           },
           {

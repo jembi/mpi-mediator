@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { Request, Response } from 'express';
-import { Bundle, Observation, Patient } from 'fhir/r2';
+import { Bundle, Observation, Patient } from 'fhir/r3';
 import nock from 'nock';
 
 import { getConfig } from '../../src/config/config';

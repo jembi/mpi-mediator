@@ -1,9 +1,9 @@
 import { expect } from 'chai';
 import nock from 'nock';
 import sinon from 'sinon';
+import { Bundle } from 'fhir/r3';
 
 import * as kafkaFhir from '../../src/utils/kafkaFhir';
-import { Bundle } from '../../src/types/bundle';
 import { getConfig } from '../../src/config/config';
 import { MpiMediatorResponseObject } from '../../src/types/response';
 import * as Auth from '../../src/utils/mpi';
@@ -24,6 +24,7 @@ describe('Kafka Async Patient Handler', (): void => {
             resource: {
               resourceType: 'Encounter',
               id: '1233',
+              status: 'planned',
             },
           },
         ],
@@ -63,7 +64,7 @@ describe('Kafka Async Patient Handler', (): void => {
     });
 
     it('should process bundle with patient', async (): Promise<void> => {
-      const bundle = {
+      const bundle: Bundle = {
         type: 'document',
         resourceType: 'Bundle',
         id: '12',
@@ -76,6 +77,7 @@ describe('Kafka Async Patient Handler', (): void => {
               subject: {
                 reference: `Patient/12333`,
               },
+              status: 'planned',
             },
           },
           {
@@ -96,10 +98,10 @@ describe('Kafka Async Patient Handler', (): void => {
       nock(`${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}`)
         .post(`/fhir/Patient`)
         .reply(201, clientRegistryResponse);
-      
+
       nock(`${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}`)
         .post(`/auth/oauth2_token`)
-        .reply(200, {access_token: 'accessToken'});
+        .reply(200, { access_token: 'accessToken' });
 
       const stub = sinon.stub(kafkaFhir, 'sendToFhirAndKafka');
       stub.callsFake(async (_n, _m): Promise<MpiMediatorResponseObject> => {
@@ -146,7 +148,7 @@ describe('Kafka Async Patient Handler', (): void => {
 
     it('should process bundle with patient ref', async (): Promise<void> => {
       const patientId: string = 'testPatient';
-      const bundle = {
+      const bundle: Bundle = {
         type: 'document',
         resourceType: 'Bundle',
         id: '12',
@@ -159,6 +161,7 @@ describe('Kafka Async Patient Handler', (): void => {
               subject: {
                 reference: `Patient/${patientId}`,
               },
+              status: 'planned',
             },
           },
         ],

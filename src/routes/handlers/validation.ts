@@ -1,9 +1,9 @@
 import { buildOpenhimResponseObject, sendRequest } from '../../utils/utils';
 import { getConfig } from '../../config/config';
 import logger from '../../logger';
-import { Bundle } from '../../types/bundle';
 import { MpiMediatorResponseObject } from '../../types/response';
 import { RequestDetails } from '../../types/request';
+import { Bundle } from 'fhir/r3';
 
 const config = getConfig();
 

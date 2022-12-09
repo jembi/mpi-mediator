@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { Bundle } from 'fhir/r3';
 import nock from 'nock';
 
 import { getConfig } from '../../src/config/config';
@@ -10,7 +11,7 @@ const config = getConfig();
 describe('Validation handler', (): void => {
   describe('*validate', (): void => {
     it('should return error when validating server is unavalaible', async (): Promise<void> => {
-      const bundle = {
+      const bundle: Bundle = {
         resourceType: 'Bundle',
         id: 'testBundle',
         type: 'transaction',
@@ -20,7 +21,6 @@ describe('Validation handler', (): void => {
             resource: {
               resourceType: 'Patient',
               id: '123',
-              tr: 12,
             },
             request: {
               method: 'PUT',
@@ -39,7 +39,7 @@ describe('Validation handler', (): void => {
     });
 
     it('should succesfully validate', async (): Promise<void> => {
-      const bundle = {
+      const bundle: Bundle = {
         resourceType: 'Bundle',
         id: 'testBundle',
         type: 'transaction',
@@ -49,7 +49,6 @@ describe('Validation handler', (): void => {
             resource: {
               resourceType: 'Patient',
               id: '123',
-              tr: 12,
             },
             request: {
               method: 'PUT',

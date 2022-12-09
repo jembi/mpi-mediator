@@ -5,11 +5,11 @@ import sinon from 'sinon';
 import * as kafkaFhir from '../../src/utils/kafkaFhir';
 import { getConfig } from '../../src/config/config';
 import { RequestDetails } from '../../src/types/request';
-import { Bundle } from '../../src/types/bundle';
 import { MpiMediatorResponseObject } from '../../src/types/response';
 import { matchSyncHandler } from '../../src/routes/handlers/matchPatientSync';
 import * as Auth from '../../src/utils/mpi';
 import { ClientOAuth2, OAuth2Token } from '../../src/utils/client-oauth2';
+import { Bundle, FhirResource } from 'fhir/r3';
 
 const config = getConfig();
 
@@ -36,7 +36,7 @@ describe('Match Patient Synchronously', (): void => {
             resource: {
               resourceType: 'Encounter',
               id: '1233',
-            },
+            } as FhirResource,
           },
         ],
       };
@@ -102,7 +102,7 @@ describe('Match Patient Synchronously', (): void => {
             resource: {
               resourceType: 'Encounter',
               id: '1233',
-            },
+            } as FhirResource,
           },
           {
             fullUrl: 'Patient/1234',
@@ -120,7 +120,7 @@ describe('Match Patient Synchronously', (): void => {
       nock(`${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}`)
         .post('/fhir/Patient')
         .reply(500, error);
-      
+
       const stub = sinon.stub(Auth, 'getMpiAuthToken');
       stub.callsFake(async (): Promise<OAuth2Token> => {
         const clientData = {
@@ -150,7 +150,7 @@ describe('Match Patient Synchronously', (): void => {
 
     it('should return error response when patient referenced does not exist the in Client Registry', async (): Promise<void> => {
       const patientId: string = '1234';
-      const bundle = {
+      const bundle: Bundle = {
         type: 'document',
         resourceType: 'Bundle',
         id: '12',
@@ -163,6 +163,7 @@ describe('Match Patient Synchronously', (): void => {
               subject: {
                 reference: `Patient/${patientId}`,
               },
+              status: 'planned',
             },
           },
         ],
@@ -203,7 +204,7 @@ describe('Match Patient Synchronously', (): void => {
 
     it('should send to the FHir store and Kafka when patient exists in the Client Registry', async (): Promise<void> => {
       const patientId: string = 'testPatient';
-      const bundle = {
+      const bundle: Bundle = {
         type: 'document',
         resourceType: 'Bundle',
         id: '12',
@@ -216,12 +217,13 @@ describe('Match Patient Synchronously', (): void => {
               subject: {
                 reference: `Patient/${patientId}`,
               },
+              status: 'planned',
             },
           },
         ],
       };
 
-      const modifiedBundle = {
+      const modifiedBundle: Bundle = {
         resourceType: 'Bundle',
         type: 'transaction',
         id: '12',
@@ -234,6 +236,7 @@ describe('Match Patient Synchronously', (): void => {
               subject: {
                 reference: `${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}/fhir/Patient/${patientId}`,
               },
+              status: 'planned',
             },
             request: {
               method: 'PUT',
@@ -305,7 +308,7 @@ describe('Match Patient Synchronously', (): void => {
 
     it('should send to the FHir store and Kafka when patient is created in the Client Registry', async (): Promise<void> => {
       const patientId: string = 'testPatient';
-      const bundle = {
+      const bundle: Bundle = {
         type: 'document',
         resourceType: 'Bundle',
         id: '12',
@@ -318,6 +321,7 @@ describe('Match Patient Synchronously', (): void => {
               subject: {
                 reference: `Patient/12333`,
               },
+              status: 'planned',
             },
           },
           {
@@ -331,7 +335,7 @@ describe('Match Patient Synchronously', (): void => {
       };
       const clientRegistryRef = `${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}/fhir/Patient/${patientId}`;
 
-      const modifiedBundle = {
+      const modifiedBundle: Bundle = {
         resourceType: 'Bundle',
         type: 'transaction',
         id: '12',
@@ -344,6 +348,7 @@ describe('Match Patient Synchronously', (): void => {
               subject: {
                 reference: clientRegistryRef,
               },
+              status: 'planned',
             },
             request: {
               method: 'PUT',
