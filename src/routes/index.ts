@@ -15,6 +15,18 @@ const routes = express.Router();
 const jsonBodyParser = express.json({ type: 'application/fhir+json' });
 
 routes.post(
+  '/fhir',
+  jsonBodyParser,
+  asyncHandler(async (req, res) => {
+    res.set('Content-Type', 'application/openhim+json');
+
+    const result = await matchSyncHandler(req.body);
+
+    res.status(result.status).send(result.body);
+  })
+);
+
+routes.post(
   '/fhir/validate',
   jsonBodyParser,
   asyncHandler(async (req, res) => {
@@ -31,18 +43,6 @@ routes.get(
   '/fhir/Patient/:patientId/\\$everything',
   mpiMdmEverythingMiddleware,
   fhirDatastoreAccessProxyMiddleware
-);
-
-routes.post(
-  '/fhir',
-  jsonBodyParser,
-  asyncHandler(async (req, res) => {
-    res.set('Content-Type', 'application/openhim+json');
-
-    const result = await matchSyncHandler(req.body);
-
-    res.status(result.status).send(result.body);
-  })
 );
 
 routes.post(
