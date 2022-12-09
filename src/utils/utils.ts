@@ -9,8 +9,8 @@ import {
   Response,
   MpiMediatorResponseObject,
 } from '../types/response';
-import { Bundle, Resource, Entry } from '../types/bundle';
 import { RequestDetails } from '../types/request';
+import { Bundle, BundleEntry, Resource } from 'fhir/r3';
 
 const config = getConfig();
 
@@ -97,13 +97,13 @@ export const extractPatientResource = (bundle: Bundle): Resource | null => {
     return null;
   }
 
-  const patientEntry: Entry | undefined = bundle.entry.find((val) => {
-    if (val.resource.resourceType === 'Patient') {
+  const patientEntry: BundleEntry | undefined = bundle.entry.find((val) => {
+    if (val.resource?.resourceType === 'Patient') {
       return true;
     }
   });
 
-  return patientEntry ? patientEntry.resource : null;
+  return patientEntry?.resource || null;
 };
 
 export const extractPatientId = (bundle: Bundle): string | null => {
@@ -138,12 +138,12 @@ export const modifyBundle = (
   }
 
   const newEntry = modifiedBundle.entry
-    .filter((val) => val.resource.resourceType !== 'Patient')
+    ?.filter((val) => val.resource?.resourceType !== 'Patient')
     .map((entry) => {
       return Object.assign({}, entry, {
         request: {
           method: 'PUT',
-          url: `${entry.resource.resourceType}/${entry.resource.id}`,
+          url: `${entry.resource?.resourceType}/${entry.resource?.id}`,
         },
       });
     });
@@ -162,9 +162,7 @@ export const modifyBundle = (
 };
 
 export const createNewPatientRef = (patientId: string): string => {
-  return `${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}/fhir/Patient/${
-    patientId
-  }`;
+  return `${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}/fhir/Patient/${patientId}`;
 };
 
 export const createHandlerResponseObject = (

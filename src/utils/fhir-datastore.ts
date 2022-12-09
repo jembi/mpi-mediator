@@ -1,4 +1,4 @@
-import { Bundle } from 'fhir/r2';
+import { Bundle } from 'fhir/r3';
 import { getConfig } from '../config/config';
 import { getData } from './utils';
 

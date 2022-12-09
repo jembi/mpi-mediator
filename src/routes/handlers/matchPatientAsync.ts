@@ -1,6 +1,6 @@
+import { Bundle } from 'fhir/r3';
 import logger from '../../logger';
 import { getConfig } from '../../config/config';
-import { Bundle } from '../../types/bundle';
 
 import { MpiMediatorResponseObject } from '../../types/response';
 import { validate } from './validation';

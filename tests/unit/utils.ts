@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import nock from 'nock';
+import { Bundle, FhirResource } from 'fhir/r3';
 
 import { getConfig } from '../../src/config/config';
 import {
@@ -16,7 +17,6 @@ import {
   OpenHimResponseObject,
   ResponseObject,
 } from '../../src/types/response';
-import { Bundle, Resource } from '../../src/types/bundle';
 import { RequestDetails } from '../../src/types/request';
 
 const config = getConfig();
@@ -144,6 +144,7 @@ describe('Utils', (): void => {
             resource: {
               resourceType: 'Encounter',
               id: '1233',
+              status: 'planned',
             },
           },
         ],
@@ -155,7 +156,7 @@ describe('Utils', (): void => {
     });
 
     it('should return patient', (): void => {
-      const patient: Resource = {
+      const patient: FhirResource = {
         resourceType: 'Patient',
         id: '1233',
       };
@@ -185,6 +186,7 @@ describe('Utils', (): void => {
             resource: {
               resourceType: 'Encounter',
               id: '1233',
+              status: 'planned',
             },
           },
         ],
@@ -197,7 +199,7 @@ describe('Utils', (): void => {
 
     it('should return patient id', (): void => {
       const patientId: string = 'testPatient1';
-      const bundle = {
+      const bundle: Bundle = {
         id: '12',
         entry: [
           {
@@ -208,6 +210,7 @@ describe('Utils', (): void => {
               subject: {
                 reference: `Patient/${patientId}`,
               },
+              status: 'planned',
             },
           },
         ],
@@ -244,11 +247,12 @@ describe('Utils', (): void => {
             resource: {
               resourceType: 'Encounter',
               id: '1233',
+              status: 'planned',
             },
           },
         ],
       };
-      const expectedBundle = {
+      const expectedBundle: Bundle = {
         resourceType: 'Bundle',
         type: 'transaction',
         id: '12',
@@ -258,6 +262,7 @@ describe('Utils', (): void => {
             resource: {
               resourceType: 'Encounter',
               id: '1233',
+              status: 'planned',
             },
             request: {
               method: 'PUT',
@@ -274,7 +279,7 @@ describe('Utils', (): void => {
 
     it('should replace tempPatientRef', (): void => {
       const tempPatientRef: string = 'Patient/1233';
-      const bundle = {
+      const bundle: Bundle = {
         type: 'document',
         resourceType: 'Bundle',
         id: '12',
@@ -287,12 +292,13 @@ describe('Utils', (): void => {
               subject: {
                 reference: tempPatientRef,
               },
+              status: 'planned',
             },
           },
         ],
       };
       const clientRegistryPatientRef: string = 'http://client-registry:8080/fhir/Patient/1455';
-      const expectedBundle = {
+      const expectedBundle: Bundle = {
         resourceType: 'Bundle',
         type: 'transaction',
         id: '12',
@@ -305,6 +311,7 @@ describe('Utils', (): void => {
               subject: {
                 reference: clientRegistryPatientRef,
               },
+              status: 'planned',
             },
             request: {
               method: 'PUT',
@@ -321,7 +328,7 @@ describe('Utils', (): void => {
 
     it('should remove patient resource', (): void => {
       const tempPatientRef: string = 'Patient/1233';
-      const bundle = {
+      const bundle: Bundle = {
         type: 'document',
         resourceType: 'Bundle',
         id: '12',
@@ -334,6 +341,7 @@ describe('Utils', (): void => {
               subject: {
                 reference: tempPatientRef,
               },
+              status: 'planned',
             },
           },
           {
@@ -344,6 +352,7 @@ describe('Utils', (): void => {
               subject: {
                 reference: tempPatientRef,
               },
+              status: 'planned',
             },
           },
           {
@@ -356,7 +365,7 @@ describe('Utils', (): void => {
         ],
       };
       const clientRegistryPatientRef: string = 'http://client-registry:8080/fhir/Patient/1455';
-      const expectedBundle = {
+      const expectedBundle: Bundle = {
         resourceType: 'Bundle',
         type: 'transaction',
         id: '12',
@@ -369,6 +378,7 @@ describe('Utils', (): void => {
               subject: {
                 reference: clientRegistryPatientRef,
               },
+              status: 'planned',
             },
             request: {
               method: 'PUT',
@@ -383,6 +393,7 @@ describe('Utils', (): void => {
               subject: {
                 reference: clientRegistryPatientRef,
               },
+              status: 'planned',
             },
             request: {
               method: 'PUT',

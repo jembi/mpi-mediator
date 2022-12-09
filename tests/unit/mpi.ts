@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { Patient } from 'fhir/r2';
+import { Patient } from 'fhir/r3';
 import nock from 'nock';
 
 import { getConfig } from '../../src/config/config';

@@ -1,4 +1,4 @@
-import { Patient, Resource } from 'fhir/r2';
+import { Patient, Resource } from 'fhir/r3';
 import { getConfig } from '../config/config';
 import { getData } from './utils';
 import { ClientOAuth2, OAuth2Token } from './client-oauth2';

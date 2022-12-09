@@ -1,6 +1,6 @@
 import { Kafka, logLevel } from 'kafkajs';
 
-import { Bundle, Entry, Resource } from '../types/bundle';
+import { Bundle, BundleEntry, Patient, Resource } from 'fhir/r3';
 import { getConfig } from '../config/config';
 import { RequestDetails } from '../types/request';
 import { MpiMediatorResponseObject, ResponseObject } from '../types/response';
@@ -49,7 +49,7 @@ export const sendToKafka = async (bundle: Bundle, topic: string): Promise<Error 
 export const sendToFhirAndKafka = async (
   requestDetails: RequestDetails,
   bundle: Bundle,
-  patient: object | null = null,
+  patient: Patient | null = null,
   newPatientRef: string = ''
 ): Promise<MpiMediatorResponseObject> => {
   requestDetails.data = JSON.stringify(bundle);
@@ -64,7 +64,7 @@ export const sendToFhirAndKafka = async (
     transactionStatus = 'Success';
 
     if (patient) {
-      const patientEntry: Entry = {
+      const patientEntry: BundleEntry = {
         fullUrl: newPatientRef,
         resource: Object.assign(
           {
@@ -78,8 +78,8 @@ export const sendToFhirAndKafka = async (
           url: newPatientRef,
         },
       };
-      bundle.entry.push(patientEntry);
-      const entry: Entry[] = [];
+      bundle.entry?.push(patientEntry);
+      const entry: BundleEntry[] = [];
       const newBundle = Object.assign({ entry: entry }, response.body);
       newBundle.entry.push(patientEntry);
       response.body = newBundle;
@@ -131,8 +131,8 @@ const fhirDatastoreRequestDetailsOrg: RequestDetails = {
 };
 
 export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponseObject> => {
-  const fhirDatastoreRequestDetails: RequestDetails = {...fhirDatastoreRequestDetailsOrg};
-  const clientRegistryRequestDetails: RequestDetails = {...clientRegistryRequestDetailsOrg};
+  const fhirDatastoreRequestDetails: RequestDetails = { ...fhirDatastoreRequestDetailsOrg };
+  const clientRegistryRequestDetails: RequestDetails = { ...clientRegistryRequestDetailsOrg };
 
   const patientResource: Resource | null = extractPatientResource(bundle);
   const patientId: string | null = extractPatientId(bundle);
@@ -179,13 +179,15 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
     return createHandlerResponseObject('Failed', clientRegistryResponse);
   }
 
-  const newPatientRef: string = createNewPatientRef(JSON.parse(JSON.stringify(clientRegistryResponse.body))['id']);
+  const newPatientRef: string = createNewPatientRef(
+    JSON.parse(JSON.stringify(clientRegistryResponse.body))['id']
+  );
   const modifiedBundle: Bundle = modifyBundle(bundle, `Patient/${patientId}`, newPatientRef);
 
   const handlerResponse: MpiMediatorResponseObject = await sendToFhirAndKafka(
     fhirDatastoreRequestDetails,
     modifiedBundle,
-    clientRegistryResponse.body,
+    clientRegistryResponse.body as Patient,
     newPatientRef
   );
 

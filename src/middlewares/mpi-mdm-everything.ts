@@ -1,6 +1,6 @@
 import format from 'date-fns/format';
 import { RequestHandler } from 'express';
-import { Bundle, BundleLink } from 'fhir/r2';
+import { Bundle, BundleLink } from 'fhir/r3';
 import logger from '../logger';
 import { buildOpenhimResponseObject } from '../utils/utils';
 import { MpiMediatorResponseObject } from '../types/response';
