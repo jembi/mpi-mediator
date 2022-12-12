@@ -1,7 +1,7 @@
 {
     "resourceType": "Bundle",
-    "id": "testBundle",
-    "type": "document",
+    "id": "0766274d-6371-4a20-a527-e3ed5af8b984",
+    "type": "transaction",
     "entry": [
       {
         "fullUrl": "Observation/testObservation",
@@ -10,7 +10,24 @@
           "id": "testObservation",
           "subject": {
             "reference": "Patient/9eca7bca-3f86-421c-a431-b0bd49753937"
+          },
+          "status": "final",
+          "text": {
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Observation</div>",
+            "status": "generated"
+          },
+          "effectiveDateTime" : "2013-04-02T09:30:10+01:00",
+          "code" : {
+            "coding" : [{
+              "system" : "http://loinc.org",
+              "code" : "15074-8",
+              "display" : "Glucose [Moles/volume] in Blood"
+            }]
           }
+        },
+        "request": {
+          "method": "PUT",
+          "url": "Observation/testObservation"
         }
       }
     ]

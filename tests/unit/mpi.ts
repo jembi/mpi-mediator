@@ -12,7 +12,7 @@ import {
 
 const config = getConfig();
 
-const { mpiProtocol, mpiHost, mpiPort } = config;
+const { mpiProtocol, mpiHost, mpiPort, mpiClientId, mpiClientSecret } = config;
 
 const mpiUrl = `${mpiProtocol}://${mpiHost}:${mpiPort}`;
 
@@ -109,7 +109,7 @@ describe('MPI', (): void => {
       nock(mpiUrl)
         .post(
           '/auth/oauth2_token',
-          `refresh_token=${newOauth2TokenGenerated.refresh_token}&grant_type=refresh_token&clientId=&client_secret=`
+          `refresh_token=${newOauth2TokenGenerated.refresh_token}&grant_type=refresh_token&clientId=${mpiClientId}&client_secret=${mpiClientSecret}`
         )
         .reply(200, newOauth2TokenRefreshed);
 
