@@ -150,9 +150,7 @@ describe('Match Patient Synchronously', (): void => {
         error: 'Internal Server',
       };
 
-      nock(`http://${config.fhirDatastoreHost}:${config.fhirDatastorePort}`)
-        .post('/fhir/Bundle/$validate')
-       .reply(200, {});
+      mockSuccefullValidation();
 
       nock(`${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}`)
         .post('/fhir/Patient')
