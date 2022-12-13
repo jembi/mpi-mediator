@@ -13,6 +13,12 @@ import { Bundle, FhirResource } from 'fhir/r3';
 
 const config = getConfig();
 
+const mockSuccefullValidation = () => {
+  nock(`http://${config.fhirDatastoreHost}:${config.fhirDatastorePort}`)
+    .post('/fhir/Bundle/$validate')
+    .reply(200, {});
+}
+
 describe('Match Patient Synchronously', (): void => {
   describe('*matchSychHanlder', (): void => {
     const fhirDatastoreRequestDetailsOrg: RequestDetails = {
@@ -24,6 +30,31 @@ describe('Match Patient Synchronously', (): void => {
       path: '/fhir',
       data: '',
     };
+
+    it('should return error when validation fails', async (): Promise<void> => {
+      const bundle: Bundle = {
+        type: 'document',
+        resourceType: 'Bundle',
+        id: '12',
+        entry: [
+          {
+            fullUrl: 'Encounter/1234',
+            resource: {
+              resourceType: 'Encounter',
+              id: '1233',
+              status: 'planned',
+            },
+          },
+        ],
+      };
+
+      nock(`http://${config.fhirDatastoreHost}:${config.fhirDatastorePort}`)
+        .post('/fhir/Bundle/$validate')
+        .reply(500, {});
+
+      const response: MpiMediatorResponseObject = await matchSyncHandler(bundle);
+      expect(response.status).to.be.equal(500);
+    });
 
     it('should process bundle without patient or patient ref', async (): Promise<void> => {
       const bundle: Bundle = {
@@ -58,6 +89,8 @@ describe('Match Patient Synchronously', (): void => {
           },
         ],
       };
+
+      mockSuccefullValidation();
 
       const stub = sinon.stub(kafkaFhir, 'sendToFhirAndKafka');
       stub.callsFake(
@@ -117,6 +150,8 @@ describe('Match Patient Synchronously', (): void => {
         error: 'Internal Server',
       };
 
+      mockSuccefullValidation();
+
       nock(`${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}`)
         .post('/fhir/Patient')
         .reply(500, error);
@@ -171,6 +206,8 @@ describe('Match Patient Synchronously', (): void => {
       const error = {
         error: 'Resource not found',
       };
+
+      mockSuccefullValidation();
 
       nock(`${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}`)
         .get(`/fhir/Patient/${patientId}`)
@@ -249,6 +286,8 @@ describe('Match Patient Synchronously', (): void => {
         resourceType: 'Patient',
         id: patientId,
       };
+
+      mockSuccefullValidation();
 
       nock(`${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}`)
         .get(`/fhir/Patient/${patientId}`)
@@ -361,6 +400,8 @@ describe('Match Patient Synchronously', (): void => {
         resourceType: 'Patient',
         id: patientId,
       };
+
+      mockSuccefullValidation();
 
       nock(`${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}`)
         .post(`/fhir/Patient`)
