@@ -50,7 +50,7 @@ const createMpiAccessProxy = (): RequestHandler => {
       const statusCode = proxyRes.statusCode || 500;
       let transactionStatus;
       if (proxyRes.statusCode === 200) {
-        logger.info('Successful proxied request!');
+        logger.info('Successfully proxied request!');
         transactionStatus = 'Success';
       } else {
         logger.error(`Error in validating: ${JSON.stringify(body)}!`);
