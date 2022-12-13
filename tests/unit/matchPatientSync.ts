@@ -13,6 +13,12 @@ import { Bundle, FhirResource } from 'fhir/r3';
 
 const config = getConfig();
 
+const mockSuccefullValidation = () => {
+  nock(`http://${config.fhirDatastoreHost}:${config.fhirDatastorePort}`)
+    .post('/fhir/Bundle/$validate')
+    .reply(200, {});
+}
+
 describe('Match Patient Synchronously', (): void => {
   describe('*matchSychHanlder', (): void => {
     const fhirDatastoreRequestDetailsOrg: RequestDetails = {
@@ -84,9 +90,7 @@ describe('Match Patient Synchronously', (): void => {
         ],
       };
 
-      nock(`http://${config.fhirDatastoreHost}:${config.fhirDatastorePort}`)
-        .post('/fhir/Bundle/$validate')
-        .reply(200, {});
+      mockSuccefullValidation();
 
       const stub = sinon.stub(kafkaFhir, 'sendToFhirAndKafka');
       stub.callsFake(
@@ -205,9 +209,7 @@ describe('Match Patient Synchronously', (): void => {
         error: 'Resource not found',
       };
 
-      nock(`http://${config.fhirDatastoreHost}:${config.fhirDatastorePort}`)
-        .post('/fhir/Bundle/$validate')
-        .reply(200, {});
+      mockSuccefullValidation();
 
       nock(`${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}`)
         .get(`/fhir/Patient/${patientId}`)
@@ -287,9 +289,7 @@ describe('Match Patient Synchronously', (): void => {
         id: patientId,
       };
 
-      nock(`http://${config.fhirDatastoreHost}:${config.fhirDatastorePort}`)
-        .post('/fhir/Bundle/$validate')
-        .reply(200, {});
+      mockSuccefullValidation();
 
       nock(`${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}`)
         .get(`/fhir/Patient/${patientId}`)
@@ -403,9 +403,7 @@ describe('Match Patient Synchronously', (): void => {
         id: patientId,
       };
 
-      nock(`http://${config.fhirDatastoreHost}:${config.fhirDatastorePort}`)
-        .post('/fhir/Bundle/$validate')
-        .reply(200, {});
+      mockSuccefullValidation();
 
       nock(`${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}`)
         .post(`/fhir/Patient`)
