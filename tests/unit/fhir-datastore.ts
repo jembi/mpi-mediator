@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { Bundle } from 'fhir/r2';
+import { Bundle } from 'fhir/r3';
 import nock from 'nock';
 
 import { getConfig } from '../../src/config/config';
