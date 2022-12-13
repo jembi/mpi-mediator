@@ -19,7 +19,7 @@ export const getConfig = () => {
     fhirDatastorePort: process.env.FHIR_DATASTORE_PORT || 8080,
     fhirDatastoreProtocol: process.env.FHIR_DATASTORE_PROTOCOL || 'http',
     mediatorUrn: process.env.MEDIATOR_URN || 'urn:mediator:mpi-mediator',
-    kafkaBrokers: process.env.kAFKA_BROKERS || 'kafka:9092',
+    kafkaBrokers: process.env.KAFKA_BROKERS || 'kafka:9092',
     kafkaBundleTopic: process.env.KAFKA_BUNDLE_TOPIC || '2xx',
     kafkaAsyncBundleTopic: process.env.KAFKA_ASYNC_BUNDLE_TOPIC || '2xx-async',
     kafkaErrorTopic: process.env.KAFKA_ERROR_TOPIC || 'errors',
