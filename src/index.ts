@@ -3,7 +3,7 @@ import path from 'path';
 import { getConfig } from './config/config';
 import logger from './logger';
 import routes from './routes/index';
-import { asyncPatientMatchHandler } from "./routes/kafkaAsyncPatientHandler";
+import { asyncPatientMatchHandler } from './routes/handlers/kafkaAsyncPatientHandler';
 import { setupMediator } from './openhim/openhim';
 
 const config = getConfig();

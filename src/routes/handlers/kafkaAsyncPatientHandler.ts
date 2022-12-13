@@ -1,10 +1,10 @@
 import { Bundle } from 'fhir/r3';
 import { Kafka, logLevel } from 'kafkajs';
 
-import { getConfig } from '../config/config';
-import logger from '../logger';
-import { MpiMediatorResponseObject } from '../types/response';
-import { processBundle, sendToKafka } from '../utils/kafkaFhir';
+import { getConfig } from '../../config/config';
+import logger from '../../logger';
+import { MpiMediatorResponseObject } from '../../types/response';
+import { processBundle, sendToKafka } from '../../utils/kafkaFhir';
 
 const config = getConfig();
 
