@@ -1,8 +1,9 @@
 import { Request, RequestHandler } from 'express';
-import { createProxyMiddleware } from 'http-proxy-middleware';
+import { createProxyMiddleware, responseInterceptor } from 'http-proxy-middleware';
 import qs from 'qs';
 import { getConfig } from '../config/config';
 import logger from '../logger';
+import { buildOpenhimResponseObject } from '../utils/utils';
 
 const logProvider = () => {
   return {
@@ -39,6 +40,30 @@ const createMpiAccessProxy = (): RequestHandler => {
     onError(err, _req, _res) {
       logger.error(err);
     },
+    /**
+     * Intercept response and build a openHIM response
+     **/
+    selfHandleResponse: true,
+    onProxyRes: responseInterceptor(async (responseBuffer, proxyRes, _req, _res) => {
+      const response = responseBuffer.toString('utf8'); // convert buffer to string
+      const body = JSON.parse(response);
+      const statusCode = proxyRes.statusCode || 500;
+      let transactionStatus;
+      if (proxyRes.statusCode === 200) {
+        logger.info('Successful proxied request!');
+        transactionStatus = 'Success';
+      } else {
+        logger.error(`Error in validating: ${JSON.stringify(body)}!`);
+        transactionStatus = 'Failed';
+      }
+
+      const responseBody = buildOpenhimResponseObject(transactionStatus, statusCode, body);
+
+      return JSON.stringify({
+        body: responseBody,
+        status: statusCode,
+      });
+    }),
   });
 };
 
