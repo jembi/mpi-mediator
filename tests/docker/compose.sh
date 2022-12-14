@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 function init_vars() {
   export COMPOSE_IGNORE_ORPHANS=1
 
