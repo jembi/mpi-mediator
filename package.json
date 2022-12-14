@@ -12,7 +12,7 @@
     "build": "npm install; tsc -p tsconfig.build.json",
     "test:unit": "LOG_LEVEL='fatal' mocha -r ts-node/register 'tests/unit/*.ts' --timeout 15000",
     "test:cucumber": "cucumber-js 'tests/cucumber/features/*.feature' --no-color --exit --logLevel='error' --require 'tests/cucumber/step-definitions/*.ts' --require-module 'ts-node/register' --require-module 'dotenv/config' dotenv_config_path=.env.test --format-options \"{\\\"snippetInterface\\\": \\\"async-await\\\"}\" --format summary --format progress-bar",
-    "test:prepare": "tests/docker/sante-mpi/compose.sh; tests/docker/hapi-fhir/compose.sh; tests/docker/openhim/compose.sh"
+    "test:prepare": "tests/docker/compose.sh"
   },
   "repository": {
     "type": "git",
