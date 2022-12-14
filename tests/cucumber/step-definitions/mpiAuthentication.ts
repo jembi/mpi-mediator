@@ -31,7 +31,7 @@ When('a post request without body was sent to get patients', async (): Promise<v
 });
 
 Then('we should get an error response', (): void => {
-  expect(responseBody.issue[0].severity).not.empty;
+  expect(responseBody.body.response.body.issue[0].severity).not.empty;
   server.close();
 });
 
@@ -71,6 +71,6 @@ When('a post request with body was sent to get patients', async (): Promise<void
 });
 
 Then('a response should be sent back', (): void => {
-  expect(responseBody.id).not.empty;
+  expect(responseBody.body.response.body.id).not.empty;
   server.close();
 });
