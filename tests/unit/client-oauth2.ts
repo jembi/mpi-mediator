@@ -82,7 +82,6 @@ describe('Client Oauth2', (): void => {
       try {
         await oauth2.refresh();
       } catch (err) {
-        console.log(err);
         expect(err).to.match(/No refresh token*/);
       }
     });

@@ -1,9 +1,25 @@
 version: '3.9'
 
 services:
+  postgres-1:
+    container_name: postgres-1
+    image: bitnami/postgresql-repmgr:14
+    environment:
+      POSTGRESQL_PASSWORD: instant101
+      REPMGR_PASSWORD: instant101
+      REPMGR_PRIMARY_HOST: postgres-1
+      REPMGR_NODE_NETWORK_NAME: postgres-1
+      REPMGR_NODE_NAME: postgres-1
+      REPMGR_PARTNER_NODES: postgres-1
+      POSTGRESQL_USERNAME: admin
+      POSTGRESQL_DATABASE: hapi
+      REPMGR_RECONNECT_INTERVAL: 3
+
   hapi-fhir:
     container_name: hapi-fhir
     image: jembi/hapi:v5.7.0-wget
+    depends_on:
+      - postgres-1
     ports:
       - "3447:8080"
     environment:

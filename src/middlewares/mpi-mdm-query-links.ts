@@ -1,6 +1,6 @@
 import { RequestHandler } from 'express';
 import logger from '../logger';
-import { buildOpenhimResponseObject } from '../routes/utils';
+import { buildOpenhimResponseObject } from '../utils/utils';
 import { OAuth2Error } from '../utils/client-oauth2';
 import { fetchMpiPatientLinks } from '../utils/mpi';
 

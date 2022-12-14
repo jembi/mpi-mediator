@@ -1,7 +1,7 @@
 import { RequestHandler } from 'express';
 import { getConfig } from '../config/config';
 import logger from '../logger';
-import { buildOpenhimResponseObject } from '../routes/utils';
+import { buildOpenhimResponseObject } from '../utils/utils';
 import { OAuth2Error } from '../utils/client-oauth2';
 import { getMpiAuthToken } from '../utils/mpi';
 

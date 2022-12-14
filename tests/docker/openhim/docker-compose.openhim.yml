@@ -1,9 +1,15 @@
 version: "3"
 
 services:
+  mongo-db:
+    container_name: mongo-db
+    image: mongo:4.2
+
   openhim-core:
     container_name: openhim-core
     image: jembi/openhim-core:latest
+    depends_on:
+      - mongo-db
     environment:
       mongo_url: "mongodb://mongo-db:27017/openhim"
       mongo_atnaUrl: "mongodb://mongo-db:27017/openhim"
