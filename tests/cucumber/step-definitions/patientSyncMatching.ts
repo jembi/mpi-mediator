@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { Given, When, Then } from 'cucumber';
+import { Given, When, Then, setDefaultTimeout } from 'cucumber';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import rewire from 'rewire';
@@ -10,6 +10,9 @@ import fetch from 'node-fetch';
 import { getConfig } from '../../../src/config/config';
 import * as KafkaFhir from '../../../src/utils/kafkaFhir';
 import { getMpiAuthToken } from '../../../src/utils/mpi';
+
+const DEFAULT_TIMEOUT = process.env.DEFAULT_TIMEOUT ? +process.env.DEFAULT_TIMEOUT : 10000;
+setDefaultTimeout(DEFAULT_TIMEOUT);
 
 const app = rewire('../../../src/index').__get__('app');
 const config = getConfig();
