@@ -7,7 +7,8 @@ import fetch from 'node-fetch';
 
 import { getConfig } from '../../../src/config/config';
 
-setDefaultTimeout(10000);
+const DEFAULT_TIMEOUT = process.env.DEFAULT_TIMEOUT ? +process.env.DEFAULT_TIMEOUT : 10000;
+setDefaultTimeout(DEFAULT_TIMEOUT);
 
 const app = rewire('../../../src/index').__get__('app');
 const config = getConfig();
