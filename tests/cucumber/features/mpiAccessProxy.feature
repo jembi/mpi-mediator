@@ -1,5 +1,5 @@
 Feature: MPI Access Proxy ()
-  As a user i want to search for patients matches 
+  As a user I want to search for patients matches 
 
   Scenario: Valid Request
     Given MPI service is up and running
