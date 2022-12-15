@@ -1,5 +1,5 @@
 Feature: Asynchronous Patient matching
-  As a user i want to send a fhir bundle and validate it before sending it to Kafka for asynchronous matching
+  As a user I want to send a fhir bundle and validate it before sending it to Kafka for asynchronous matching
 
   Scenario: Send invalid fhir bundle
     Given the mediator is up and running

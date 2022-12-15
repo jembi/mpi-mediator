@@ -1,5 +1,5 @@
 Feature: Bundle Validation
-  As a user i want to validate fhir bundles
+  As a user I want to validate fhir bundles
 
   Scenario: Invalid Fhir Bundle
     Given the fhir datastore service is up and running

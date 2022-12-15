@@ -1,5 +1,5 @@
-Feature: FHIR Access Proxy ()
-  As a user i want to get everything related to a specific patient 
+Feature: FHIR Access Proxy
+  As a user I want to get everything related to a specific patient 
 
   Scenario: Valid $everything Request
     Given MPI and FHIR services are up and running

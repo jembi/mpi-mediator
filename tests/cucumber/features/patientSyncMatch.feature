@@ -1,5 +1,5 @@
 Feature: Synchronous Patient matching
-  As a user i want to send a fhir bundle to Kafka and the Fhir datastore, after creating the patient on the Client registry
+  As a user I want to send a fhir bundle to Kafka and the Fhir datastore, after creating the patient on the Client registry
 
   Scenario: Send bundle with patient resource to MPI
     Given the fhir datastore, kafka and the client registry are up and running
