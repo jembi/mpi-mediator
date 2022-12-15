@@ -12,6 +12,7 @@ export const openhimProxyResponseInterceptor = responseInterceptor(
     const body = JSON.parse(response);
     const statusCode = proxyRes.statusCode || 500;
     let transactionStatus;
+    
     if (proxyRes.statusCode === 200) {
       logger.info('Successfully proxied request!');
       transactionStatus = 'Success';
