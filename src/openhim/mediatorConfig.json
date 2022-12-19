@@ -6,7 +6,7 @@
   "defaultChannelConfig": [
     {
       "name": "MPI mediator",
-      "urlPattern": "^/fhir$",
+      "urlPattern": "^(/async)?/fhir.*$",
       "routes": [
         {
           "name": "MPI Endpoint",
@@ -20,7 +20,7 @@
         "instant"
       ],
       "methods": [
-        "POST"
+        "POST", "GET"
       ],
       "type": "http"
     }
