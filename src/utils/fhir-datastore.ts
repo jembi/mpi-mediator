@@ -1,6 +1,6 @@
 import { Bundle } from 'fhir/r3';
 import { getConfig } from '../config/config';
-import { getData } from './utils';
+import { getData, isHttpStatusOk } from './utils';
 
 /**
  * Fetch all patient related resources ($everything operation)
@@ -15,5 +15,5 @@ export const fetchAllPatientResourcesFromFhirDatastore = async (
   } = getConfig();
   const response = await getData(protocol, host, port, `/fhir/${ref}/$everything`);
 
-  return response.status === 200 ? (response.body as Bundle) : undefined;
+  return isHttpStatusOk(response.status) ? (response.body as Bundle) : undefined;
 };

@@ -9,7 +9,9 @@ import {
   createNewPatientRef,
   extractPatientId,
   extractPatientResource,
+  isHttpStatusOk,
   modifyBundle,
+  postData,
   sendRequest,
 } from './utils';
 import logger from '../logger';
@@ -59,7 +61,7 @@ export const sendToFhirAndKafka = async (
 
   let transactionStatus: string;
 
-  if (response.status === 200) {
+  if (isHttpStatusOk(response.status)) {
     logger.info('Successfully sent Fhir bundle to the Fhir Datastore!');
 
     transactionStatus = 'Success';
@@ -134,7 +136,7 @@ const fhirDatastoreRequestDetailsOrg: RequestDetails = {
   data: '',
 };
 
-export const processPatient = async (
+export const submitPatient = async (
   patientResource: Resource
 ): Promise<MpiMediatorResponseObject> => {
   const clientRegistryRequestDetails: RequestDetails = { ...clientRegistryRequestDetailsOrg };
@@ -147,14 +149,21 @@ export const processPatient = async (
 
   clientRegistryRequestDetails.data = JSON.stringify(patientResource);
 
-  const clientRegistryResponse: ResponseObject = await sendRequest(
-    clientRegistryRequestDetails
+  const { protocol, host, port, path, data, authToken } = clientRegistryRequestDetails;
+
+  const clientRegistryResponse: ResponseObject = await postData(
+    protocol,
+    host,
+    port,
+    path,
+    'application/fhir+json',
+    data,
+    authToken
   );
 
-  const transactionStatus =
-    clientRegistryResponse.status === 200 || clientRegistryResponse.status === 201
-      ? 'Success'
-      : 'Failed';
+  const transactionStatus = isHttpStatusOk(clientRegistryResponse.status)
+    ? 'Success'
+    : 'Failed';
 
   return createHandlerResponseObject(transactionStatus, clientRegistryResponse);
 };
@@ -195,7 +204,7 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
     clientRegistryRequestDetails
   );
 
-  if (!(clientRegistryResponse.status === 201 || clientRegistryResponse.status === 200)) {
+  if (!isHttpStatusOk(clientRegistryResponse.status)) {
     if (patientResource) {
       logger.error(
         `Patient resource creation in Client Registry failed: ${JSON.stringify(

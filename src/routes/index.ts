@@ -7,10 +7,9 @@ import { mpiMdmEverythingMiddleware } from '../middlewares/mpi-mdm-everything';
 import { matchAsyncHandler } from './handlers/matchPatientAsync';
 import { matchSyncHandler } from './handlers/matchPatientSync';
 import { mpiMdmQueryLinksMiddleware } from '../middlewares/mpi-mdm-query-links';
-
-import { validate } from './handlers/validation';
-import { processPatient } from '../utils/kafkaFhir';
 import { MpiMediatorResponseObject } from '../types/response';
+import { validate } from '../middlewares/validation';
+import { submitPatient } from '../utils/kafkaFhir';
 
 const routes = express.Router();
 
@@ -19,43 +18,26 @@ const jsonBodyParser = express.json({ type: 'application/fhir+json' });
 routes.post(
   '/fhir',
   jsonBodyParser,
+  validate,
   asyncHandler(async (req, res) => {
-    res.set('Content-Type', 'application/openhim+json');
-
     const result = await matchSyncHandler(req.body);
 
+    res.set('Content-Type', 'application/openhim+json');
     res.status(result.status).send(result.body);
   })
 );
 
-routes.post(
-  '/fhir/validate',
-  jsonBodyParser,
-  asyncHandler(async (req, res) => {
-    const { status, body } = await validate(req.body);
-
-    res.set('Content-Type', 'application/openhim+json');
-    res.status(status).send(body);
-  })
-);
+routes.post('/fhir/validate', jsonBodyParser, validate);
 
 routes.post(
   '/fhir/Patient',
   jsonBodyParser,
+  validate,
   asyncHandler(async (req, res) => {
-    const validateResponse = await validate(req.body);
-    let status = validateResponse.status;
-    let body = { ...validateResponse.body };
-
-    if (validateResponse.status === 200) {
-      const handlerResponse: MpiMediatorResponseObject = await processPatient(req.body);
-
-      status = handlerResponse.status;
-      body = { ...handlerResponse.body };
-    }
+    const handlerResponse: MpiMediatorResponseObject = await submitPatient(req.body);
 
     res.set('Content-Type', 'application/openhim+json');
-    res.status(status).send(body);
+    res.status(handlerResponse.status).send(handlerResponse.body);
   })
 );
 
@@ -70,6 +52,7 @@ routes.get(
 routes.post(
   '/async/fhir',
   jsonBodyParser,
+  validate,
   asyncHandler(async (req, res) => {
     res.set('Content-Type', 'application/openhim+json');
 

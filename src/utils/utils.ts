@@ -14,9 +14,11 @@ import { Bundle, BundleEntry, Resource } from 'fhir/r3';
 
 const config = getConfig();
 
+export const isHttpStatusOk = (status: number) => status >= 200 && status < 300;
+
 export const sendRequest = async (req: RequestDetails): Promise<ResponseObject> => {
   let body: object = {};
-  let status: number = 200;
+  let status = 200;
 
   try {
     const response = await fetch(`${req.protocol}://${req.host}:${req.port}${req.path}`, {
@@ -27,6 +29,7 @@ export const sendRequest = async (req: RequestDetails): Promise<ResponseObject> 
       body: req.data,
       method: req.method,
     });
+
     body = await response.json();
     status = response.status;
   } catch (err) {
@@ -67,9 +70,19 @@ export const postData = async (
   port: number | string,
   path: string,
   contentType: string,
-  data: string
+  data: string,
+  authToken?: string
 ): Promise<ResponseObject> => {
-  return sendRequest({ method: 'POST', protocol, host, port, path, contentType, data });
+  return sendRequest({
+    method: 'POST',
+    protocol,
+    host,
+    port,
+    path,
+    authToken,
+    contentType,
+    data,
+  });
 };
 
 export const buildOpenhimResponseObject = (
@@ -114,6 +127,7 @@ export const extractPatientId = (bundle: Bundle): string | null => {
   if (!patientRefs.length) {
     return null;
   }
+
   const splitRef: string[] = patientRefs[0].split('/');
 
   return splitRef.length === 2 ? splitRef[1] : null;
@@ -127,8 +141,8 @@ export const extractPatientId = (bundle: Bundle): string | null => {
 */
 export const modifyBundle = (
   bundle: Bundle,
-  tempPatientRef: string = '',
-  clientRegistryPatientRef: string = ''
+  tempPatientRef = '',
+  clientRegistryPatientRef = ''
 ): Bundle => {
   let modifiedBundle = Object.assign({}, bundle);
 
@@ -147,6 +161,7 @@ export const modifyBundle = (
         },
       });
     });
+
   modifiedBundle.entry = newEntry;
 
   if (tempPatientRef && clientRegistryPatientRef) {
