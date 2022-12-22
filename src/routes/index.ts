@@ -9,6 +9,8 @@ import { matchSyncHandler } from './handlers/matchPatientSync';
 import { mpiMdmQueryLinksMiddleware } from '../middlewares/mpi-mdm-query-links';
 
 import { validate } from './handlers/validation';
+import { processPatient } from '../utils/kafkaFhir';
+import { MpiMediatorResponseObject } from '../types/response';
 
 const routes = express.Router();
 
@@ -31,6 +33,26 @@ routes.post(
   jsonBodyParser,
   asyncHandler(async (req, res) => {
     const { status, body } = await validate(req.body);
+
+    res.set('Content-Type', 'application/openhim+json');
+    res.status(status).send(body);
+  })
+);
+
+routes.post(
+  '/fhir/Patient',
+  jsonBodyParser,
+  asyncHandler(async (req, res) => {
+    const validateResponse = await validate(req.body);
+    let status = validateResponse.status;
+    let body = { ...validateResponse.body };
+
+    if (validateResponse.status === 200) {
+      const handlerResponse: MpiMediatorResponseObject = await processPatient(req.body);
+
+      status = handlerResponse.status;
+      body = { ...handlerResponse.body };
+    }
 
     res.set('Content-Type', 'application/openhim+json');
     res.status(status).send(body);

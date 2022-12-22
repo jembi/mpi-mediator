@@ -43,6 +43,7 @@ export const sendToKafka = async (bundle: Bundle, topic: string): Promise<Error 
       return error;
     }
   }
+
   return null;
 };
 
@@ -50,7 +51,7 @@ export const sendToFhirAndKafka = async (
   requestDetails: RequestDetails,
   bundle: Bundle,
   patient: Patient | null = null,
-  newPatientRef: string = ''
+  newPatientRef = ''
 ): Promise<MpiMediatorResponseObject> => {
   requestDetails.data = JSON.stringify(bundle);
 
@@ -78,9 +79,12 @@ export const sendToFhirAndKafka = async (
           url: newPatientRef,
         },
       };
+
       bundle.entry?.push(patientEntry);
+
       const entry: BundleEntry[] = [];
       const newBundle = Object.assign({ entry: entry }, response.body);
+
       newBundle.entry.push(patientEntry);
       response.body = newBundle;
     }
@@ -130,6 +134,31 @@ const fhirDatastoreRequestDetailsOrg: RequestDetails = {
   data: '',
 };
 
+export const processPatient = async (
+  patientResource: Resource
+): Promise<MpiMediatorResponseObject> => {
+  const clientRegistryRequestDetails: RequestDetails = { ...clientRegistryRequestDetailsOrg };
+
+  if (config.mpiAuthEnabled) {
+    const auth: OAuth2Token = await getMpiAuthToken();
+
+    clientRegistryRequestDetails.authToken = `Bearer ${auth.accessToken}`;
+  }
+
+  clientRegistryRequestDetails.data = JSON.stringify(patientResource);
+
+  const clientRegistryResponse: ResponseObject = await sendRequest(
+    clientRegistryRequestDetails
+  );
+
+  const transactionStatus =
+    clientRegistryResponse.status === 200 || clientRegistryResponse.status === 201
+      ? 'Success'
+      : 'Failed';
+
+  return createHandlerResponseObject(transactionStatus, clientRegistryResponse);
+};
+
 export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponseObject> => {
   const fhirDatastoreRequestDetails: RequestDetails = { ...fhirDatastoreRequestDetailsOrg };
   const clientRegistryRequestDetails: RequestDetails = { ...clientRegistryRequestDetailsOrg };
@@ -144,11 +173,13 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
       fhirDatastoreRequestDetails,
       modifyBundle(bundle)
     );
+
     return handlerResponse;
   }
 
   if (config.mpiAuthEnabled) {
     const auth: OAuth2Token = await getMpiAuthToken();
+
     clientRegistryRequestDetails.authToken = `Bearer ${auth.accessToken}`;
   }
 
@@ -178,6 +209,7 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
         )}`
       );
     }
+
     return createHandlerResponseObject('Failed', clientRegistryResponse);
   }
 
