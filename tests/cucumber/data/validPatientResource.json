@@ -1,0 +1,15 @@
+{
+    "fullUrl": "Patient/testPatient",
+    "resource": {
+      "resourceType": "Patient",
+      "id": "testPatient",
+      "text": {
+        "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Patient</div>",
+        "status": "generated"
+      }
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Patient/testPatient"
+    }
+  }

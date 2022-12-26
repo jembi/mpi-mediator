@@ -7,9 +7,7 @@ import { mpiMdmEverythingMiddleware } from '../middlewares/mpi-mdm-everything';
 import { matchAsyncHandler } from './handlers/matchPatientAsync';
 import { matchSyncHandler } from './handlers/matchPatientSync';
 import { mpiMdmQueryLinksMiddleware } from '../middlewares/mpi-mdm-query-links';
-import { MpiMediatorResponseObject } from '../types/response';
-import { validate } from '../middlewares/validation';
-import { submitPatient } from '../utils/kafkaFhir';
+import { validationMiddleware } from '../middlewares/validation';
 
 const routes = express.Router();
 
@@ -18,7 +16,7 @@ const jsonBodyParser = express.json({ type: 'application/fhir+json' });
 routes.post(
   '/fhir',
   jsonBodyParser,
-  validate,
+  validationMiddleware,
   asyncHandler(async (req, res) => {
     const result = await matchSyncHandler(req.body);
 
@@ -27,19 +25,19 @@ routes.post(
   })
 );
 
-routes.post('/fhir/validate', jsonBodyParser, validate);
-
 routes.post(
-  '/fhir/Patient',
+  '/fhir/validate',
   jsonBodyParser,
-  validate,
-  asyncHandler(async (req, res) => {
-    const handlerResponse: MpiMediatorResponseObject = await submitPatient(req.body);
+  validationMiddleware,
+  asyncHandler(async (_req, res) => {
+    const { status, body } = res.locals.validationResponse;
 
     res.set('Content-Type', 'application/openhim+json');
-    res.status(handlerResponse.status).send(handlerResponse.body);
+    res.status(status).send(body);
   })
 );
+
+routes.post('/fhir/Patient', jsonBodyParser, validationMiddleware, mpiAccessProxyMiddleware);
 
 routes.post('/fhir/Patient/\\$match', mpiAuthMiddleware, mpiAccessProxyMiddleware);
 
@@ -52,7 +50,7 @@ routes.get(
 routes.post(
   '/async/fhir',
   jsonBodyParser,
-  validate,
+  validationMiddleware,
   asyncHandler(async (req, res) => {
     res.set('Content-Type', 'application/openhim+json');
 

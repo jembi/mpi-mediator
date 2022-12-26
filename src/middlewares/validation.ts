@@ -6,7 +6,7 @@ import { buildOpenhimResponseObject, isHttpStatusOk, sendRequest } from '../util
 
 const config = getConfig();
 
-export const validate: RequestHandler = async (req, res, next) => {
+export const validationMiddleware: RequestHandler = async (req, res, next) => {
   logger.info('Validating Fhir Resources');
 
   const reqDetails: RequestDetails = {
@@ -25,18 +25,17 @@ export const validate: RequestHandler = async (req, res, next) => {
 
   if (isHttpStatusOk(response.status)) {
     logger.info('Successfully validated bundle!');
-    next();
   } else {
     logger.error(`Error in validating: ${JSON.stringify(response.body)}!`);
     transactionStatus = 'Failed';
-
-    const responseBody = buildOpenhimResponseObject(
-      transactionStatus,
-      response.status,
-      response.body
-    );
-
-    res.set('Content-Type', 'application/openhim+json');
-    res.status(response.status).send(responseBody);
   }
+
+  const responseBody = buildOpenhimResponseObject(
+    transactionStatus,
+    response.status,
+    response.body
+  );
+
+  res.locals.validationResponse = { status: response.status, body: responseBody };
+  next();
 };

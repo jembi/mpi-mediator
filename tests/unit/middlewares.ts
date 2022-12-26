@@ -6,6 +6,7 @@ import nock from 'nock';
 import { getConfig } from '../../src/config/config';
 import { mpiMdmEverythingMiddleware } from '../../src/middlewares/mpi-mdm-everything';
 import { mpiMdmQueryLinksMiddleware } from '../../src/middlewares/mpi-mdm-query-links';
+import { validationMiddleware } from '../../src/middlewares/validation';
 import { mpiAuthMiddleware } from '../../src/middlewares/mpi-auth';
 
 const config = getConfig();
@@ -132,6 +133,68 @@ describe('Middlewares', (): void => {
       } catch (err) {
         expect(err).to.not.be.undefined;
       }
+    });
+  });
+
+  describe('*validationMiddleware', (): void => {
+    it('should validate bundle and send it to SanteMPI', async () => {
+      nock(fhirDatastoreUrl).post('/fhir/Bundle/$validate').reply(200, {
+        status: 'Success',
+      });
+      nock(mpiUrl).post('/fhir/Patient').reply(200, patientFhirResource2);
+
+      const request = {
+        body: {},
+        headers: {},
+        query: { _mdm: 'true' },
+        params: { patientId: '1' },
+      } as any as Request;
+      let result: any = null;
+      let statusCode: number = 0;
+      const response = {
+        send: function (body: any) {
+          result = body;
+        },
+        status: function (code: number) {
+          statusCode = code;
+          return this;
+        },
+        set: () => {},
+      } as any as Response;
+
+      await validationMiddleware(request, response, () => {});
+      expect(statusCode).to.equal(200);
+      expect(result.status).to.equal('200');
+      nock.cleanAll();
+    });
+    it('should return a Failed response after verification', async () => {
+      nock(fhirDatastoreUrl).post('/fhir/Bundle/$validate').reply(400, {
+        status: 'Failed',
+      });
+
+      const request = {
+        body: {},
+        headers: {},
+        query: { _mdm: 'true' },
+        params: { patientId: '1' },
+      } as any as Request;
+      let result: any = null;
+      let statusCode: number = 0;
+      const response = {
+        send: function (body: any) {
+          result = body;
+        },
+        status: function (code: number) {
+          statusCode = code;
+          return this;
+        },
+        set: () => {},
+      } as any as Response;
+
+      await validationMiddleware(request, response, () => {});
+      expect(statusCode).to.equal(400);
+      expect(result.status).to.equal('400');
+      nock.cleanAll();
     });
   });
 

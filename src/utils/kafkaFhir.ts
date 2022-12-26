@@ -136,38 +136,6 @@ const fhirDatastoreRequestDetailsOrg: RequestDetails = {
   data: '',
 };
 
-export const submitPatient = async (
-  patientResource: Resource
-): Promise<MpiMediatorResponseObject> => {
-  const clientRegistryRequestDetails: RequestDetails = { ...clientRegistryRequestDetailsOrg };
-
-  if (config.mpiAuthEnabled) {
-    const auth: OAuth2Token = await getMpiAuthToken();
-
-    clientRegistryRequestDetails.authToken = `Bearer ${auth.accessToken}`;
-  }
-
-  clientRegistryRequestDetails.data = JSON.stringify(patientResource);
-
-  const { protocol, host, port, path, data, authToken } = clientRegistryRequestDetails;
-
-  const clientRegistryResponse: ResponseObject = await postData(
-    protocol,
-    host,
-    port,
-    path,
-    'application/fhir+json',
-    data,
-    authToken
-  );
-
-  const transactionStatus = isHttpStatusOk(clientRegistryResponse.status)
-    ? 'Success'
-    : 'Failed';
-
-  return createHandlerResponseObject(transactionStatus, clientRegistryResponse);
-};
-
 export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponseObject> => {
   const fhirDatastoreRequestDetails: RequestDetails = { ...fhirDatastoreRequestDetailsOrg };
   const clientRegistryRequestDetails: RequestDetails = { ...clientRegistryRequestDetailsOrg };
