@@ -7,7 +7,6 @@ import { mpiMdmEverythingMiddleware } from '../middlewares/mpi-mdm-everything';
 import { matchAsyncHandler } from './handlers/matchPatientAsync';
 import { matchSyncHandler } from './handlers/matchPatientSync';
 import { mpiMdmQueryLinksMiddleware } from '../middlewares/mpi-mdm-query-links';
-
 import { validate } from './handlers/validation';
 
 const routes = express.Router();
@@ -39,11 +38,7 @@ routes.post(
 
 routes.post('/fhir/Patient/\\$match', mpiAuthMiddleware, mpiAccessProxyMiddleware);
 
-routes.get(
-  '/fhir/Patient/:patientId/\\$everything',
-  mpiMdmEverythingMiddleware,
-  fhirDatastoreAccessProxyMiddleware
-);
+routes.get('/fhir/Patient/:patientId/\\$everything', mpiMdmEverythingMiddleware);
 
 routes.post(
   '/async/fhir',

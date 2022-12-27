@@ -1,11 +1,9 @@
-import format from 'date-fns/format';
 import { RequestHandler } from 'express';
-import { Bundle, BundleLink } from 'fhir/r3';
 import logger from '../logger';
-import { buildOpenhimResponseObject } from '../utils/utils';
+import { buildOpenhimResponseObject, unbundle } from '../utils/utils';
 import { MpiMediatorResponseObject } from '../types/response';
-import { fetchAllPatientResourcesFromFhirDatastore } from '../utils/fhir-datastore';
 import { fetchMpiPatientLinks } from '../utils/mpi';
+import { fetchResourcesRelatedToPatient } from '../routes/handlers/fetchPatientResources';
 
 /**
  * Get all patient related resources ($everything) from HAPI FHIR using MDM Expansion
@@ -21,44 +19,9 @@ const fetchAllLinkedPatientResources = async (
     await fetchMpiPatientLinks(patientRef, patientRefs);
 
     // Perform requests to HAPI FHIR to get everything for each patient ref
-    const fhirRequests = patientRefs.map(fetchAllPatientResourcesFromFhirDatastore);
-    const fhirBundles = (await Promise.all(fhirRequests)).filter(
-      (bundle) => !!bundle
-    ) as Bundle[];
-    // Combine all bundles into a single one
-    const bundle = fhirBundles.reduce(
-      (acc, curr) => {
-        // Concat entries
-        if (Array.isArray(curr.entry)) {
-          acc.entry = (acc.entry || []).concat(curr.entry);
-          acc.total = (acc.total || 0) + curr.entry.length;
-        }
+    const fhirRequests = patientRefs.map(fetchResourcesRelatedToPatient);
 
-        // Concat links
-        if (curr.link && Array.isArray(curr.link)) {
-          acc.link = (acc.link || []).concat(
-            curr.link.map(({ url }) => {
-              return {
-                relation: 'subsection',
-                url,
-              } as BundleLink;
-            })
-          );
-        }
-
-        return acc;
-      },
-      {
-        resourceType: 'Bundle',
-        meta: {
-          lastUpdated: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"),
-        },
-        type: 'searchset',
-        total: 0,
-        link: [],
-        entry: [],
-      } as Bundle
-    );
+    const bundle = unbundle(await Promise.all(fhirRequests));
 
     return {
       status: 200,
