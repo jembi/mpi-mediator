@@ -23,6 +23,8 @@ export const fetchAllPatientResources = async (ref: string): Promise<Bundle> => 
     try {
       const response = await getData(protocol, host, port, path);
 
+      console.log(response);
+
       return response.body as Bundle;
     } catch (e) {
       logger.error('Unable to fetch patient resource ', resource, patientRef);
@@ -41,14 +43,16 @@ export const fetchPatientResources = async (
 
   const response = await fetchAllPatientResources(patientRef);
 
+  console.log('response>>>>', response);
+
   let transactionStatus: string;
   let status = 200;
 
-  if (response.entry) {
+  if (response.entry?.length !== 0) {
     logger.info('Successfully fetch resources!');
     transactionStatus = 'Success';
   } else {
-    logger.error(`Error in fetching resources!`);
+    logger.error(`No resources associated to this patient!`);
     transactionStatus = 'Failed';
     status = 404;
   }

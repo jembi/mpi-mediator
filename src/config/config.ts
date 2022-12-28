@@ -12,9 +12,7 @@ export const getConfig = () => {
     logLevel: (process.env.LOG_LEVEL || 'debug') as LogLevel,
     registerMediator: process.env.REGISTER_MEDIATOR === 'false' ? false : true,
     openhimMediatorUrl: process.env.OPENHIM_MEDIATOR_URL || 'https://localhost:8080',
-    resources:
-      process.env.PATIENT_EVERYTHING_RESOURCES?.split(',') ||
-      'Observation,Encounter,Appointment'.split(','),
+    resources: process.env.PATIENT_EVERYTHING_RESOURCES?.split(',') || ['Encounter'],
     openhimUsername: process.env.OPENHIM_USERNAME || 'root@openhim.org',
     openhimPassword: process.env.OPENHIM_PASSWORD || 'instant101',
     trustSelfSigned: process.env.TRUST_SELF_SIGNED === 'false' ? false : true,

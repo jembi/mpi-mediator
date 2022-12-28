@@ -43,6 +43,7 @@ export const sendToKafka = async (bundle: Bundle, topic: string): Promise<Error 
       return error;
     }
   }
+
   return null;
 };
 
@@ -50,7 +51,7 @@ export const sendToFhirAndKafka = async (
   requestDetails: RequestDetails,
   bundle: Bundle,
   patient: Patient | null = null,
-  newPatientRef: string = ''
+  newPatientRef = ''
 ): Promise<MpiMediatorResponseObject> => {
   requestDetails.data = JSON.stringify(bundle);
 
@@ -78,9 +79,12 @@ export const sendToFhirAndKafka = async (
           url: newPatientRef,
         },
       };
+
       bundle.entry?.push(patientEntry);
+
       const entry: BundleEntry[] = [];
       const newBundle = Object.assign({ entry: entry }, response.body);
+
       newBundle.entry.push(patientEntry);
       response.body = newBundle;
     }
@@ -144,11 +148,13 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
       fhirDatastoreRequestDetails,
       modifyBundle(bundle)
     );
+
     return handlerResponse;
   }
 
   if (config.mpiAuthEnabled) {
     const auth: OAuth2Token = await getMpiAuthToken();
+
     clientRegistryRequestDetails.authToken = `Bearer ${auth.accessToken}`;
   }
 
@@ -178,6 +184,7 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
         )}`
       );
     }
+
     return createHandlerResponseObject('Failed', clientRegistryResponse);
   }
 
