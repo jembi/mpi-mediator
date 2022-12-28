@@ -24,29 +24,27 @@ export const fetchResourcesRelatedToPatient = async (ref: string): Promise<Bundl
   return unbundle(await Promise.all(bundles));
 };
 
-// export const fetchPatientResources = async (): Promise<MpiMediatorResponseObject> => {
-//   logger.info('Fetching resources for Patient');
+export const fetchResources = async (ref: string): Promise<MpiMediatorResponseObject> => {
+  logger.info('Fetching resources for Patient');
 
-//   const response = await fetchResourcesRelatedToPatient(reqDetails);
+  const response = await fetchResourcesRelatedToPatient(ref);
 
-//   let transactionStatus: string;
+  let transactionStatus: string;
+  let status = 200;
 
-//   if (response.entry) {
-//     logger.info('Successfully validated bundle!');
-//     transactionStatus = 'Success';
-//   } else {
-//     logger.error(`Error in validating: ${JSON.stringify(response.body)}!`);
-//     transactionStatus = 'Failed';
-//   }
+  if (response.entry) {
+    logger.info('Successfully fetch resources!');
+    transactionStatus = 'Success';
+  } else {
+    logger.error(`Error in fetching resources!`);
+    transactionStatus = 'Failed';
+    status = 404;
+  }
 
-//   const responseBody = buildOpenhimResponseObject(
-//     transactionStatus,
-//     response.status,
-//     response
-//   );
+  const responseBody = buildOpenhimResponseObject(transactionStatus, status, response);
 
-//   return {
-//     body: responseBody,
-//     status: response.status,
-//   };
-// };
+  return {
+    body: responseBody,
+    status: status,
+  };
+};
