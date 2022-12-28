@@ -2,32 +2,44 @@ import { Bundle } from 'fhir/r3';
 import { getConfig } from '../../config/config';
 import logger from '../../logger';
 import { MpiMediatorResponseObject } from '../../types/response';
-import { resources } from '../../utils/resources';
+import { PATIENT_RESOURCES } from '../../utils/constants';
 import { buildOpenhimResponseObject, getData, unbundle } from '../../utils/utils';
 
 const {
   fhirDatastoreProtocol: protocol,
   fhirDatastoreHost: host,
   fhirDatastorePort: port,
+  resources,
 } = getConfig();
 
-export const fetchResourcesRelatedToPatient = async (ref: string): Promise<Bundle> => {
+export const fetchAllPatientResources = async (ref: string): Promise<Bundle> => {
   const patientRef = `http://santedb-mpi:8080/fhir/Patient/${ref}`;
 
   const bundles = resources.map(async (resource) => {
-    const path = `/fhir/${resource}?subject=${patientRef}`;
-    const response = await getData(protocol, host, port, path);
+    const path = `/fhir/${resource}?${PATIENT_RESOURCES[resource]}=${encodeURIComponent(
+      patientRef
+    )}`;
 
-    return response.body as Bundle;
+    try {
+      const response = await getData(protocol, host, port, path);
+
+      return response.body as Bundle;
+    } catch (e) {
+      logger.error('Unable to fetch patient resource ', resource, patientRef);
+
+      return null;
+    }
   });
 
   return unbundle(await Promise.all(bundles));
 };
 
-export const fetchResources = async (ref: string): Promise<MpiMediatorResponseObject> => {
+export const fetchPatientResources = async (
+  patientRef: string
+): Promise<MpiMediatorResponseObject> => {
   logger.info('Fetching resources for Patient');
 
-  const response = await fetchResourcesRelatedToPatient(ref);
+  const response = await fetchAllPatientResources(patientRef);
 
   let transactionStatus: string;
   let status = 200;

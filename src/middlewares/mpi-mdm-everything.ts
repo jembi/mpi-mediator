@@ -3,7 +3,7 @@ import logger from '../logger';
 import { buildOpenhimResponseObject, unbundle } from '../utils/utils';
 import { MpiMediatorResponseObject } from '../types/response';
 import { fetchMpiPatientLinks } from '../utils/mpi';
-import { fetchResourcesRelatedToPatient } from '../routes/handlers/fetchPatientResources';
+import { fetchAllPatientResources } from '../routes/handlers/fetchPatientResources';
 
 /**
  * Get all patient related resources ($everything) from HAPI FHIR using MDM Expansion
@@ -19,7 +19,7 @@ const fetchAllLinkedPatientResources = async (
     await fetchMpiPatientLinks(patientRef, patientRefs);
 
     // Perform requests to HAPI FHIR to get everything for each patient ref
-    const fhirRequests = patientRefs.map(fetchResourcesRelatedToPatient);
+    const fhirRequests = patientRefs.map(fetchAllPatientResources);
 
     const bundle = unbundle(await Promise.all(fhirRequests));
 

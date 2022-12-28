@@ -184,7 +184,7 @@ export const createHandlerResponseObject = (
   };
 };
 
-export const unbundle = async (fhirRequests: Bundle<FhirResource>[]) => {
+export const unbundle = async (fhirRequests: (Bundle<FhirResource> | null)[]) => {
   const fhirBundles = fhirRequests.filter((bundle) => !!bundle) as Bundle[];
   // Combine all bundles into a single one
   const bundle = fhirBundles.reduce(
