@@ -8,6 +8,7 @@ import { matchAsyncHandler } from './handlers/matchPatientAsync';
 import { matchSyncHandler } from './handlers/matchPatientSync';
 import { mpiMdmQueryLinksMiddleware } from '../middlewares/mpi-mdm-query-links';
 import { validationMiddleware } from '../middlewares/validation';
+import { buildOpenhimResponseObject } from '../utils/utils';
 
 const routes = express.Router();
 
@@ -18,10 +19,19 @@ routes.post(
   jsonBodyParser,
   validationMiddleware,
   asyncHandler(async (req, res) => {
-    const result = await matchSyncHandler(req.body);
+    const { status, transactionStatus, body } = res.locals.validationResponse;
 
     res.set('Content-Type', 'application/openhim+json');
-    res.status(result.status).send(result.body);
+
+    if (transactionStatus === 'Success') {
+      const result = await matchSyncHandler(req.body);
+
+      res.status(result.status).send(result.body);
+    } else {
+      const responseBody = buildOpenhimResponseObject(transactionStatus, status, body);
+
+      res.status(status).send(responseBody);
+    }
   })
 );
 
@@ -30,10 +40,12 @@ routes.post(
   jsonBodyParser,
   validationMiddleware,
   asyncHandler(async (_req, res) => {
-    const { status, body } = res.locals.validationResponse;
+    const { status, transactionStatus, body } = res.locals.validationResponse;
+
+    const responseBody = buildOpenhimResponseObject(transactionStatus, status, body);
 
     res.set('Content-Type', 'application/openhim+json');
-    res.status(status).send(body);
+    res.status(status).send(responseBody);
   })
 );
 
@@ -52,11 +64,19 @@ routes.post(
   jsonBodyParser,
   validationMiddleware,
   asyncHandler(async (req, res) => {
+    const { status, transactionStatus, body } = res.locals.validationResponse;
+
     res.set('Content-Type', 'application/openhim+json');
 
-    const result = await matchAsyncHandler(req.body);
+    if (transactionStatus === 'Success') {
+      const result = await matchAsyncHandler(req.body);
 
-    res.status(result.status).send(result.body);
+      res.status(result.status).send(result.body);
+    } else {
+      const responseBody = buildOpenhimResponseObject(transactionStatus, status, body);
+
+      res.status(status).send(responseBody);
+    }
   })
 );
 
