@@ -174,20 +174,20 @@ describe('Middlewares', (): void => {
         body: { ...patientFhirResource1 },
         headers: {},
       } as any as Request;
+      let result: any = null;
+      let statusCode: number = 0;
       const response = {
-        locals: {},
         send: function (body: any) {
-          this.locals.validationResponse.body = body;
+          result = body;
         },
         status: function (code: number) {
-          this.locals.validationResponse.status = code;
+          statusCode = code;
           return this;
         },
         set: () => {},
       } as any as Response;
-
       await validationMiddleware(request, response, () => {});
-      expect(response.locals.validationResponse.status).to.equal(412);
+      expect(statusCode).to.equal(412);
       nock.cleanAll();
     });
   });

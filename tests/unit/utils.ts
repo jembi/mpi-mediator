@@ -57,6 +57,7 @@ describe('Utils', (): void => {
         path: '',
         method: 'POST',
         data: 'data',
+        headers: {},
       };
       const response: ResponseObject = await sendRequest(reqDetails);
 
@@ -110,6 +111,7 @@ describe('Utils', (): void => {
         port,
         path,
         method: 'GET',
+        headers: {},
       };
 
       nock(`http://${host}:${port}`).get(`${path}`).reply(200, {
