@@ -81,7 +81,7 @@ describe('Utils', (): void => {
         host,
         port,
         path,
-        contentType,
+        headers: { contentType },
         data,
         method: 'POST',
       };

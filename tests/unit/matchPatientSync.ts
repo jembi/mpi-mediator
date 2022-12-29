@@ -17,7 +17,7 @@ const mockSuccefullValidation = () => {
   nock(`http://${config.fhirDatastoreHost}:${config.fhirDatastorePort}`)
     .post('/fhir/Bundle/$validate')
     .reply(200, {});
-}
+};
 
 describe('Match Patient Synchronously', (): void => {
   describe('*matchSychHanlder', (): void => {
@@ -25,7 +25,7 @@ describe('Match Patient Synchronously', (): void => {
       protocol: config.fhirDatastoreProtocol,
       host: config.fhirDatastoreHost,
       port: config.fhirDatastorePort,
-      contentType: 'application/fhir+json',
+      headers: { contentType: 'application/fhir+json' },
       method: 'POST',
       path: '/fhir',
       data: '',

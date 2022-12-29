@@ -11,7 +11,6 @@ import {
   extractPatientResource,
   isHttpStatusOk,
   modifyBundle,
-  postData,
   sendRequest,
 } from './utils';
 import logger from '../logger';
@@ -123,14 +122,13 @@ const clientRegistryRequestDetailsOrg: RequestDetails = {
   port: config.mpiPort,
   path: '/fhir/Patient',
   method: 'POST',
-  contentType: 'application/fhir+json',
-  authToken: '',
+  headers: { contentType: 'application/fhir+json', authToken: '' },
 };
 const fhirDatastoreRequestDetailsOrg: RequestDetails = {
   protocol: config.fhirDatastoreProtocol,
   host: config.fhirDatastoreHost,
   port: config.fhirDatastorePort,
-  contentType: 'application/fhir+json',
+  headers: { contentType: 'application/fhir+json' },
   method: 'POST',
   path: '/fhir',
   data: '',
@@ -157,7 +155,9 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
   if (config.mpiAuthEnabled) {
     const auth: OAuth2Token = await getMpiAuthToken();
 
-    clientRegistryRequestDetails.authToken = `Bearer ${auth.accessToken}`;
+    if (clientRegistryRequestDetails.headers?.authToken) {
+      clientRegistryRequestDetails.headers.authToken = `Bearer ${auth.accessToken}`;
+    }
   }
 
   if (!patientResource && patientId) {

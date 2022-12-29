@@ -138,45 +138,41 @@ describe('Middlewares', (): void => {
 
   describe('*validationMiddleware', (): void => {
     it('should validate bundle and send it to SanteMPI', async () => {
-      nock(fhirDatastoreUrl).post('/fhir/Bundle/$validate').reply(200, {
-        status: 'Success',
-      });
-      nock(mpiUrl).post('/fhir/Patient').reply(200, patientFhirResource2);
+      nock(fhirDatastoreUrl)
+        .post('/fhir/Patient/$validate')
+        .reply(200, {
+          status: 'Success',
+          body: { ...patientFhirResource1 },
+        });
 
       const request = {
-        body: {},
+        body: { ...patientFhirResource1 },
         headers: {},
-        query: { _mdm: 'true' },
-        params: { patientId: '1' },
       } as any as Request;
-      let result: any = null;
-      let statusCode: number = 0;
+      let validationResponse = { status: 0, body: null };
       const response = {
         send: function (body: any) {
-          result = body;
+          this.locals.validationResponse.body = body;
         },
         status: function (code: number) {
-          statusCode = code;
+          this.locals.validationResponse.status = code;
           return this;
         },
         set: () => {},
       } as any as Response;
 
       await validationMiddleware(request, response, () => {});
-      expect(statusCode).to.equal(200);
-      expect(result.status).to.equal('200');
+      expect(response.locals.validationResponse.status).to.equal(200);
       nock.cleanAll();
     });
     it('should return a Failed response after verification', async () => {
-      nock(fhirDatastoreUrl).post('/fhir/Bundle/$validate').reply(400, {
+      nock(fhirDatastoreUrl).post('/fhir/Bundle/$validate').reply(412, {
         status: 'Failed',
       });
 
       const request = {
         body: {},
         headers: {},
-        query: { _mdm: 'true' },
-        params: { patientId: '1' },
       } as any as Request;
       let result: any = null;
       let statusCode: number = 0;
@@ -192,8 +188,8 @@ describe('Middlewares', (): void => {
       } as any as Response;
 
       await validationMiddleware(request, response, () => {});
-      expect(statusCode).to.equal(400);
-      expect(result.status).to.equal('400');
+      expect(statusCode).to.equal(412);
+      expect(result.status).to.equal('412');
       nock.cleanAll();
     });
   });

@@ -1,12 +1,15 @@
+export interface Headers {
+  authToken?: string;
+  contentType?: string;
+}
 export interface RequestDetails {
   protocol: string;
   host: string;
   port: number | string;
   path: string;
-  authToken?: string;
   method: string;
+  headers?: Headers;
   data?: string;
-  contentType?: string;
 }
 
 export interface RequestOptions {

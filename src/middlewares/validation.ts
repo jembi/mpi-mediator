@@ -13,9 +13,9 @@ export const validationMiddleware: RequestHandler = async (req, res, next) => {
     protocol: config.fhirDatastoreProtocol,
     host: config.fhirDatastoreHost,
     port: config.fhirDatastorePort,
-    path: '/fhir/Bundle/$validate',
-    contentType: 'application/fhir+json',
+    path: `/fhir/${req.body.resourceType}/$validate`,
     method: 'POST',
+    headers: { contentType: 'application/fhir+json' },
     data: JSON.stringify(req.body),
   };
 

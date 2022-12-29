@@ -9,7 +9,7 @@ import {
   Response,
   MpiMediatorResponseObject,
 } from '../types/response';
-import { RequestDetails } from '../types/request';
+import { RequestDetails, Headers } from '../types/request';
 import { Bundle, BundleEntry, Resource } from 'fhir/r3';
 
 const config = getConfig();
@@ -19,12 +19,13 @@ export const isHttpStatusOk = (status: number) => status >= 200 && status < 300;
 export const sendRequest = async (req: RequestDetails): Promise<ResponseObject> => {
   let body: object = {};
   let status = 200;
+  const reqHeaders = req.headers;
 
   try {
     const response = await fetch(`${req.protocol}://${req.host}:${req.port}${req.path}`, {
       headers: {
-        'Content-Type': req.contentType ? req.contentType : '',
-        Authorization: req.authToken ? req.authToken : '',
+        'Content-Type': reqHeaders?.contentType ? reqHeaders.contentType : '',
+        Authorization: reqHeaders?.authToken ? reqHeaders.authToken : '',
       },
       body: req.data,
       method: req.method,
@@ -53,13 +54,14 @@ export const getData = async (
   host: string,
   port: number | string,
   path: string,
-  headers?: HeadersInit
+  headers?: Headers
 ): Promise<ResponseObject> => {
   return sendRequest({
     method: 'GET',
     protocol,
     host,
     port,
+    headers,
     path,
   });
 };
@@ -79,8 +81,7 @@ export const postData = async (
     host,
     port,
     path,
-    authToken,
-    contentType,
+    headers: { authToken, contentType },
     data,
   });
 };
