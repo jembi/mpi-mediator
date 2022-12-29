@@ -1,25 +1,21 @@
 import { RequestHandler } from 'express';
 import { getConfig } from '../config/config';
 import logger from '../logger';
-import { RequestDetails } from '../types/request';
-import { buildOpenhimResponseObject, isHttpStatusOk, sendRequest } from '../utils/utils';
+import { buildOpenhimResponseObject, isHttpStatusOk, postData } from '../utils/utils';
 
-const config = getConfig();
+const { fhirDatastoreProtocol, fhirDatastoreHost, fhirDatastorePort } = getConfig();
 
 export const validationMiddleware: RequestHandler = async (req, res, next) => {
   logger.info('Validating Fhir Resources');
 
-  const reqDetails: RequestDetails = {
-    protocol: config.fhirDatastoreProtocol,
-    host: config.fhirDatastoreHost,
-    port: config.fhirDatastorePort,
-    path: `/fhir/${req.body.resourceType}/$validate`,
-    method: 'POST',
-    headers: { contentType: 'application/fhir+json' },
-    data: JSON.stringify(req.body),
-  };
-
-  const response = await sendRequest(reqDetails);
+  const response = await postData(
+    fhirDatastoreProtocol,
+    fhirDatastoreHost,
+    fhirDatastorePort,
+    `/fhir/${req.body.resourceType}/$validate`,
+    JSON.stringify(req.body),
+    { 'Content-Type': 'application/fhir+json' }
+  );
 
   let transactionStatus = 'Success';
 
