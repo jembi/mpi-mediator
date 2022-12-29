@@ -42,7 +42,7 @@ describe('Utils', (): void => {
       expect(returnedObject.status).to.equal(transactionStatus);
       expect(returnedObject.response).to.have.property('timestamp');
       expect(returnedObject.response.headers).to.deep.equal({
-        'content-type': contentType,
+        'Content-Type': contentType,
       });
       expect(returnedObject.response.body).to.deep.equal(body);
     });

@@ -78,6 +78,8 @@ describe('MPI', (): void => {
 
       const response = await getMpiAuthToken();
 
+      console.log(response.accessToken);
+
       expect(response.accessToken).to.equal(newOauth2TokenGenerated.access_token);
       // Should be saved in the memory
       expect(mpiToken?.accessToken).to.equal(newOauth2TokenGenerated.access_token);

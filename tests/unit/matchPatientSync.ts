@@ -25,7 +25,7 @@ describe('Match Patient Synchronously', (): void => {
       protocol: config.fhirDatastoreProtocol,
       host: config.fhirDatastoreHost,
       port: config.fhirDatastorePort,
-      headers: { contentType: 'application/fhir+json' },
+      headers: { 'Content-Type': 'application/fhir+json' },
       method: 'POST',
       path: '/fhir',
       data: '',
@@ -445,7 +445,7 @@ describe('Match Patient Synchronously', (): void => {
               status: 'Success',
               response: {
                 status: 200,
-                headers: { 'content-type': 'application/json' },
+                headers: { 'Content-Type': 'application/json' },
                 body: { mesage: 'Success' },
                 timestamp: '12/02/1991',
               },
