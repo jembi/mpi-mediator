@@ -22,8 +22,6 @@ const logProvider = () => {
  * Helper function to filter out the requests that needs to be proxied to the MPI
  */
 const filterMpiRequests = (pathname: string, req: Request): boolean => {
-  console.log(pathname);
-
   return req.method === 'POST' && !!pathname.match(/^\/fhir\/Patient(\/\$match)?/i);
 };
 
