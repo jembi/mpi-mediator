@@ -155,9 +155,7 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
   if (config.mpiAuthEnabled) {
     const auth: OAuth2Token = await getMpiAuthToken();
 
-    if (clientRegistryRequestDetails.headers?.authToken) {
-      clientRegistryRequestDetails.headers.authToken = `Bearer ${auth.accessToken}`;
-    }
+    clientRegistryRequestDetails.headers.authToken = `Bearer ${auth.accessToken}`;
   }
 
   if (!patientResource && patientId) {

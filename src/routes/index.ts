@@ -19,19 +19,10 @@ routes.post(
   jsonBodyParser,
   validationMiddleware,
   asyncHandler(async (req, res) => {
-    const { status, transactionStatus, body } = res.locals.validationResponse;
+    const result = await matchSyncHandler(req.body);
 
     res.set('Content-Type', 'application/openhim+json');
-
-    if (transactionStatus === 'Success') {
-      const result = await matchSyncHandler(req.body);
-
-      res.status(result.status).send(result.body);
-    } else {
-      const responseBody = buildOpenhimResponseObject(transactionStatus, status, body);
-
-      res.status(status).send(responseBody);
-    }
+    res.status(result.status).send(result.body);
   })
 );
 
@@ -49,7 +40,13 @@ routes.post(
   })
 );
 
-routes.post('/fhir/Patient', jsonBodyParser, validationMiddleware, mpiAccessProxyMiddleware);
+routes.post(
+  '/fhir/Patient',
+  jsonBodyParser,
+  validationMiddleware,
+  mpiAuthMiddleware,
+  mpiAccessProxyMiddleware
+);
 
 routes.post('/fhir/Patient/\\$match', mpiAuthMiddleware, mpiAccessProxyMiddleware);
 
@@ -64,19 +61,10 @@ routes.post(
   jsonBodyParser,
   validationMiddleware,
   asyncHandler(async (req, res) => {
-    const { status, transactionStatus, body } = res.locals.validationResponse;
+    const result = await matchAsyncHandler(req.body);
 
     res.set('Content-Type', 'application/openhim+json');
-
-    if (transactionStatus === 'Success') {
-      const result = await matchAsyncHandler(req.body);
-
-      res.status(result.status).send(result.body);
-    } else {
-      const responseBody = buildOpenhimResponseObject(transactionStatus, status, body);
-
-      res.status(status).send(responseBody);
-    }
+    res.status(result.status).send(result.body);
   })
 );
 

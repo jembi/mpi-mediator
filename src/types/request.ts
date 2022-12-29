@@ -8,7 +8,7 @@ export interface RequestDetails {
   port: number | string;
   path: string;
   method: string;
-  headers?: Headers;
+  headers: Headers;
   data?: string;
 }
 

@@ -2,7 +2,7 @@ import { RequestHandler } from 'express';
 import { getConfig } from '../config/config';
 import logger from '../logger';
 import { RequestDetails } from '../types/request';
-import { isHttpStatusOk, sendRequest } from '../utils/utils';
+import { buildOpenhimResponseObject, isHttpStatusOk, sendRequest } from '../utils/utils';
 
 const config = getConfig();
 
@@ -25,16 +25,24 @@ export const validationMiddleware: RequestHandler = async (req, res, next) => {
 
   if (isHttpStatusOk(response.status)) {
     logger.info('Successfully validated bundle!');
-    next();
+    res.locals.validationResponse = {
+      status: response.status,
+      transactionStatus,
+      body: response.body,
+    };
+
+    return next();
   } else {
     logger.error(`Error in validating: ${JSON.stringify(response.body)}!`);
     transactionStatus = 'Failed';
-  }
 
-  res.locals.validationResponse = {
-    status: response.status,
-    transactionStatus,
-    body: response.body,
-  };
-  next();
+    const responseBody = buildOpenhimResponseObject(
+      transactionStatus,
+      response.status,
+      response.body
+    );
+
+    res.set('Content-Type', 'application/openhim+json');
+    res.status(response.status).send(responseBody);
+  }
 };

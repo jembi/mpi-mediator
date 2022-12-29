@@ -3,7 +3,10 @@ import { createProxyMiddleware } from 'http-proxy-middleware';
 import qs from 'qs';
 import { getConfig } from '../config/config';
 import logger from '../logger';
-import { openhimProxyResponseInterceptor } from './openhim-proxy-interceptor';
+import {
+  openhimProxyResponseInterceptor,
+  proxyRequestInterceptor,
+} from './openhim-proxy-interceptor';
 
 const logProvider = () => {
   return {
@@ -19,7 +22,9 @@ const logProvider = () => {
  * Helper function to filter out the requests that needs to be proxied to the MPI
  */
 const filterMpiRequests = (pathname: string, req: Request): boolean => {
-  return req.method === 'POST' && !!pathname.match(/^\/fhir\/Patient(\/\$match)?$/i);
+  console.log(pathname);
+
+  return req.method === 'POST' && !!pathname.match(/^\/fhir\/Patient(\/\$match)?/i);
 };
 
 /**
@@ -43,6 +48,7 @@ const createMpiAccessProxy = (): RequestHandler => {
     // Intercept response and build an openHIM response
     selfHandleResponse: true,
     onProxyRes: openhimProxyResponseInterceptor,
+    onProxyReq: proxyRequestInterceptor,
   });
 };
 

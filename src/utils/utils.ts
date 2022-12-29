@@ -19,13 +19,12 @@ export const isHttpStatusOk = (status: number) => status >= 200 && status < 300;
 export const sendRequest = async (req: RequestDetails): Promise<ResponseObject> => {
   let body: object = {};
   let status = 200;
-  const reqHeaders = req.headers;
 
   try {
     const response = await fetch(`${req.protocol}://${req.host}:${req.port}${req.path}`, {
       headers: {
-        'Content-Type': reqHeaders?.contentType ? reqHeaders.contentType : '',
-        Authorization: reqHeaders?.authToken ? reqHeaders.authToken : '',
+        'Content-Type': req.headers?.contentType ? req.headers.contentType : '',
+        Authorization: req.headers?.authToken ? req.headers.authToken : '',
       },
       body: req.data,
       method: req.method,
@@ -54,7 +53,7 @@ export const getData = async (
   host: string,
   port: number | string,
   path: string,
-  headers?: Headers
+  headers: Headers
 ): Promise<ResponseObject> => {
   return sendRequest({
     method: 'GET',
