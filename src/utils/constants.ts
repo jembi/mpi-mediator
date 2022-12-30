@@ -4,7 +4,7 @@ export const PATIENT_RESOURCES: { [key: string]: string } = {
   Account: 'subject',
   AdverseEvent: 'subject',
   AllergyIntolerance: 'patient',
-  Appointment: 'participant.actor',
+  Appointment: 'patient',
   AppointmentResponse: 'actor',
   AuditEvent: 'who',
   Basic: 'subject',

@@ -3,52 +3,55 @@ import { getConfig } from '../../config/config';
 import logger from '../../logger';
 import { MpiMediatorResponseObject } from '../../types/response';
 import { PATIENT_RESOURCES } from '../../utils/constants';
-import { buildOpenhimResponseObject, getData, unbundle } from '../../utils/utils';
+import { buildOpenhimResponseObject, getData, mergeBundles } from '../../utils/utils';
 
 const {
   fhirDatastoreProtocol: protocol,
   fhirDatastoreHost: host,
   fhirDatastorePort: port,
+  mpiProtocol,
+  mpiHost,
+  mpiPort,
   resources,
 } = getConfig();
 
-export const fetchAllPatientResources = async (ref: string): Promise<Bundle> => {
-  const patientRef = `http://santedb-mpi:8080/fhir/Patient/${ref}`;
+export const fetchAllPatientResourcesByRefs = async (
+  patientRefs: string[]
+): Promise<Bundle> => {
+  const patientExternalRefs = patientRefs.map(
+    (ref) => `${mpiProtocol}://${mpiHost}:${mpiPort}/fhir/${ref}`
+  );
 
-  const bundles = resources.map(async (resource) => {
+  const responsePromises = resources.map((resource) => {
     const path = `/fhir/${resource}?${PATIENT_RESOURCES[resource]}=${encodeURIComponent(
-      patientRef
+      patientExternalRefs.join(',')
     )}`;
 
-    try {
-      const response = await getData(protocol, host, port, path);
-
-      console.log(response);
-
-      return response.body as Bundle;
-    } catch (e) {
-      logger.error('Unable to fetch patient resource ', resource, patientRef);
+    return getData(protocol, host, port, path).catch((err) => {
+      logger.error('Unable to fetch patient resource ', resource, patientRefs, err);
 
       return null;
-    }
+    });
   });
 
-  return unbundle(await Promise.all(bundles));
+  const bundles = (await Promise.all(responsePromises))
+    .filter((response) => !!response)
+    .map((response) => response?.body as Bundle);
+
+  return mergeBundles(bundles);
 };
 
-export const fetchPatientResources = async (
+export const fetchEverythingByRef = async (
   patientRef: string
 ): Promise<MpiMediatorResponseObject> => {
   logger.info('Fetching resources for Patient');
 
-  const response = await fetchAllPatientResources(patientRef);
-
-  console.log('response>>>>', response);
+  const bundle = await fetchAllPatientResourcesByRefs([patientRef]);
 
   let transactionStatus: string;
   let status = 200;
 
-  if (response.entry?.length !== 0) {
+  if (bundle.entry?.length !== 0) {
     logger.info('Successfully fetch resources!');
     transactionStatus = 'Success';
   } else {
@@ -57,7 +60,7 @@ export const fetchPatientResources = async (
     status = 404;
   }
 
-  const responseBody = buildOpenhimResponseObject(transactionStatus, status, response);
+  const responseBody = buildOpenhimResponseObject(transactionStatus, status, bundle);
 
   return {
     body: responseBody,

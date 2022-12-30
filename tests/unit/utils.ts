@@ -11,6 +11,7 @@ import {
   modifyBundle,
   createNewPatientRef,
   createHandlerResponseObject,
+  mergeBundles,
 } from '../../src/utils/utils';
 import {
   MpiMediatorResponseObject,
@@ -18,6 +19,7 @@ import {
   ResponseObject,
 } from '../../src/types/response';
 import { RequestDetails } from '../../src/types/request';
+import format from 'date-fns/format';
 
 const config = getConfig();
 
@@ -435,6 +437,86 @@ describe('Utils', (): void => {
       expect(handlerResponse.body.response.body).to.deep.equal({
         message: 'Success',
       });
+    });
+  });
+  describe('*mergeBundles', (): void => {
+    it('should merge  bundles', async (): Promise<void> => {
+      const clientRegistryPatientRef: string = 'http://client-registry:8080/fhir/Patient/1455';
+      const bundles: Bundle[] = [
+        {
+          type: 'document',
+          resourceType: 'Bundle',
+          id: '12',
+          entry: [
+            {
+              fullUrl: 'Encounter/1111',
+              resource: {
+                resourceType: 'Encounter',
+                id: '1111',
+                subject: {
+                  reference: clientRegistryPatientRef,
+                },
+                status: 'planned',
+              },
+            },
+          ],
+        },
+        {
+          type: 'document',
+          resourceType: 'Bundle',
+          id: '12',
+          entry: [
+            {
+              fullUrl: 'Encounter/1234',
+              resource: {
+                resourceType: 'Encounter',
+                id: '1233',
+                subject: {
+                  reference: clientRegistryPatientRef,
+                },
+                status: 'planned',
+              },
+            },
+          ],
+        },
+      ];
+      const expectedBundle: Bundle = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        total: 2,
+        entry: [
+          {
+            fullUrl: 'Encounter/1111',
+            resource: {
+              resourceType: 'Encounter',
+              id: '1111',
+              subject: {
+                reference: clientRegistryPatientRef,
+              },
+              status: 'planned',
+            },
+          },
+          {
+            fullUrl: 'Encounter/1234',
+            resource: {
+              resourceType: 'Encounter',
+              id: '1233',
+              subject: {
+                reference: clientRegistryPatientRef,
+              },
+              status: 'planned',
+            },
+          },
+        ],
+        link: [],
+        meta: {
+          lastUpdated: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
+        },
+      };
+
+      const result = await mergeBundles(bundles);
+
+      expect(result).to.be.deep.equal(expectedBundle);
     });
   });
 });

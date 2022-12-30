@@ -7,6 +7,7 @@ import { getConfig } from '../../src/config/config';
 import { mpiMdmEverythingMiddleware } from '../../src/middlewares/mpi-mdm-everything';
 import { mpiMdmQueryLinksMiddleware } from '../../src/middlewares/mpi-mdm-query-links';
 import { mpiAuthMiddleware } from '../../src/middlewares/mpi-auth';
+import format from 'date-fns/format';
 
 const config = getConfig();
 
@@ -63,11 +64,6 @@ const fhirObservation1: Observation = {
   },
 };
 
-const fhirObservation2: Observation = {
-  ...fhirObservation1,
-  id: 'observation-2',
-};
-
 const fhirBundle1: Bundle = {
   resourceType: 'Bundle',
   id: 'bundle-example-1',
@@ -84,13 +80,105 @@ const fhirBundle1: Bundle = {
   ],
 };
 
-const fhirBundle2: Bundle = {
-  ...fhirBundle1,
-  id: 'bundle-example-2',
-  link: [{ relation: 'self', url: 'http://hapi-fhir/bundle-example-2' }],
+const Encounters: Bundle = {
+  resourceType: 'Bundle',
+  id: 'testBundle',
+  type: 'searchset',
+  total: 2,
   entry: [
     {
-      resource: fhirObservation2,
+      fullUrl: 'Encounter/testEncounter',
+      resource: {
+        resourceType: 'Encounter',
+        id: 'testEncounter',
+        status: 'arrived',
+        subject: {
+          reference: 'http://sante-mpi:8080/fhir/Patient/1',
+        },
+      },
+    },
+    {
+      fullUrl: 'Encounter/testEncounter',
+      resource: {
+        resourceType: 'Encounter',
+        id: 'testEncounter',
+        status: 'arrived',
+        subject: {
+          reference: 'http://sante-mpi:8080/fhir/Patient/2',
+        },
+      },
+    },
+  ],
+};
+const Observations: Bundle = {
+  resourceType: 'Bundle',
+  id: 'testBundle',
+  type: 'searchset',
+  total: 2,
+  entry: [
+    {
+      fullUrl: 'Observation/testObservation',
+      resource: {
+        resourceType: 'Observation',
+        id: 'testObservation',
+        status: 'cancelled',
+        subject: {
+          reference: 'http://sante-mpi:8080/fhir/Patient/1',
+        },
+        code: {},
+      },
+    },
+    {
+      fullUrl: 'Observation/testObservation',
+      resource: {
+        resourceType: 'Observation',
+        id: 'testObservation',
+        status: 'cancelled',
+        subject: {
+          reference: 'http://sante-mpi:8080/fhir/Patient/2',
+        },
+        code: {},
+      },
+    },
+  ],
+};
+
+const Appointments: Bundle = {
+  resourceType: 'Bundle',
+  id: 'testBundle',
+  type: 'searchset',
+  entry: [
+    {
+      fullUrl: 'Appointments/testEncounter',
+      resource: {
+        resourceType: 'Appointment',
+        id: 'testEncounter',
+        status: 'arrived',
+        participant: [
+          {
+            status: 'accepted',
+            actor: {
+              reference: 'http://sante-mpi:8080/fhir/Patient/1',
+            },
+          },
+        ],
+      },
+    },
+    {
+      fullUrl: 'Appointments/testEncounter',
+      resource: {
+        resourceType: 'Appointment',
+        id: 'testEncounter',
+        status: 'arrived',
+        participant: [
+          {
+            status: 'accepted',
+            actor: {
+              reference: 'http://sante-mpi:8080/fhir/Patient/2',
+            },
+          },
+        ],
+      },
     },
   ],
 };
@@ -147,12 +235,31 @@ describe('Middlewares', (): void => {
     });
 
     it('should perform MDM expansion when mdm param is supplied', async () => {
-      nock(fhirDatastoreUrl).get('/fhir/Patient/1/$everything').reply(200, fhirBundle1);
-      nock(fhirDatastoreUrl).get('/fhir/Patient/2/$everything').reply(200, fhirBundle2);
-
-      nock(mpiUrl).post('/auth/oauth2_token').reply(200, {});
+      nock(mpiUrl).post('/auth/oauth2_token').reply(200, newOauth2TokenGenerated);
       nock(mpiUrl).get('/fhir/Patient/1').reply(200, patientFhirResource1);
       nock(mpiUrl).get('/fhir/Patient/2').reply(200, patientFhirResource2);
+      nock(fhirDatastoreUrl)
+        .get(
+          `/fhir/Encounter?subject=${encodeURIComponent(
+            'http://santedb-mpi:8080/fhir/Patient/1,http://santedb-mpi:8080/fhir/Patient/2'
+          )}`
+        )
+        .reply(200, Encounters);
+      nock(fhirDatastoreUrl)
+        .get(
+          `/fhir/Appointment?patient=${encodeURIComponent(
+            'http://santedb-mpi:8080/fhir/Patient/1,http://santedb-mpi:8080/fhir/Patient/2'
+          )}`
+        )
+        .reply(200, Appointments);
+      nock(fhirDatastoreUrl)
+        .get(
+          `/fhir/Observation?subject=${encodeURIComponent(
+            'http://santedb-mpi:8080/fhir/Patient/1,http://santedb-mpi:8080/fhir/Patient/2'
+          )}`
+        )
+        .reply(200, Observations);
+
       const request = {
         body: {},
         headers: {},
@@ -174,9 +281,8 @@ describe('Middlewares', (): void => {
       await mpiMdmEverythingMiddleware(request, response, () => {});
       expect(statusCode).to.equal(200);
       expect(result.status).to.equal('200');
-      expect(result.response.body.total).to.equal(2);
-      expect(result.response.body.entry.length).to.equal(2);
-      expect(result.response.body.link.length).to.equal(2);
+      expect(result.response.body.total).to.equal(6);
+      expect(result.response.body.entry.length).to.equal(6);
       nock.cleanAll();
     });
   });

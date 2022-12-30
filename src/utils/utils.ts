@@ -184,7 +184,7 @@ export const createHandlerResponseObject = (
   };
 };
 
-export const unbundle = async (fhirRequests: (Bundle<FhirResource> | null)[]) => {
+export const mergeBundles = async (fhirRequests: (Bundle<FhirResource> | null)[]) => {
   const fhirBundles = fhirRequests.filter((bundle) => !!bundle) as Bundle[];
   // Combine all bundles into a single one
   const bundle = fhirBundles.reduce(
@@ -212,7 +212,7 @@ export const unbundle = async (fhirRequests: (Bundle<FhirResource> | null)[]) =>
     {
       resourceType: 'Bundle',
       meta: {
-        lastUpdated: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"),
+        lastUpdated: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
       },
       type: 'searchset',
       total: 0,
