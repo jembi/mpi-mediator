@@ -29,11 +29,28 @@ Given('MPI and FHIR services are up and running', async (): Promise<void> => {
 
 When('a $everything search request is sent', async (): Promise<void> => {
   const response = await request
-    .get('/fhir/Patient/$everything?_mdm=true')
+    .get('/fhir/Patient/1/$everything?_mdm=true')
     .set('Content-Type', 'application/fhir+json')
     .expect(200);
   responseBody = response.body;
 });
+
+Then('a successful response containing a bundle is sent back', (): void => {
+  expect(responseBody.body.status).to.equal('Success');
+  expect(responseBody.body.response.body.resourceType).to.equal('Bundle');
+  server.close();
+});
+
+When(
+  'When a $everything search request is sent withou the mdm expantion',
+  async (): Promise<void> => {
+    const response = await request
+      .get('/fhir/Patient/1/$everything')
+      .set('Content-Type', 'application/fhir+json')
+      .expect(200);
+    responseBody = response.body;
+  }
+);
 
 Then('a successful response containing a bundle is sent back', (): void => {
   expect(responseBody.body.status).to.equal('Success');
