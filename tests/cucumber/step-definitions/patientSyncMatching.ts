@@ -11,11 +11,10 @@ import { getConfig } from '../../../src/config/config';
 import * as KafkaFhir from '../../../src/utils/kafkaFhir';
 import { getMpiAuthToken } from '../../../src/utils/mpi';
 
-const DEFAULT_TIMEOUT = process.env.DEFAULT_TIMEOUT ? +process.env.DEFAULT_TIMEOUT : 10000;
-setDefaultTimeout(DEFAULT_TIMEOUT);
-
 const app = rewire('../../../src/index').__get__('app');
 const config = getConfig();
+
+setDefaultTimeout(config.cucumberDefaultTimeout);
 
 const bundle = require(path.resolve(__dirname, '..', 'data', 'bundle.json'));
 const invalidPatientRefBundle = require(path.resolve(

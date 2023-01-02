@@ -10,12 +10,11 @@ import { getConfig } from '../../../src/config/config';
 import { MediatorConfig } from '../../../src/types/mediatorConfig';
 import { setupMediator } from '../../../src/openhim/openhim';
 
-const DEFAULT_TIMEOUT = process.env.DEFAULT_TIMEOUT ? +process.env.DEFAULT_TIMEOUT : 10000;
-setDefaultTimeout(DEFAULT_TIMEOUT);
-
 process.env.TRUST_SELF_SIGNED = 'true';
 process.env.REGISTER_MEDIATOR = 'true';
 const config = getConfig();
+
+setDefaultTimeout(config.cucumberDefaultTimeout);
 
 const httpsAgent = new https.Agent({
   rejectUnauthorized: false,

@@ -23,13 +23,25 @@ util::timeout_check() {
   fi
 }
 
+# A function that will return a message called when of parameter not provided
+#
+# Arguments:
+# - $1 : optional - function name missing the parameter
+# - $2 : optional - name of the parameter missing
+missing_param() {
+  local FUNC_NAME=${1:-""}
+  local ARG_NAME=${2:-""}
+
+  echo "FATAL: ${FUNC_NAME} parameter ${ARG_NAME} not provided"
+}
+
 # Waits for a container to be up
 #
 # Arguments:
 # - $1 : service name (eg. hapi-fhir)
 #
 util::await_container_startup() {
-  local -r SERVICE_NAME=${1:?"FATAL: await_container_startup parameter not provided"}
+  local -r SERVICE_NAME=${1:?$(missing_param await_container_startup)}
 
   local start_time
   start_time=$(date +%s)
@@ -46,8 +58,8 @@ util::await_container_startup() {
 # - $2 : service status (eg. running)
 #
 util::await_container_status() {
-  local -r SERVICE_NAME=${1:?"FATAL: await_container_status parameter not provided"}
-  local -r SERVICE_STATUS=${2:?"FATAL: await_container_status parameter not provided"}
+  local -r SERVICE_NAME=${1:?$(missing_param await_container_status SERVICE_NAME)}
+  local -r SERVICE_STATUS=${2:?$(missing_param await_container_status SERVICE_STATUS)}
 
   local start_time
   start_time=$(date +%s)
@@ -63,7 +75,7 @@ util::await_container_status() {
 # - $1 : service name (eg. hapi-fhir)
 #
 util::await_container_healthy() {
-  local -r SERVICE_NAME=${1:?"FATAL: await_container_healthy parameter not provided"}
+  local -r SERVICE_NAME=${1:?$(missing_param await_container_healthy)}
 
   local start_time
   start_time=$(date +%s)
@@ -81,9 +93,11 @@ util::await_container_healthy() {
 # - $3 : with health check, true to run util::await_container_healthy(), anything else to not await healthcheck
 #
 util::await_container_ready() {
-  local -r SERVICE_NAME=${1:?"FATAL: await_container_ready parameter not provided"}
-  local -r SERVICE_STATUS=${2:?"FATAL: await_container_ready parameter not provided"}
-  local -r HEALTH_CHECK=${3:?"FATAL: await_container_ready parameter not provided"}
+  local -r SERVICE_NAME=${1:?$(missing_param await_container_ready SERVICE_NAME)}
+  local -r SERVICE_STATUS=${2:?$(missing_param await_container_ready SERVICE_STATUS)}
+  local -r HEALTH_CHECK=${3:?$(missing_param await_container_ready HEALTH_CHECK)}
+
+  echo -n "Waiting for $SERVICE_NAME to be ready..."
 
   util::await_container_startup "$SERVICE_NAME"
   util::await_container_status "$SERVICE_NAME" "$SERVICE_STATUS"
@@ -91,6 +105,8 @@ util::await_container_ready() {
   if [[ $HEALTH_CHECK == "true" ]]; then
     util::await_container_healthy "$SERVICE_NAME"
   fi
+
+  echo -e "\rWaiting for $SERVICE_NAME to be ready... Done"
 }
 
 # Waits for a container's startup logs to stabilize
@@ -100,8 +116,8 @@ util::await_container_ready() {
 # - $2 : stable time, if the logs remain stable for this time, the function passes
 #
 util::await_container_logs_stable() {
-  local -r SERVICE_NAME=${1:?"FATAL: await_container_logs_stable parameter not provided"}
-  local -r STABLE_TIME=${2:?"FATAL: await_container_logs_stable parameter not provided"}
+  local -r SERVICE_NAME=${1:?$(missing_param await_container_logs_stable SERVICE_NAME)}
+  local -r STABLE_TIME=${2:?$(missing_param await_container_logs_stable STABLE_TIME)}
 
   local start_time
   start_time=$(date +%s)
@@ -119,7 +135,7 @@ util::await_container_logs_stable() {
 
     tried_for=$((tried_for + 1))
     prev_count=$curr_count
-    
+
     sleep 1
   done
 }

@@ -14,7 +14,7 @@ export const getConfig = () => {
     openhimMediatorUrl: process.env.OPENHIM_MEDIATOR_URL || 'https://localhost:8080',
     openhimUsername: process.env.OPENHIM_USERNAME || 'root@openhim.org',
     openhimPassword: process.env.OPENHIM_PASSWORD || 'instant101',
-    trustSelfSigned: process.env.TRUST_SELF_SIGNED  === 'false' ? false : true,
+    trustSelfSigned: process.env.TRUST_SELF_SIGNED === 'false' ? false : true,
     fhirDatastoreHost: process.env.FHIR_DATASTORE_HOST || 'hapi-fhir',
     fhirDatastorePort: process.env.FHIR_DATASTORE_PORT || 8080,
     fhirDatastoreProtocol: process.env.FHIR_DATASTORE_PROTOCOL || 'http',
@@ -31,5 +31,6 @@ export const getConfig = () => {
     mpiAuthEnabled: process.env.MPI_AUTH_ENABLED === 'false' ? false : true,
     mpiClientId: process.env.MPI_CLIENT_ID || '',
     mpiClientSecret: process.env.MPI_CLIENT_SECRET || '',
+    cucumberDefaultTimeout: process.env.CUCUMBER_DEFAULT_TIMEOUT || 20000,
   });
 };
