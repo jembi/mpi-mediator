@@ -14,13 +14,12 @@ const path = require('path');
 
   process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0;
 
-  const jsonData = JSON.parse(
-    fs.readFileSync(path.resolve(__dirname, 'openhim-import.json'))
-  );
-
-  const data = JSON.stringify(jsonData);
-
   try {
+    const jsonData = JSON.parse(
+      fs.readFileSync(path.resolve(__dirname, 'openhim-import.json'))
+    );
+
+    const data = JSON.stringify(jsonData);
     const res = await fetch(`https://localhost:8080/metadata`, {
       method: 'POST',
       headers: {
