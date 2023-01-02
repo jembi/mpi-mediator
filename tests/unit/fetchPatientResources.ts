@@ -66,33 +66,10 @@ const Observations: Bundle = {
     },
   ],
 };
-const Appointments: Bundle = {
-  resourceType: 'Bundle',
-  id: 'testBundle',
-  type: 'searchset',
-  entry: [
-    {
-      fullUrl: 'Appointments/testEncounter',
-      resource: {
-        resourceType: 'Appointment',
-        id: 'testEncounter',
-        status: 'arrived',
-        participant: [
-          {
-            status: 'accepted',
-            actor: {
-              reference: 'http://sante-mpi:8080/fhir/Patient/testPatient',
-            },
-          },
-        ],
-      },
-    },
-  ],
-};
 
 const bundle: Bundle = {
   ...emptyBundle,
-  total: 3,
+  total: 2,
   entry: [
     {
       fullUrl: 'Encounter/testEncounter',
@@ -115,22 +92,6 @@ const bundle: Bundle = {
           reference: 'http://sante-mpi:8080/fhir/Patient/testPatient',
         },
         code: {},
-      },
-    },
-    {
-      fullUrl: 'Appointments/testEncounter',
-      resource: {
-        resourceType: 'Appointment',
-        id: 'testEncounter',
-        status: 'arrived',
-        participant: [
-          {
-            status: 'accepted',
-            actor: {
-              reference: 'http://sante-mpi:8080/fhir/Patient/testPatient',
-            },
-          },
-        ],
       },
     },
   ],
@@ -159,9 +120,6 @@ describe('FetchPatientResources handler', (): void => {
       nock(fhirDatastoreUrl)
         .get(`/fhir/Observation?subject=${encodeURIComponent(refUrl)}`)
         .reply(200, Observations);
-      nock(fhirDatastoreUrl)
-        .get(`/fhir/Appointment?patient=${encodeURIComponent(refUrl)}`)
-        .reply(200, Appointments);
 
       const result = await fetchAllPatientResourcesByRefs([patientRef]);
       expect(result).to.deep.equal(bundle);
@@ -190,9 +148,6 @@ describe('FetchPatientResources handler', (): void => {
       nock(fhirDatastoreUrl)
         .get(`/fhir/Observation?subject=${encodeURIComponent(refUrl)}`)
         .reply(200, Observations);
-      nock(fhirDatastoreUrl)
-        .get(`/fhir/Appointment?patient=${encodeURIComponent(refUrl)}`)
-        .reply(200, Appointments);
 
       const result: MpiMediatorResponseObject = await fetchEverythingByRef(patientRef);
 

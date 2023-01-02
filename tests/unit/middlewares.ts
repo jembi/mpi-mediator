@@ -50,36 +50,6 @@ const patientFhirResource2: Patient = {
   ],
 };
 
-const fhirObservation1: Observation = {
-  resourceType: 'Observation',
-  id: 'observation-1',
-  status: 'final',
-  code: {
-    coding: [
-      {
-        system: 'http://loinc.org',
-        code: '55233-1',
-      },
-    ],
-  },
-};
-
-const fhirBundle1: Bundle = {
-  resourceType: 'Bundle',
-  id: 'bundle-example-1',
-  meta: {
-    lastUpdated: '2014-08-18T01:43:30Z',
-  },
-  type: 'searchset',
-  total: 1,
-  link: [{ relation: 'self', url: 'http://hapi-fhir/bundle-example-1' }],
-  entry: [
-    {
-      resource: fhirObservation1,
-    },
-  ],
-};
-
 const Encounters: Bundle = {
   resourceType: 'Bundle',
   id: 'testBundle',
@@ -138,46 +108,6 @@ const Observations: Bundle = {
           reference: 'http://sante-mpi:8080/fhir/Patient/2',
         },
         code: {},
-      },
-    },
-  ],
-};
-
-const Appointments: Bundle = {
-  resourceType: 'Bundle',
-  id: 'testBundle',
-  type: 'searchset',
-  entry: [
-    {
-      fullUrl: 'Appointments/testEncounter',
-      resource: {
-        resourceType: 'Appointment',
-        id: 'testEncounter',
-        status: 'arrived',
-        participant: [
-          {
-            status: 'accepted',
-            actor: {
-              reference: 'http://sante-mpi:8080/fhir/Patient/1',
-            },
-          },
-        ],
-      },
-    },
-    {
-      fullUrl: 'Appointments/testEncounter',
-      resource: {
-        resourceType: 'Appointment',
-        id: 'testEncounter',
-        status: 'arrived',
-        participant: [
-          {
-            status: 'accepted',
-            actor: {
-              reference: 'http://sante-mpi:8080/fhir/Patient/2',
-            },
-          },
-        ],
       },
     },
   ],
@@ -247,13 +177,6 @@ describe('Middlewares', (): void => {
         .reply(200, Encounters);
       nock(fhirDatastoreUrl)
         .get(
-          `/fhir/Appointment?patient=${encodeURIComponent(
-            'http://santedb-mpi:8080/fhir/Patient/1,http://santedb-mpi:8080/fhir/Patient/2'
-          )}`
-        )
-        .reply(200, Appointments);
-      nock(fhirDatastoreUrl)
-        .get(
           `/fhir/Observation?subject=${encodeURIComponent(
             'http://santedb-mpi:8080/fhir/Patient/1,http://santedb-mpi:8080/fhir/Patient/2'
           )}`
@@ -281,8 +204,8 @@ describe('Middlewares', (): void => {
       await mpiMdmEverythingMiddleware(request, response, () => {});
       expect(statusCode).to.equal(200);
       expect(result.status).to.equal('200');
-      expect(result.response.body.total).to.equal(6);
-      expect(result.response.body.entry.length).to.equal(6);
+      expect(result.response.body.total).to.equal(4);
+      expect(result.response.body.entry.length).to.equal(4);
       nock.cleanAll();
     });
   });

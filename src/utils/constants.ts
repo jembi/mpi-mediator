@@ -18,7 +18,7 @@ export const PATIENT_RESOURCES: { [key: string]: string } = {
   ClinicalImpression: 'subject',
   Communication: 'subject',
   CommunicationRequest: 'subject',
-  Composition: 'author',
+  Composition: 'subject',
   Condition: 'subject',
   Consent: 'patient',
   Contract: 'subject',
