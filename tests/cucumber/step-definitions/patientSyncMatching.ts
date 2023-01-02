@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { Given, When, Then } from 'cucumber';
+import { Given, When, Then, setDefaultTimeout } from 'cucumber';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import rewire from 'rewire';
@@ -13,6 +13,8 @@ import { getMpiAuthToken } from '../../../src/utils/mpi';
 
 const app = rewire('../../../src/index').__get__('app');
 const config = getConfig();
+
+setDefaultTimeout(config.cucumberDefaultTimeout);
 
 const bundle = require(path.resolve(__dirname, '..', 'data', 'bundle.json'));
 const invalidPatientRefBundle = require(path.resolve(

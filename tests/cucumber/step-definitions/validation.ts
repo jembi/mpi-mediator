@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { Given, When, Then } from 'cucumber';
+import { Given, When, Then, setDefaultTimeout } from 'cucumber';
 import { expect } from 'chai';
 import rewire from 'rewire';
 import supertest from 'supertest';
@@ -10,6 +10,8 @@ import { getConfig } from '../../../src/config/config';
 
 const app = rewire('../../../src/index').__get__('app');
 const config = getConfig();
+
+setDefaultTimeout(config.cucumberDefaultTimeout);
 
 const invalidFhirBundle = require(path.resolve(
   __dirname,

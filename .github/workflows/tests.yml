@@ -1,0 +1,19 @@
+name: Cucumber tests
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install modules
+        run: npm i
+
+      - name: Start test services
+        run: npm run test:prepare
+
+      - name: Run cucumber tests
+        run: npm run test:cucumber
+      
+      - name: Run unit tests
+        run: npm run test:unit
