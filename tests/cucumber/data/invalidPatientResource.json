@@ -1,11 +1,13 @@
 {
-    "fullUrl": "Patient/testPatient",
-    "resource": {
-      "resourceType": "Patient",
-      "id": "testPatient",
-      "text": {
-        "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Patient</div>",
-        "status": "generated"
-      }
-    }
+  "resourceType": "Patient",
+  "id": "testPatient",
+  "meta": {
+    "profile": [
+      "http://openhie.org/fhir/hiv-casereporting/StructureDefinition/hiv-patient"
+    ]
+  },
+  "text": {
+    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Patient</div>",
+    "status": "generated"
   }
+}

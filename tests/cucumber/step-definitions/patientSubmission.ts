@@ -7,6 +7,7 @@ import path from 'path';
 import fetch from 'node-fetch';
 
 import { getConfig } from '../../../src/config/config';
+import { getMpiAuthToken } from '../../../src/utils/mpi';
 
 const app = rewire('../../../src/index').__get__('app');
 const config = getConfig();
@@ -34,6 +35,20 @@ Given(
     );
     expect(response.status).to.equal(200);
 
+    const auth = await getMpiAuthToken();
+
+    const clientRegistryResponse = await fetch(
+      `${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}/fhir/Patient`,
+      {
+        headers: {
+          Authorization: `Bearer ${auth.accessToken}`,
+        },
+        method: 'GET',
+      }
+    );
+
+    expect(clientRegistryResponse.status).to.equal(200);
+
     server = app.listen(3003);
     request = supertest(server);
   }
@@ -42,9 +57,9 @@ Given(
 When('a patient resource is sent to the MPI mediator', async (): Promise<void> => {
   const response = await request
     .post('/fhir/Patient')
-    .send(invalidPatientResource)
+    .send(validPatientResource)
     .set('Content-Type', 'application/fhir+json')
-    .expect(200);
+    .expect(201);
 
   responseBody = response.body;
 });
@@ -52,19 +67,20 @@ When('a patient resource is sent to the MPI mediator', async (): Promise<void> =
 When('an invalid patient resource sent to the MPI mediator', async (): Promise<void> => {
   const response = await request
     .post('/fhir/Patient')
-    .send(validPatientResource)
+    .send(invalidPatientResource)
     .set('Content-Type', 'application/fhir+json')
     .expect(412);
 
   responseBody = response.body;
 });
 
-Then('a patient should be created on the client registry', (): void => {
+Then('a patient resource should be created on the client registry', (): void => {
+  console.log(responseBody);
   expect(responseBody.status).to.equal('Success');
   server.close();
 });
 
 Then('an error, indicating the resource is invalid, should be sent back', (): void => {
-  expect(responseBody.status).to.equal('failed');
+  expect(responseBody.status).to.equal('Failed');
   server.close();
 });

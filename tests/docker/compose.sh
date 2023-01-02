@@ -24,9 +24,9 @@ function deploy_services() {
     docker network create mediator_tests_default 1>/dev/null
   fi
 
-  docker-compose -p mediator_tests -f "$FILE_PATH"/sante-mpi/docker-compose.sante-mpi.yml up -d
-  docker-compose -p mediator_tests -f "$FILE_PATH"/hapi-fhir/docker-compose.hapi-fhir.yml up -d
-  docker-compose -p mediator_tests -f "$FILE_PATH"/openhim/docker-compose.openhim.yml up -d
+  docker compose -p mediator_tests -f "$FILE_PATH"/sante-mpi/docker-compose.sante-mpi.yml up -d
+  docker compose -p mediator_tests -f "$FILE_PATH"/hapi-fhir/docker-compose.hapi-fhir.yml up -d
+  docker compose -p mediator_tests -f "$FILE_PATH"/openhim/docker-compose.openhim.yml up -d
 }
 
 function await_sante_mpi() {
