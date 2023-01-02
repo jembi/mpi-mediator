@@ -144,7 +144,7 @@ export class OAuth2Token {
         body: {
           refresh_token: this.refreshToken,
           grant_type: 'refresh_token',
-          clientId: options.clientId,
+          client_id: options.clientId,
           client_secret: options.clientSecret,
         },
       },
@@ -224,7 +224,7 @@ export class ClientOAuth2 {
    * Pull an authentication error from the response data.
    */
   getAuthError(body: any): OAuth2Error | undefined {
-    const message = body.error in ERROR_RESPONSES || body.error_description || body.error;
+    const message = body.error in ERROR_RESPONSES ? body.error : body.error_description;
 
     if (message) {
       const err = new OAuth2Error(message);
