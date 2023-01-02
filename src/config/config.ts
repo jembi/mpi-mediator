@@ -31,5 +31,6 @@ export const getConfig = () => {
     mpiAuthEnabled: process.env.MPI_AUTH_ENABLED === 'false' ? false : true,
     mpiClientId: process.env.MPI_CLIENT_ID || '',
     mpiClientSecret: process.env.MPI_CLIENT_SECRET || '',
+    cucumberDefaultTimeout: process.env.CUCUMBER_DEFAULT_TIMEOUT || 20000,
   });
 };
