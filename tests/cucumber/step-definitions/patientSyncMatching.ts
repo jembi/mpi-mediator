@@ -84,27 +84,9 @@ When(
 When(
   'a fhir bundle with a valid patient reference is send to the MPI mediator',
   async (): Promise<void> => {
-    const auth = await getMpiAuthToken();
-    const clientRegResponse = await fetch(
-      `${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}/fhir/Patient`,
-      {
-        headers: {
-          Authorization: `Bearer ${auth.accessToken}`,
-          'Content-Type': 'application/fhir+json',
-        },
-        method: 'POST',
-        body: JSON.stringify({ resourceType: 'Patient' }),
-      }
-    );
-
-    const patient = await clientRegResponse.json();
-
-    // Add valid patient reference
-    invalidPatientRefBundle.entry[0].resource.subject.reference = `Patient/${patient.id}`;
-
     const response = await request
       .post('/fhir')
-      .send(invalidPatientRefBundle)
+      .send(bundle)
       .set('content-type', 'application/fhir+json')
       .expect(200);
 
@@ -114,20 +96,13 @@ When(
 
 Then('a patient should be created on the client registry', async (): Promise<void> => {
   const auth = await getMpiAuthToken();
-  let patientId: string;
 
-  for (let index = 0; index < responseBody.response.body.entry.length; index++) {
-    if (responseBody.response.body.entry[index].resource) {
-      const resource = responseBody.response.body.entry[index].resource;
-
-      if (resource.resourceType === 'Patient') {
-        patientId = resource.id;
-      }
-    }
-  }
+  const { resource } = responseBody.response.body.entry.find(
+    (resource) => resource.resource?.resourceType === 'Patient'
+  );
 
   const response = await fetch(
-    `${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}/fhir/Patient/${patientId}`,
+    `${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}/fhir/Patient/${resource.id}`,
     {
       headers: {
         Authorization: `Bearer ${auth.accessToken}`,

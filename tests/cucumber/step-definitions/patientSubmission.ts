@@ -63,6 +63,10 @@ When('a patient resource is sent to the MPI mediator', async (): Promise<void> =
 
   responseBody = response.body;
 });
+Then('a patient resource should be created on the client registry', (): void => {
+  expect(responseBody.status).to.equal('Success');
+  server.close();
+});
 
 When('an invalid patient resource sent to the MPI mediator', async (): Promise<void> => {
   const response = await request
@@ -73,13 +77,6 @@ When('an invalid patient resource sent to the MPI mediator', async (): Promise<v
 
   responseBody = response.body;
 });
-
-Then('a patient resource should be created on the client registry', (): void => {
-  console.log(responseBody);
-  expect(responseBody.status).to.equal('Success');
-  server.close();
-});
-
 Then('an error, indicating the resource is invalid, should be sent back', (): void => {
   expect(responseBody.status).to.equal('Failed');
   server.close();
