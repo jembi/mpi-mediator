@@ -4,7 +4,7 @@ As a user I want to send a fhir Patient resource and validate it before sending 
  Scenario: Send patient resource to MPI
     Given the fhir datastore and the client registry are up and running
     When a patient resource is sent to the MPI mediator
-    Then a patient should be created on the client registry
+    Then a patient resource should be created on the client registry
 
   Scenario: Send an invalid patient to MPI
     Given the fhir datastore and the client registry are up and running
