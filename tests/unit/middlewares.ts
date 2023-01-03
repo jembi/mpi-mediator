@@ -260,7 +260,7 @@ describe('Middlewares', (): void => {
       } as any as Response;
       await mpiMdmEverythingMiddleware(request, response, () => {});
       expect(statusCode).to.equal(200);
-      expect(result.status).to.equal('200');
+      expect(result.status).to.equal('Success');
       expect(result.response.body.total).to.equal(4);
       expect(result.response.body.entry.length).to.equal(4);
       nock.cleanAll();

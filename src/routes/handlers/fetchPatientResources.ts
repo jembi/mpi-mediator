@@ -27,7 +27,9 @@ export const fetchAllPatientResourcesByRefs = async (
       patientExternalRefs.join(',')
     )}`;
 
-    return getData(protocol, host, port, path).catch((err) => {
+    return getData(protocol, host, port, path, {
+      'Content-Type': 'application/fhir+json',
+    }).catch((err) => {
       logger.error('Unable to fetch patient resource ', resource, patientRefs, err);
 
       return null;
@@ -52,7 +54,7 @@ export const fetchEverythingByRef = async (
   let status = 200;
 
   if (bundle.entry?.length !== 0) {
-    logger.info('Successfully fetch resources!');
+    logger.info(`Successfully fetched resources for patient with id ${patientRef}!`);
     transactionStatus = 'Success';
   } else {
     logger.error(`No resources associated to this patient!`);

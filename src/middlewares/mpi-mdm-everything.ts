@@ -1,6 +1,6 @@
 import { RequestHandler } from 'express';
 import logger from '../logger';
-import { buildOpenhimResponseObject } from '../utils/utils';
+import { buildOpenhimResponseObject, isHttpStatusOk } from '../utils/utils';
 import { MpiMediatorResponseObject } from '../types/response';
 import { fetchMpiPatientLinks } from '../utils/mpi';
 import { fetchAllPatientResourcesByRefs } from '../routes/handlers/fetchPatientResources';
@@ -23,14 +23,14 @@ const fetchAllLinkedPatientResources = async (
 
     return {
       status: 200,
-      body: buildOpenhimResponseObject('200', 200, bundle),
+      body: buildOpenhimResponseObject('Success', 200, bundle),
     };
   } catch (e) {
     logger.error('Unable to fetch all linked patient resources (MDM expansion)', e);
 
     return {
       status: 500,
-      body: buildOpenhimResponseObject('500', 500, e as Error),
+      body: buildOpenhimResponseObject('Failed', 500, e as Error),
     };
   }
 };
