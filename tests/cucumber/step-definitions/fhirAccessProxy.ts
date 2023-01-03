@@ -36,8 +36,8 @@ When('a $everything search request is sent', async (): Promise<void> => {
 });
 
 Then('a successful response containing a bundle is sent back', (): void => {
-  expect(responseBody.body.status).to.equal('Success');
-  expect(responseBody.body.response.body.resourceType).to.equal('Bundle');
+  expect(responseBody.status).to.equal('Success');
+  expect(responseBody.response.body.resourceType).to.equal('Bundle');
   server.close();
 });
 
@@ -51,6 +51,6 @@ When('an MDM search request is sent', async (): Promise<void> => {
 });
 
 Then('a successful MDM response is sent back', (): void => {
-  expect(responseBody.body.status).to.equal('Success');
+  expect(responseBody.status).to.equal('Success');
   server.close();
 });

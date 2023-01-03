@@ -30,12 +30,14 @@ export const asyncPatientMatchHandler = async (): Promise<void> => {
       logger.info('Fhir bundle received from queue');
 
       consumer.pause([{ topic: config.kafkaAsyncBundleTopic }]);
+
       const bundleString: string | undefined = message.value?.toString();
       let bundle: Bundle;
 
       if (!bundleString) {
         logger.error('Invalid Fhir bundle received from Kafka');
         consumer.resume([{ topic: config.kafkaAsyncBundleTopic }]);
+
         return;
       } else {
         bundle = JSON.parse(bundleString);
@@ -46,6 +48,7 @@ export const asyncPatientMatchHandler = async (): Promise<void> => {
       if (processingResult.body.status === 'Failed') {
         sendToKafka(bundle, config.kafkaErrorTopic);
       }
+
       consumer.resume([{ topic: config.kafkaAsyncBundleTopic }]);
     },
   });

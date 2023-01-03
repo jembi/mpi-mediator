@@ -1,12 +1,8 @@
-export interface Headers {
-  'content-type': string;
-}
-
 export interface Response {
   status: number;
   body: object;
   timestamp: string;
-  headers: Headers;
+  headers: HeadersInit;
 }
 
 export interface OpenHimResponseObject {
