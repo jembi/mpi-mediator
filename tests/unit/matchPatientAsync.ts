@@ -10,7 +10,7 @@ import { MpiMediatorResponseObject } from '../../src/types/response';
 
 const config = getConfig();
 
-describe('MAtch Patient Asynchronously', (): void => {
+describe('Match Patient Asynchronously', (): void => {
   describe('*matchAsyncHandler', (): void => {
     it('should return error when validation fails', async (): Promise<void> => {
       const bundle: Bundle = {

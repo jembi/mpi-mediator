@@ -462,6 +462,12 @@ describe('Utils', (): void => {
               },
             },
           ],
+          link: [
+            {
+              url: 'http://hapi-fhir:3447/Encounter/1234',
+              relation: 'seealso',
+            },
+          ],
         },
         {
           type: 'document',
@@ -478,6 +484,12 @@ describe('Utils', (): void => {
                 },
                 status: 'planned',
               },
+            },
+          ],
+          link: [
+            {
+              url: 'http://hapi-fhir:3447/Encounter/1111',
+              relation: 'next',
             },
           ],
         },
@@ -510,15 +522,24 @@ describe('Utils', (): void => {
             },
           },
         ],
-        link: [],
+        link: [
+          {
+            relation: 'subsection',
+            url: 'http://hapi-fhir:3447/Encounter/1234',
+          },
+          {
+            relation: 'subsection',
+            url: 'http://hapi-fhir:3447/Encounter/1111',
+          },
+        ],
         meta: {
           lastUpdated: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
         },
       };
 
       const result = await mergeBundles(bundles);
-
       expect(result).to.be.deep.equal(expectedBundle);
+      expect(result.link?.length).to.equal(2);
     });
   });
 });
