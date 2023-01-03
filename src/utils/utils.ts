@@ -1,5 +1,5 @@
 import format from 'date-fns/format';
-import fetch from 'node-fetch';
+import fetch, { HeaderInit, HeadersInit } from 'node-fetch';
 
 import { getConfig } from '../config/config';
 import logger from '../logger';
@@ -14,18 +14,25 @@ import { Bundle, BundleEntry, BundleLink, FhirResource, Resource } from 'fhir/r3
 
 const config = getConfig();
 
-export const sendRequest = async (req: RequestDetails): Promise<ResponseObject> => {
+export const isHttpStatusOk = (status: number) => status >= 200 && status < 300;
+
+export const sendRequest = async ({
+  protocol,
+  host,
+  port,
+  path,
+  headers,
+  data,
+  method,
+}: RequestDetails): Promise<ResponseObject> => {
   let body: object = {};
   let status = 200;
 
   try {
-    const response = await fetch(`${req.protocol}://${req.host}:${req.port}${req.path}`, {
-      headers: {
-        'Content-Type': req.contentType ? req.contentType : '',
-        Authorization: req.authToken ? req.authToken : '',
-      },
-      body: req.data,
-      method: req.method,
+    const response = await fetch(`${protocol}://${host}:${port}${path}`, {
+      headers,
+      body: data,
+      method: method,
     });
 
     body = await response.json();
@@ -51,13 +58,14 @@ export const getData = async (
   host: string,
   port: number | string,
   path: string,
-  headers?: HeadersInit
+  headers: HeadersInit
 ): Promise<ResponseObject> => {
   return sendRequest({
     method: 'GET',
     protocol,
     host,
     port,
+    headers,
     path,
   });
 };
@@ -67,10 +75,18 @@ export const postData = async (
   host: string,
   port: number | string,
   path: string,
-  contentType: string,
-  data: string
+  data: string,
+  headers: HeaderInit = { 'Content-Type': 'application/fhir+json' }
 ): Promise<ResponseObject> => {
-  return sendRequest({ method: 'POST', protocol, host, port, path, contentType, data });
+  return sendRequest({
+    method: 'POST',
+    protocol,
+    host,
+    port,
+    path,
+    headers,
+    data,
+  });
 };
 
 export const buildOpenhimResponseObject = (
@@ -81,7 +97,7 @@ export const buildOpenhimResponseObject = (
 ): OpenHimResponseObject => {
   const response: Response = {
     status: httpResponseStatusCode,
-    headers: { 'content-type': contentType },
+    headers: { 'Content-Type': contentType },
     body: responseBody,
     timestamp: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"),
   };

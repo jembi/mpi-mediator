@@ -6,6 +6,7 @@ import nock from 'nock';
 import { getConfig } from '../../src/config/config';
 import { mpiMdmEverythingMiddleware } from '../../src/middlewares/mpi-mdm-everything';
 import { mpiMdmQueryLinksMiddleware } from '../../src/middlewares/mpi-mdm-query-links';
+import { validationMiddleware } from '../../src/middlewares/validation';
 import { mpiAuthMiddleware } from '../../src/middlewares/mpi-auth';
 import format from 'date-fns/format';
 
@@ -150,6 +151,62 @@ describe('Middlewares', (): void => {
       } catch (err) {
         expect(err).to.not.be.undefined;
       }
+    });
+  });
+
+  describe('*validationMiddleware', (): void => {
+    it('should validate bundle and forward it to SanteMPI', async () => {
+      nock(fhirDatastoreUrl)
+        .post('/fhir/Patient/$validate')
+        .reply(200, {
+          status: 'Success',
+          body: { ...patientFhirResource1 },
+        });
+
+      const request = {
+        body: { ...patientFhirResource1 },
+        headers: {},
+      } as any as Request;
+      const response = {
+        locals: {},
+        send: function (body: any) {
+          this.locals.validationResponse.body = body;
+        },
+        status: function (code: number) {
+          this.locals.validationResponse.status = code;
+          return this;
+        },
+        set: () => {},
+      } as any as Response;
+
+      await validationMiddleware(request, response, () => {});
+      expect(response.locals.validationResponse.status).to.equal(200);
+      nock.cleanAll();
+    });
+    it('should return a Failed response after verification', async () => {
+      nock(fhirDatastoreUrl).post('/fhir/Patient/$validate').reply(412, {
+        status: 'Failed',
+      });
+
+      const request = {
+        body: { ...patientFhirResource1 },
+        headers: {},
+      } as any as Request;
+      let result: any = null;
+      let statusCode: number = 0;
+      const response = {
+        send: function (body: any) {
+          result = body;
+        },
+        status: function (code: number) {
+          statusCode = code;
+          return this;
+        },
+        set: () => {},
+      } as any as Response;
+      await validationMiddleware(request, response, () => {});
+      expect(statusCode).to.equal(412);
+      nock.cleanAll();
     });
   });
 

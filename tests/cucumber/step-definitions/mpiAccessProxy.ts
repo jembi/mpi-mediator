@@ -66,7 +66,7 @@ When('a $match search request is sent', async (): Promise<void> => {
 });
 
 Then('a success response is sent back', (): void => {
-  expect(responseBody.body.status).to.equal('Success');
+  expect(responseBody.status).to.equal('Success');
   server.close();
 });
 
@@ -81,6 +81,6 @@ When('an invalid $match search request is sent', async (): Promise<void> => {
 });
 
 Then('an error response is sent back', (): void => {
-  expect(responseBody.body.status).to.equal('Failed');
+  expect(responseBody.status).to.equal('Failed');
   server.close();
 });

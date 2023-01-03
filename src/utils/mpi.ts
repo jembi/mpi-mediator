@@ -1,6 +1,6 @@
 import { Patient, Resource } from 'fhir/r3';
 import { getConfig } from '../config/config';
-import { getData } from './utils';
+import { getData, isHttpStatusOk } from './utils';
 import { ClientOAuth2, OAuth2Token } from './client-oauth2';
 
 // Singleton instance of MPI Token stored in memory
@@ -48,7 +48,7 @@ export const fetchMpiResourceByRef = async <T extends Resource>(
 
   const response = await getData(protocol, host, port, `/fhir/${ref}`, headers);
 
-  return response.status === 200 ? (response.body as T) : undefined;
+  return isHttpStatusOk(response.status) ? (response.body as T) : undefined;
 };
 
 /**

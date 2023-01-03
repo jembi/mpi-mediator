@@ -3,7 +3,10 @@ import qs from 'qs';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { getConfig } from '../config/config';
 import logger from '../logger';
-import { openhimProxyResponseInterceptor } from './openhim-proxy-interceptor';
+import {
+  openhimProxyResponseInterceptor,
+  proxyRequestInterceptor,
+} from './openhim-proxy-interceptor';
 
 const logProvider = () => {
   return {
@@ -48,6 +51,7 @@ const createFhirAccessProxy = (): RequestHandler => {
     // Intercept response and build an openHIM response
     selfHandleResponse: true,
     onProxyRes: openhimProxyResponseInterceptor,
+    onProxyReq: proxyRequestInterceptor,
   });
 };
 

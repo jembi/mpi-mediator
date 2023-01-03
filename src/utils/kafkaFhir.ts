@@ -9,7 +9,9 @@ import {
   createNewPatientRef,
   extractPatientId,
   extractPatientResource,
+  isHttpStatusOk,
   modifyBundle,
+  postData,
   sendRequest,
 } from './utils';
 import logger from '../logger';
@@ -53,13 +55,20 @@ export const sendToFhirAndKafka = async (
   patient: Patient | null = null,
   newPatientRef = ''
 ): Promise<MpiMediatorResponseObject> => {
-  requestDetails.data = JSON.stringify(bundle);
+  const { protocol, host, port, path, headers } = requestDetails;
 
-  const response: ResponseObject = await sendRequest(requestDetails);
+  const response: ResponseObject = await postData(
+    protocol,
+    host,
+    port,
+    path,
+    JSON.stringify(bundle),
+    headers
+  );
 
   let transactionStatus: string;
 
-  if (response.status === 200) {
+  if (isHttpStatusOk(response.status)) {
     logger.info('Successfully sent Fhir bundle to the Fhir Datastore!');
 
     transactionStatus = 'Success';
@@ -121,14 +130,13 @@ const clientRegistryRequestDetailsOrg: RequestDetails = {
   port: config.mpiPort,
   path: '/fhir/Patient',
   method: 'POST',
-  contentType: 'application/fhir+json',
-  authToken: '',
+  headers: { 'Content-Type': 'application/fhir+json' },
 };
 const fhirDatastoreRequestDetailsOrg: RequestDetails = {
   protocol: config.fhirDatastoreProtocol,
   host: config.fhirDatastoreHost,
   port: config.fhirDatastorePort,
-  contentType: 'application/fhir+json',
+  headers: { 'Content-Type': 'application/fhir+json' },
   method: 'POST',
   path: '/fhir',
   data: '',
@@ -155,7 +163,10 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
   if (config.mpiAuthEnabled) {
     const auth: OAuth2Token = await getMpiAuthToken();
 
-    clientRegistryRequestDetails.authToken = `Bearer ${auth.accessToken}`;
+    clientRegistryRequestDetails.headers = {
+      ...clientRegistryRequestDetails.headers,
+      ['Authorization']: `Bearer ${auth.accessToken}`,
+    };
   }
 
   if (!patientResource && patientId) {
@@ -170,7 +181,7 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
     clientRegistryRequestDetails
   );
 
-  if (!(clientRegistryResponse.status === 201 || clientRegistryResponse.status === 200)) {
+  if (!isHttpStatusOk(clientRegistryResponse.status)) {
     if (patientResource) {
       logger.error(
         `Patient resource creation in Client Registry failed: ${JSON.stringify(

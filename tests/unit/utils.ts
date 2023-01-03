@@ -44,7 +44,7 @@ describe('Utils', (): void => {
       expect(returnedObject.status).to.equal(transactionStatus);
       expect(returnedObject.response).to.have.property('timestamp');
       expect(returnedObject.response.headers).to.deep.equal({
-        'content-type': contentType,
+        'Content-Type': contentType,
       });
       expect(returnedObject.response.body).to.deep.equal(body);
     });
@@ -59,6 +59,7 @@ describe('Utils', (): void => {
         path: '',
         method: 'POST',
         data: 'data',
+        headers: {},
       };
       const response: ResponseObject = await sendRequest(reqDetails);
 
@@ -83,7 +84,7 @@ describe('Utils', (): void => {
         host,
         port,
         path,
-        contentType,
+        headers: { contentType },
         data,
         method: 'POST',
       };
@@ -112,6 +113,7 @@ describe('Utils', (): void => {
         port,
         path,
         method: 'GET',
+        headers: {},
       };
 
       nock(`http://${host}:${port}`).get(`${path}`).reply(200, {
