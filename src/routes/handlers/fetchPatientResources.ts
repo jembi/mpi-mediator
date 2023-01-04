@@ -40,6 +40,8 @@ export const fetchAllPatientResourcesByRefs = async (
         throw response;
       }
 
+      console.log(response);
+
       return response;
     });
   });
