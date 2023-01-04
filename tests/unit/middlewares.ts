@@ -8,6 +8,7 @@ import { mpiMdmEverythingMiddleware } from '../../src/middlewares/mpi-mdm-everyt
 import { mpiMdmQueryLinksMiddleware } from '../../src/middlewares/mpi-mdm-query-links';
 import { validationMiddleware } from '../../src/middlewares/validation';
 import { mpiAuthMiddleware } from '../../src/middlewares/mpi-auth';
+import format from 'date-fns/format';
 
 const config = getConfig();
 
@@ -50,48 +51,65 @@ const patientFhirResource2: Patient = {
   ],
 };
 
-const fhirObservation1: Observation = {
-  resourceType: 'Observation',
-  id: 'observation-1',
-  status: 'final',
-  code: {
-    coding: [
-      {
-        system: 'http://loinc.org',
-        code: '55233-1',
-      },
-    ],
-  },
-};
-
-const fhirObservation2: Observation = {
-  ...fhirObservation1,
-  id: 'observation-2',
-};
-
-const fhirBundle1: Bundle = {
+const Encounters: Bundle = {
   resourceType: 'Bundle',
-  id: 'bundle-example-1',
-  meta: {
-    lastUpdated: '2014-08-18T01:43:30Z',
-  },
+  id: 'testBundle',
   type: 'searchset',
-  total: 1,
-  link: [{ relation: 'self', url: 'http://hapi-fhir/bundle-example-1' }],
+  total: 2,
   entry: [
     {
-      resource: fhirObservation1,
+      fullUrl: 'Encounter/testEncounter',
+      resource: {
+        resourceType: 'Encounter',
+        id: 'testEncounter',
+        status: 'arrived',
+        subject: {
+          reference: 'http://sante-mpi:8080/fhir/Patient/1',
+        },
+      },
+    },
+    {
+      fullUrl: 'Encounter/testEncounter',
+      resource: {
+        resourceType: 'Encounter',
+        id: 'testEncounter',
+        status: 'arrived',
+        subject: {
+          reference: 'http://sante-mpi:8080/fhir/Patient/2',
+        },
+      },
     },
   ],
 };
-
-const fhirBundle2: Bundle = {
-  ...fhirBundle1,
-  id: 'bundle-example-2',
-  link: [{ relation: 'self', url: 'http://hapi-fhir/bundle-example-2' }],
+const Observations: Bundle = {
+  resourceType: 'Bundle',
+  id: 'testBundle',
+  type: 'searchset',
+  total: 2,
   entry: [
     {
-      resource: fhirObservation2,
+      fullUrl: 'Observation/testObservation',
+      resource: {
+        resourceType: 'Observation',
+        id: 'testObservation',
+        status: 'cancelled',
+        subject: {
+          reference: 'http://sante-mpi:8080/fhir/Patient/1',
+        },
+        code: {},
+      },
+    },
+    {
+      fullUrl: 'Observation/testObservation',
+      resource: {
+        resourceType: 'Observation',
+        id: 'testObservation',
+        status: 'cancelled',
+        subject: {
+          reference: 'http://sante-mpi:8080/fhir/Patient/2',
+        },
+        code: {},
+      },
     },
   ],
 };
@@ -204,12 +222,24 @@ describe('Middlewares', (): void => {
     });
 
     it('should perform MDM expansion when mdm param is supplied', async () => {
-      nock(fhirDatastoreUrl).get('/fhir/Patient/1/$everything').reply(200, fhirBundle1);
-      nock(fhirDatastoreUrl).get('/fhir/Patient/2/$everything').reply(200, fhirBundle2);
-
-      nock(mpiUrl).post('/auth/oauth2_token').reply(200, {});
+      nock(mpiUrl).post('/auth/oauth2_token').reply(200, newOauth2TokenGenerated);
       nock(mpiUrl).get('/fhir/Patient/1').reply(200, patientFhirResource1);
       nock(mpiUrl).get('/fhir/Patient/2').reply(200, patientFhirResource2);
+      nock(fhirDatastoreUrl)
+        .get(
+          `/fhir/Encounter?subject=${encodeURIComponent(
+            'http://santedb-mpi:8080/fhir/Patient/1,http://santedb-mpi:8080/fhir/Patient/2'
+          )}`
+        )
+        .reply(200, Encounters);
+      nock(fhirDatastoreUrl)
+        .get(
+          `/fhir/Observation?subject=${encodeURIComponent(
+            'http://santedb-mpi:8080/fhir/Patient/1,http://santedb-mpi:8080/fhir/Patient/2'
+          )}`
+        )
+        .reply(200, Observations);
+
       const request = {
         body: {},
         headers: {},
@@ -230,10 +260,9 @@ describe('Middlewares', (): void => {
       } as any as Response;
       await mpiMdmEverythingMiddleware(request, response, () => {});
       expect(statusCode).to.equal(200);
-      expect(result.status).to.equal('200');
-      expect(result.response.body.total).to.equal(2);
-      expect(result.response.body.entry.length).to.equal(2);
-      expect(result.response.body.link.length).to.equal(2);
+      expect(result.status).to.equal('Success');
+      expect(result.response.body.total).to.equal(4);
+      expect(result.response.body.entry.length).to.equal(4);
       nock.cleanAll();
     });
   });

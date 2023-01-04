@@ -3,7 +3,13 @@ Feature: FHIR Access Proxy
 
   Scenario: Valid $everything Request
     Given MPI and FHIR services are up and running
-    When a $everything search request is sent
+    When an $everything search request is sent
+    Then a successful response containing a bundle of related patient resources is sent back
+    
+    
+  Scenario: Valid $everything Request without MDM
+    Given MPI and FHIR services are up and running
+    When an $everything search request is sent without the MDM param
     Then a successful response containing a bundle is sent back
 
   Scenario: Valid MDM Request

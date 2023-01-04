@@ -9,6 +9,7 @@ import { matchSyncHandler } from './handlers/matchPatientSync';
 import { mpiMdmQueryLinksMiddleware } from '../middlewares/mpi-mdm-query-links';
 import { validationMiddleware } from '../middlewares/validation';
 import { buildOpenhimResponseObject } from '../utils/utils';
+import { fetchEverythingByRef } from './handlers/fetchPatientResources';
 
 const routes = express.Router();
 
@@ -53,7 +54,12 @@ routes.post('/fhir/Patient/\\$match', mpiAuthMiddleware, mpiAccessProxyMiddlewar
 routes.get(
   '/fhir/Patient/:patientId/\\$everything',
   mpiMdmEverythingMiddleware,
-  fhirDatastoreAccessProxyMiddleware
+  asyncHandler(async (req, res) => {
+    const { status, body } = await fetchEverythingByRef(`Patient/${req.params.patientId}`);
+
+    res.set('Content-Type', 'application/openhim+json');
+    res.status(status).send(body);
+  })
 );
 
 routes.post(

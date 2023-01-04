@@ -10,7 +10,7 @@ import {
   MpiMediatorResponseObject,
 } from '../types/response';
 import { RequestDetails } from '../types/request';
-import { Bundle, BundleEntry, Resource } from 'fhir/r3';
+import { Bundle, BundleEntry, BundleLink, FhirResource, Resource } from 'fhir/r3';
 
 const config = getConfig();
 
@@ -198,4 +198,44 @@ export const createHandlerResponseObject = (
     body: responseBody,
     status: response.status,
   };
+};
+
+export const mergeBundles = async (fhirRequests: (Bundle<FhirResource> | null)[]) => {
+  const fhirBundles = fhirRequests.filter((bundle) => !!bundle) as Bundle[];
+  // Combine all bundles into a single one
+  const bundle = fhirBundles.reduce(
+    (acc, curr) => {
+      // Concat entries
+      if (Array.isArray(curr.entry)) {
+        acc.entry = (acc.entry || []).concat(curr.entry);
+        acc.total = (acc.total || 0) + curr.entry.length;
+      }
+
+      // Concat links
+      if (curr.link && Array.isArray(curr.link)) {
+        acc.link = (acc.link || []).concat(
+          curr.link.map(({ url }) => {
+            return {
+              relation: 'subsection',
+              url,
+            } as BundleLink;
+          })
+        );
+      }
+
+      return acc;
+    },
+    {
+      resourceType: 'Bundle',
+      meta: {
+        lastUpdated: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
+      },
+      type: 'searchset',
+      total: 0,
+      link: [],
+      entry: [],
+    } as Bundle
+  );
+
+  return bundle;
 };
