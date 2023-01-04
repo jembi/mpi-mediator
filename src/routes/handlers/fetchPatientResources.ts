@@ -3,7 +3,12 @@ import { getConfig } from '../../config/config';
 import logger from '../../logger';
 import { MpiMediatorResponseObject } from '../../types/response';
 import { PATIENT_RESOURCES } from '../../utils/constants';
-import { buildOpenhimResponseObject, getData, mergeBundles } from '../../utils/utils';
+import {
+  buildOpenhimResponseObject,
+  getData,
+  isHttpStatusOk,
+  mergeBundles,
+} from '../../utils/utils';
 
 const {
   fhirDatastoreProtocol: protocol,
@@ -29,16 +34,19 @@ export const fetchAllPatientResourcesByRefs = async (
 
     return getData(protocol, host, port, path, {
       'Content-Type': 'application/fhir+json',
-    }).catch((err) => {
-      logger.error('Unable to fetch patient resource ', resource, patientRefs, err);
+    }).then((response) => {
+      if (!isHttpStatusOk(response.status)) {
+        // We throw an error if one of the requests fails
+        throw response;
+      }
 
-      return null;
+      return response;
     });
   });
 
-  const bundles = (await Promise.all(responsePromises))
-    .filter((response) => !!response)
-    .map((response) => response?.body as Bundle);
+  const bundles = (await Promise.all(responsePromises)).map(
+    (response) => response?.body as Bundle
+  );
 
   return mergeBundles(bundles);
 };
@@ -48,24 +56,25 @@ export const fetchEverythingByRef = async (
 ): Promise<MpiMediatorResponseObject> => {
   logger.info('Fetching resources for Patient');
 
-  const bundle = await fetchAllPatientResourcesByRefs([patientRef]);
+  try {
+    const bundle = await fetchAllPatientResourcesByRefs([patientRef]);
+    const responseBody = buildOpenhimResponseObject('Success', 200, bundle);
 
-  let transactionStatus: string;
-  let status = 200;
-
-  if (bundle.entry?.length !== 0) {
     logger.info(`Successfully fetched resources for patient with id ${patientRef}!`);
-    transactionStatus = 'Success';
-  } else {
-    logger.error(`No resources associated to this patient!`);
-    transactionStatus = 'Failed';
-    status = 404;
+
+    return {
+      body: responseBody,
+      status: 200,
+    };
+  } catch (err) {
+    logger.error(`Unable to fetch all linked patient resources!`, err);
+
+    const status = (err as any).status || 500;
+    const body = (err as any).body || {};
+
+    return {
+      body: buildOpenhimResponseObject('Failed', status, body),
+      status: status,
+    };
   }
-
-  const responseBody = buildOpenhimResponseObject(transactionStatus, status, bundle);
-
-  return {
-    body: responseBody,
-    status: status,
-  };
 };

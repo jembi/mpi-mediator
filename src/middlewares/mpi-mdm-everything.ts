@@ -1,6 +1,6 @@
 import { RequestHandler } from 'express';
 import logger from '../logger';
-import { buildOpenhimResponseObject, isHttpStatusOk } from '../utils/utils';
+import { buildOpenhimResponseObject } from '../utils/utils';
 import { MpiMediatorResponseObject } from '../types/response';
 import { fetchMpiPatientLinks } from '../utils/mpi';
 import { fetchAllPatientResourcesByRefs } from '../routes/handlers/fetchPatientResources';
