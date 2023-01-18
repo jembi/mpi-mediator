@@ -155,6 +155,29 @@ describe('Middlewares', (): void => {
   });
 
   describe('*validationMiddleware', (): void => {
+    it('should return error when content type is incorrect', async () => {
+      const request = {
+        body: { ...patientFhirResource1 },
+        headers: {},
+      } as any as Request;
+      let result: any = null;
+      let statusCode: number = 0;
+      const response = {
+        send: function (body: any) {
+          result = body;
+        },
+        status: function (code: number) {
+          statusCode = code;
+          return this;
+        },
+        set: () => {},
+      } as any as Response;
+
+      await validationMiddleware(request, response, () => {});
+      expect(statusCode).to.equal(400);
+      nock.cleanAll();
+    });
+
     it('should validate bundle and forward it to SanteMPI', async () => {
       nock(fhirDatastoreUrl)
         .post('/fhir/Patient/$validate')
@@ -165,7 +188,9 @@ describe('Middlewares', (): void => {
 
       const request = {
         body: { ...patientFhirResource1 },
-        headers: {},
+        headers: {
+          'content-type': config.contentType,
+        },
       } as any as Request;
       const response = {
         locals: {},
@@ -183,6 +208,7 @@ describe('Middlewares', (): void => {
       expect(response.locals.validationResponse.status).to.equal(200);
       nock.cleanAll();
     });
+
     it('should return a Failed response after verification', async () => {
       nock(fhirDatastoreUrl).post('/fhir/Patient/$validate').reply(412, {
         status: 'Failed',
@@ -190,7 +216,9 @@ describe('Middlewares', (): void => {
 
       const request = {
         body: { ...patientFhirResource1 },
-        headers: {},
+        headers: {
+          'content-type': config.contentType,
+        },
       } as any as Request;
       let result: any = null;
       let statusCode: number = 0;

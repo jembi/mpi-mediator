@@ -18,9 +18,13 @@ const invalidMatchParams = {
       name: 'resource',
       resource: {
         resourceType: 'Patient',
+        text: {
+          div: '<div xmlns=\"http://www.w3.org/1999/xhtml\">Patient</div>',
+          status: 'generated'
+        },
         name: [
           {
-            family: ['Smith'],
+            family: 'Smith',
             given: ['John'],
           },
         ],
@@ -35,11 +39,11 @@ const validMatchParams = {
     ...invalidMatchParams.parameter,
     {
       name: 'count',
-      valueInteger: '3',
+      valueInteger: 3,
     },
     {
       name: 'onlyCertainMatches',
-      valueBoolean: 'false',
+      valueBoolean: false,
     },
   ],
 };

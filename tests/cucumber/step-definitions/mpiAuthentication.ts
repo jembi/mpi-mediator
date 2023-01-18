@@ -33,7 +33,9 @@ When('a post request without body was sent to get patients', async (): Promise<v
 });
 
 Then('we should get an error response', (): void => {
-  expect(responseBody.response.body.issue[0].severity).not.empty;
+  expect(responseBody.response.body.error,
+    `Invalid Content! Type should be "${config.contentType}" and Length should be greater than 0"`
+  );
   server.close();
 });
 
@@ -48,9 +50,13 @@ When('a post request with body was sent to get patients', async (): Promise<void
           name: 'resource',
           resource: {
             resourceType: 'Patient',
+            text: {
+              div: '<div xmlns=\"http://www.w3.org/1999/xhtml\">Patient</div>',
+              status: 'generated'
+            },
             name: [
               {
-                family: ['Smith'],
+                family: 'Smith',
                 given: ['John'],
               },
             ],
@@ -58,11 +64,11 @@ When('a post request with body was sent to get patients', async (): Promise<void
         },
         {
           name: 'count',
-          valueInteger: '3',
+          valueInteger: 3,
         },
         {
           name: 'onlyCertainMatches',
-          valueBoolean: 'false',
+          valueBoolean: false,
         },
       ],
     })
