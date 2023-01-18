@@ -49,7 +49,13 @@ routes.post(
   mpiAccessProxyMiddleware
 );
 
-routes.post('/fhir/Patient/\\$match', mpiAuthMiddleware, mpiAccessProxyMiddleware);
+routes.post(
+  '/fhir/Patient/\\$match',
+  jsonBodyParser,
+  validationMiddleware,
+  mpiAuthMiddleware,
+  mpiAccessProxyMiddleware
+);
 
 routes.get(
   '/fhir/Patient/:patientId/\\$everything',
