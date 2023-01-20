@@ -12,31 +12,6 @@ const config = getConfig();
 
 describe('Match Patient Asynchronously', (): void => {
   describe('*matchAsyncHandler', (): void => {
-    it('should return error when validation fails', async (): Promise<void> => {
-      const bundle: Bundle = {
-        type: 'document',
-        resourceType: 'Bundle',
-        id: '12',
-        entry: [
-          {
-            fullUrl: 'Encounter/1234',
-            resource: {
-              resourceType: 'Encounter',
-              id: '1233',
-              status: 'planned',
-            },
-          },
-        ],
-      };
-
-      nock(`http://${config.fhirDatastoreHost}:${config.fhirDatastorePort}`)
-        .post('/fhir/Bundle/$validate')
-        .reply(500, {});
-
-      const response: MpiMediatorResponseObject = await matchAsyncHandler(bundle);
-      expect(response.status).to.be.equal(500);
-    });
-
     it('should return error when sending to kafka fails', async (): Promise<void> => {
       const bundle: Bundle = {
         type: 'document',

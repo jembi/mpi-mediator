@@ -22,6 +22,7 @@ export const getConfig = () => {
     fhirDatastoreHost: process.env.FHIR_DATASTORE_HOST || 'hapi-fhir',
     fhirDatastorePort: process.env.FHIR_DATASTORE_PORT || 8080,
     fhirDatastoreProtocol: process.env.FHIR_DATASTORE_PROTOCOL || 'http',
+    contentType: process.env.MEDIATOR_INPUT_CONTENT_TYPE || 'application/fhir+json',
     mediatorUrn: process.env.MEDIATOR_URN || 'urn:mediator:mpi-mediator',
     kafkaBrokers: process.env.KAFKA_BROKERS || 'kafka:9092',
     kafkaBundleTopic: process.env.KAFKA_BUNDLE_TOPIC || '2xx',
