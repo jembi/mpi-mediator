@@ -37,5 +37,6 @@ export const getConfig = () => {
     mpiClientId: process.env.MPI_CLIENT_ID || '',
     mpiClientSecret: process.env.MPI_CLIENT_SECRET || '',
     cucumberDefaultTimeout: process.env.CUCUMBER_DEFAULT_TIMEOUT || 20000,
+    disableValidation: process.env.DISABLE_VALIDATION == 'true' ? true : false
   });
 };

@@ -4,7 +4,7 @@ import logger from '../logger';
 import { ResponseObject } from '../types/response';
 import { buildOpenhimResponseObject, isHttpStatusOk, postData } from '../utils/utils';
 
-const { fhirDatastoreProtocol, fhirDatastoreHost, fhirDatastorePort, contentType } =
+const { fhirDatastoreProtocol, fhirDatastoreHost, fhirDatastorePort, contentType, disableValidation } =
   getConfig();
 
 export const validationMiddleware: RequestHandler = async (req, res, next) => {
@@ -20,6 +20,8 @@ export const validationMiddleware: RequestHandler = async (req, res, next) => {
       },
       status: 400,
     };
+  } else if (disableValidation) {
+      return next();
   } else {
     response = await postData(
       fhirDatastoreProtocol,
