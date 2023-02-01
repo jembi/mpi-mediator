@@ -103,6 +103,15 @@ export const sendToFhirAndKafka = async (
       response.body = newBundle;
     }
 
+    if (newPatientRef && patient) {
+      bundle = JSON.parse(
+        JSON.stringify(bundle).replace(
+          new RegExp(newPatientRef, 'g'),
+          `Patient/${patient?.id}`
+        )
+      );
+    }
+
     const kafkaResponseError: Error | null = await sendToKafka(
       bundle,
       config.kafkaBundleTopic
