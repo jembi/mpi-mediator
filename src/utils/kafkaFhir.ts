@@ -3,7 +3,11 @@ import { Kafka, logLevel } from 'kafkajs';
 import { Bundle, BundleEntry, Patient, Resource } from 'fhir/r3';
 import { getConfig } from '../config/config';
 import { RequestDetails } from '../types/request';
-import { MpiMediatorResponseObject, ResponseObject } from '../types/response';
+import {
+  MpiMediatorResponseObject,
+  ResponseObject,
+  MpiTransformResult,
+} from '../types/response';
 import {
   createHandlerResponseObject,
   createNewPatientRef,
@@ -13,6 +17,7 @@ import {
   modifyBundle,
   postData,
   sendRequest,
+  transformPatientResourceForMPI,
 } from './utils';
 import logger from '../logger';
 import { getMpiAuthToken } from './mpi';
@@ -148,6 +153,7 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
 
   const patientResource: Resource | null = extractPatientResource(bundle);
   const patientId: string | null = extractPatientId(bundle);
+  let patientMpiTransformResult: MpiTransformResult = {};
 
   if (!(patientResource || patientId)) {
     logger.info('No Patient resource or Patient reference was found in Fhir Bundle!');
@@ -174,7 +180,8 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
     clientRegistryRequestDetails.method = 'GET';
     delete clientRegistryRequestDetails.data;
   } else {
-    clientRegistryRequestDetails.data = JSON.stringify(patientResource);
+    patientMpiTransformResult = transformPatientResourceForMPI(patientResource as Resource);
+    clientRegistryRequestDetails.data = JSON.stringify(patientMpiTransformResult.patient);
   }
 
   const clientRegistryResponse: ResponseObject = await sendRequest(
@@ -204,10 +211,25 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
   );
   const modifiedBundle: Bundle = modifyBundle(bundle, `Patient/${patientId}`, newPatientRef);
 
+  //Add the patient's managing organization and extensions
+  let transformedPatient = Object.assign({}, clientRegistryResponse.body);
+  if (patientResource) {
+    if (patientMpiTransformResult.extension?.length) {
+      transformedPatient = Object.assign({}, transformedPatient, {
+        extension: patientMpiTransformResult.extension,
+      });
+    }
+    if (patientMpiTransformResult.managingOrganization) {
+      transformedPatient = Object.assign({}, transformedPatient, {
+        managingOrganization: patientMpiTransformResult.managingOrganization,
+      });
+    }
+  }
+
   const handlerResponse: MpiMediatorResponseObject = await sendToFhirAndKafka(
     fhirDatastoreRequestDetails,
     modifiedBundle,
-    clientRegistryResponse.body as Patient,
+    transformedPatient as Patient,
     newPatientRef
   );
 
