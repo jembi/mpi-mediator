@@ -28,7 +28,7 @@ describe('Client Oauth2', (): void => {
       const expiresOn = 3;
       const dateNow = new Date();
       const expires = oauth2.expiresIn(expiresOn);
-      expect(+expires - +dateNow).to.equal(expiresOn * 1000);
+      expect(+expires - +dateNow).to.equal(expiresOn);
     });
 
     it('should return an expiration date when passing a date', async (): Promise<void> => {

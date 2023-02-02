@@ -103,7 +103,7 @@ describe('MPI', (): void => {
         token_type: 'bearer',
         access_token: 'accessToken2',
         refresh_token: 'refreshToken2',
-        expires_in: 1, // 1s
+        expires_in: 1000, // 1000ms
       };
 
       nock(mpiUrl)

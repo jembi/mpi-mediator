@@ -115,8 +115,7 @@ export class OAuth2Token {
    */
   expiresIn(duration: number | Date): Date {
     if (typeof duration === 'number') {
-      this.expires = new Date();
-      this.expires.setSeconds(this.expires.getSeconds() + duration);
+      this.expires = new Date(Date.now() + duration);
     } else if (duration instanceof Date) {
       this.expires = new Date(duration.getTime());
     } else {
