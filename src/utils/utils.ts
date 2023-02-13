@@ -8,6 +8,7 @@ import {
   ResponseObject,
   Response,
   MpiMediatorResponseObject,
+  MpiTransformResult,
 } from '../types/response';
 import { RequestDetails } from '../types/request';
 import { Bundle, BundleEntry, BundleLink, FhirResource, Resource } from 'fhir/r3';
@@ -178,6 +179,27 @@ export const modifyBundle = (
   }
 
   return modifiedBundle;
+};
+
+/**
+ * This method removes the patient's extension and managing organization. The Client registry only stores Patient resources. Extensions and Managing Organization
+ * references will result in validation errors.
+ * The function returns a tranformed patient, extension and managing organization.
+*/
+export const transformPatientResourceForMPI = (patient: Resource): MpiTransformResult => {
+  const transformedPatient = JSON.parse(JSON.stringify(patient));
+
+  const extension = transformedPatient.extension;
+  const managingOrganization = transformedPatient.managingOrganization;
+
+  delete transformedPatient.extension;
+  delete transformedPatient.managingOrganization;
+
+  return {
+    patient: transformedPatient,
+    managingOrganization,
+    extension,
+  };
 };
 
 export const createNewPatientRef = (patientId: string): string => {

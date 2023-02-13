@@ -20,3 +20,9 @@ export interface MpiMediatorResponseObject {
   body: OpenHimResponseObject;
   status: number;
 }
+
+export interface MpiTransformResult {
+  patient?: object;
+  managingOrganization?: object;
+  extension?: [object];
+}

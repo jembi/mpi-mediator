@@ -12,6 +12,7 @@ import {
   createNewPatientRef,
   createHandlerResponseObject,
   mergeBundles,
+  transformPatientResourceForMPI,
 } from '../../src/utils/utils';
 import {
   MpiMediatorResponseObject,
@@ -177,6 +178,43 @@ describe('Utils', (): void => {
       };
 
       expect(extractPatientResource(bundle)).to.deep.equal(patient);
+    });
+  });
+
+  describe('*transformPatientResourceForMpi', (): void => {
+    it('should remove extensions and managing resources', (): void => {
+      const patientResource = {
+        id: '436b1164-bbd8-4f78-a63b-a1e291bbb7f3',
+        resourceType: 'Patient',
+        gender: 'unknown',
+        birthDate: '2014-11-30',
+        managingOrganization: {
+          reference: 'Organization/HIVOrganizationExample2',
+        },
+        extension: [
+          {
+            url: 'http://openhie.org/fhir/hiv-casereporting/StructureDefinition/key-population',
+            valueCodeableConcept: {
+              coding: [
+                {
+                  code: 'GENERAL-POPULATION',
+                },
+              ],
+            },
+          },
+        ],
+      };
+      const expectdPatient = {
+        id: '436b1164-bbd8-4f78-a63b-a1e291bbb7f3',
+        resourceType: 'Patient',
+        gender: 'unknown',
+        birthDate: '2014-11-30',
+      };
+      const transformResult = transformPatientResourceForMPI(patientResource);
+
+      expect(transformResult.extension).to.exist;
+      expect(transformResult.patient).to.deep.equal(expectdPatient);
+      expect(transformResult.managingOrganization).to.exist;
     });
   });
 
