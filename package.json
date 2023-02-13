@@ -8,7 +8,7 @@
     "start": "ts-node -r dotenv/config src/index.ts",
     "format": "prettier --check --write '{src,tests}/**/*.ts'",
     "lint": "eslint . --ext .ts,.js --fix",
-    "docker:build": "npm run build; docker build -t jembi/mpi-mediator:1.1.0 .",
+    "docker:build": "npm run build; docker build -t jembi/mpi-mediator:v1.1.0 .",
     "build": "npm install; tsc -p tsconfig.build.json",
     "test:unit": "LOG_LEVEL='fatal' MODE='testing' mocha -r ts-node/register 'tests/unit/*.ts' --timeout 15000",
     "test:cucumber": "CUCUMBER_DEFAULT_TIMEOUT=20000 MODE='testing' cucumber-js 'tests/cucumber/features/**/*.feature' --no-color --exit --logLevel='error' --require 'tests/cucumber/step-definitions/*.ts' --require-module 'ts-node/register' --require-module 'dotenv/config' dotenv_config_path=.env.test --format-options \"{\\\"snippetInterface\\\": \\\"async-await\\\"}\" --format summary --format progress-bar",
