@@ -109,7 +109,7 @@ describe('MPI', (): void => {
       nock(mpiUrl)
         .post(
           '/auth/oauth2_token',
-          `refresh_token=${newOauth2TokenGenerated.refresh_token}&grant_type=refresh_token&client_id=${mpiClientId}&client_secret=${mpiClientSecret}`
+          `refresh_token=${newOauth2TokenGenerated.refresh_token}&grant_type=client_credentials&client_id=${mpiClientId}&client_secret=${mpiClientSecret}`
         )
         .reply(200, newOauth2TokenRefreshed);
 

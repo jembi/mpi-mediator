@@ -142,7 +142,7 @@ export class OAuth2Token {
         headers: DEFAULT_HEADERS,
         body: {
           refresh_token: this.refreshToken,
-          grant_type: 'refresh_token',
+          grant_type: 'client_credentials',
           client_id: options.clientId,
           client_secret: options.clientSecret,
         },
