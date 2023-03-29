@@ -4,7 +4,7 @@ on: push
 
 jobs:
   scan-images:
-    runs-on: ubuntu-22.04.2
+    runs-on: ubuntu-latest
     steps:
       - name: Run trivy vulnerability scanner for the MPI - mediator image
         uses: aquasecurity/trivy-action@master
