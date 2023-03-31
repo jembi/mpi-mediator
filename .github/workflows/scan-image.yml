@@ -1,15 +1,24 @@
 name: Scan latest mpi image
 
-on: push
+on:
+  schedule:
+    - cron: '*/5 * * * *'
 
 jobs:
   scan-images:
     runs-on: ubuntu-latest
     steps:
-      - name: Run trivy vulnerability scanner for the MPI - mediator image
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build an image from Dockerfile
+        run: |
+          docker build -t jembi/mpi-mediator:${{ github.sha }} .
+
+      - name: Run trivy vulnerability scanner for the MPI mediator image
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: jembi/mpi-mediator:latest
+          image-ref: jembi/mpi-mediator:${{ github.sha }}
           format: 'sarif'
           output: 'trivy-results.sarif'
         
