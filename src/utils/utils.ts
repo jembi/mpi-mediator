@@ -185,7 +185,7 @@ export const modifyBundle = (
  * This method removes the patient's extension and managing organization. The Client registry only stores Patient resources. Extensions and Managing Organization
  * references will result in validation errors.
  * The function returns a tranformed patient, extension and managing organization.
-*/
+ */
 export const transformPatientResourceForMPI = (patient: Resource): MpiTransformResult => {
   const transformedPatient = JSON.parse(JSON.stringify(patient));
 
@@ -203,6 +203,10 @@ export const transformPatientResourceForMPI = (patient: Resource): MpiTransformR
 };
 
 export const createNewPatientRef = (patientId: string): string => {
+  if (config.mpiProxyUrl) {
+    return `${config.mpiProxyUrl}/fhir/Patient/${patientId}`;
+  }
+
   return `${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}/fhir/Patient/${patientId}`;
 };
 
