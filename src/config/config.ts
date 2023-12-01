@@ -28,6 +28,7 @@ export const getConfig = () => {
     kafkaBundleTopic: process.env.KAFKA_BUNDLE_TOPIC || '2xx',
     kafkaAsyncBundleTopic: process.env.KAFKA_ASYNC_BUNDLE_TOPIC || '2xx-async',
     kafkaErrorTopic: process.env.KAFKA_ERROR_TOPIC || 'errors',
+    kafkaPatientTopic: process.env.KAFKA_PATIENT_TOPIC ?? 'patient',
     mpiKafkaClientId: process.env.MPI_KAFKA_CLIENT_ID || 'mpi-mediator',
     runningMode: process.env.MODE || '',
     mpiHost: process.env.MPI_HOST || 'santedb-mpi',
@@ -36,7 +37,11 @@ export const getConfig = () => {
     mpiAuthEnabled: process.env.MPI_AUTH_ENABLED === 'false' ? false : true,
     mpiClientId: process.env.MPI_CLIENT_ID || '',
     mpiClientSecret: process.env.MPI_CLIENT_SECRET || '',
+    mpiProxyUrl: process.env.MPI_PROXY_URL || '',
     cucumberDefaultTimeout: process.env.CUCUMBER_DEFAULT_TIMEOUT || 20000,
-    disableValidation: process.env.DISABLE_VALIDATION == 'true' ? true : false
+    disableValidation: process.env.DISABLE_VALIDATION == 'true' ? true : false,
+    enableJempiGoldenIdUpdate:
+      process.env.ENABLE_JEMPI_GOLDEN_ID_UPDATE == 'true' ? true : false,
+    kafkaJempiAuditTopic: process.env.KAFKA_JEMPI_AUDIT_TOPIC ?? 'JeMPI-audit-trail',
   });
 };
