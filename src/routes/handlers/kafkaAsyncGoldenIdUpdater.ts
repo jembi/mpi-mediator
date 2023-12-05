@@ -37,7 +37,15 @@ export const asyncGoldenIdUpdater = async (): Promise<void> => {
         return;
       }
 
-      const audit: JempiAudit = JSON.parse(message.value.toString());
+      let audit: JempiAudit;
+
+      try {
+        audit = JSON.parse(message.value.toString());
+      } catch (error) {
+        logger.error('Error parsing JeMPI audit message', error);
+
+        return;
+      }
 
       if (
         audit.event.startsWith('Interaction -> update GoldenID') ||

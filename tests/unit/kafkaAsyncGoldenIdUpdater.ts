@@ -106,6 +106,18 @@ describe('asyncGoldenIdUpdater', () => {
     ).to.be.true;
   });
 
+  it('should handle message with invalid JSON', async () => {
+    const mockMessage = "I'm not JSON";
+    const loggerErrorStub = sandbox.stub(logger, 'error');
+
+    await asyncGoldenIdUpdater();
+    const promises = mockConsumer.run.yieldTo('eachMessage', { message: mockMessage });
+    await promises[0];
+
+    expect(loggerErrorStub.calledOnce).to.be.true;
+    expect(loggerErrorStub.calledWith(`Error parsing JeMPI audit message`)).to.be.true;
+  });
+
   it('should handle patient not found error correctly', async () => {
     const mockMessage = {
       value: JSON.stringify({
