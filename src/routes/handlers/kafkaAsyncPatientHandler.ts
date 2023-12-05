@@ -20,7 +20,6 @@ export const asyncPatientMatchHandler = async (): Promise<void> => {
   await consumer.connect();
   await consumer.subscribe({
     topic: config.kafkaAsyncBundleTopic,
-    fromBeginning: true,
   });
 
   logger.info('Kafka consumer started');
