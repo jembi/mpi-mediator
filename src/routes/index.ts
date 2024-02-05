@@ -10,10 +10,12 @@ import { mpiMdmQueryLinksMiddleware } from '../middlewares/mpi-mdm-query-links';
 import { validationMiddleware } from '../middlewares/validation';
 import { buildOpenhimResponseObject } from '../utils/utils';
 import { fetchEverythingByRef } from './handlers/fetchPatientResources';
+import { getConfig } from '../config/config';
 
 const routes = express.Router();
 
-const jsonBodyParser = express.json({ type: 'application/fhir+json' });
+const { bodySizeLimit } = getConfig();
+const jsonBodyParser = express.json({ type: 'application/fhir+json', limit: bodySizeLimit });
 
 routes.post(
   '/fhir',
