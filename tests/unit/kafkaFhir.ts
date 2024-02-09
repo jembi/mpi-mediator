@@ -7,6 +7,7 @@ import { getConfig } from '../../src/config/config';
 
 import * as kafkaFhir from '../../src/utils/kafkaFhir';
 import { RequestDetails } from '../../src/types/request';
+import { NewPatientMap } from '../../src/types/newPatientMap';
 
 const config = getConfig();
 
@@ -112,11 +113,12 @@ describe('Kafka Fhir interaction', (): void => {
       stub.restore();
     });
 
-    it('should add patient to fhir bundle before sending to kafka', async (): Promise<void> => {
+    it('should restore full patient data to fhir bundle before sending to kafka', async (): Promise<void> => {
       const stub = sinon.stub(kafkaFhir, 'sendToKafka');
       stub.callsFake(async (bundle: Bundle, topic: string): Promise<Error | null> => {
         expect(topic).to.equal(config.kafkaBundleTopic);
         expect(bundle.entry?.length).to.be.equal(2);
+        expect(bundle.entry?.[1].resource).deep.equal(restoredPatient);
         return null;
       });
 
@@ -142,11 +144,51 @@ describe('Kafka Fhir interaction', (): void => {
               id: '1233',
             } as FhirResource,
           },
+          {
+            fullUrl: 'Patient/1234',
+            resource: {
+              resourceType: 'Patient',
+              link: [
+                {
+                  type: 'refer',
+                  other: {
+                    reference: 'http://santedb-mpi:8080/fhir/Patient/xxx',
+                  },
+                },
+              ],
+            },
+            request: {
+              method: 'PUT',
+              url: 'Patient/xxx',
+            },
+          },
         ],
       };
-      const patient: Patient = {
+
+      const restoredPatient: Patient = {
         resourceType: 'Patient',
         id: '1233',
+        name: [
+          {
+            given: ['John'],
+            family: 'Doe',
+          },
+        ],
+        extension: [
+          {
+            url: 'http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName',
+            valueString: 'Jane Doe',
+          },
+        ],
+        managingOrganization: {
+          reference: 'Organization/1',
+        },
+      };
+
+      const newPatientMap: NewPatientMap = {
+        'Patient/1234': {
+          restoredPatient,
+        },
       };
 
       nock(
@@ -161,7 +203,105 @@ describe('Kafka Fhir interaction', (): void => {
       const response = await kafkaFhir.sendToFhirAndKafka(
         fhirDatastoreRequestDetailsOrg,
         bundle,
-        patient
+        newPatientMap
+      );
+
+      expect(response.status).to.be.equal(200);
+      expect(response.body.status).to.be.equal('Success');
+      stub.restore();
+    });
+
+    it('should ADD restored patient data to fhir bundle before sending to kafka if no matching patient is found in bundle', async (): Promise<void> => {
+      const stub = sinon.stub(kafkaFhir, 'sendToKafka');
+      stub.callsFake(async (bundle: Bundle, topic: string): Promise<Error | null> => {
+        expect(topic).to.equal(config.kafkaBundleTopic);
+        expect(bundle.entry?.length).to.be.equal(3);
+        expect(bundle.entry?.[2].resource).deep.equal(restoredPatient);
+        return null;
+      });
+
+      const fhirDatastoreRequestDetailsOrg: RequestDetails = {
+        protocol: config.fhirDatastoreProtocol,
+        host: config.fhirDatastoreHost,
+        port: config.fhirDatastorePort,
+        headers: { contentType: 'application/fhir+json' },
+        method: 'POST',
+        path: '/fhir',
+        data: '',
+      };
+
+      const bundle: Bundle = {
+        type: 'document',
+        resourceType: 'Bundle',
+        id: '12',
+        entry: [
+          {
+            fullUrl: 'Encounter/1234',
+            resource: {
+              resourceType: 'Encounter',
+              id: '1233',
+            } as FhirResource,
+          },
+          {
+            fullUrl: 'Patient/5555',
+            resource: {
+              resourceType: 'Patient',
+              link: [
+                {
+                  type: 'refer',
+                  other: {
+                    reference: 'http://santedb-mpi:8080/fhir/Patient/xxx',
+                  },
+                },
+              ],
+            },
+            request: {
+              method: 'PUT',
+              url: 'Patient/xxx',
+            },
+          },
+        ],
+      };
+
+      const restoredPatient: Patient = {
+        resourceType: 'Patient',
+        id: '1233',
+        name: [
+          {
+            given: ['John'],
+            family: 'Doe',
+          },
+        ],
+        extension: [
+          {
+            url: 'http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName',
+            valueString: 'Jane Doe',
+          },
+        ],
+        managingOrganization: {
+          reference: 'Organization/1',
+        },
+      };
+
+      const newPatientMap: NewPatientMap = {
+        'Patient/1234': {
+          restoredPatient,
+        },
+      };
+
+      nock(
+        `${config.fhirDatastoreProtocol}://${config.fhirDatastoreHost}:${config.fhirDatastorePort}`
+      )
+        .post(`/fhir`)
+        .reply(200, {
+          resourceType: 'Bundle',
+          id: '123',
+        });
+
+      const response = await kafkaFhir.sendToFhirAndKafka(
+        fhirDatastoreRequestDetailsOrg,
+        bundle,
+        newPatientMap
       );
 
       expect(response.status).to.be.equal(200);

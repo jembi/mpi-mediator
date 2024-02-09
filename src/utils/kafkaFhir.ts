@@ -194,17 +194,29 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
 
   const clientRegistryResponses = await Promise.all(promises);
 
+  const failedRequests = clientRegistryResponses.filter(
+    (clientRegistryResponse) => !isHttpStatusOk(clientRegistryResponse.status)
+  );
+
+  if (failedRequests.length > 0) {
+    logger.error(
+      `Patient resource creation in Client Registry failed: ${JSON.stringify(failedRequests)}`
+    );
+
+    // combine all failed requests into a single response
+    const combinedResponse: ResponseObject = failedRequests.reduce(
+      (combined: { status: number; body: { errors: any[] } }, current) => {
+        combined.body.errors.push(current.body);
+
+        return combined;
+      },
+      { status: failedRequests[0].status, body: { errors: [] } }
+    );
+
+    return createHandlerResponseObject('Failed', combinedResponse);
+  }
+
   clientRegistryResponses.map((clientRegistryResponse, index) => {
-    if (!isHttpStatusOk(clientRegistryResponse.status)) {
-      logger.error(
-        `Patient resource creation in Client Registry failed: ${JSON.stringify(
-          clientRegistryResponse.body
-        )}`
-      );
-
-      return null;
-    }
-
     const fullUrl = patientEntries[index]?.fullUrl;
 
     if (fullUrl) {
