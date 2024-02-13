@@ -55,15 +55,17 @@ When(
       .set('content-type', 'application/fhir+json')
       .expect(200);
 
-    const { resource } = bundleSubmission.body.response.body.entry.find(
-      (resource) => resource.resource?.resourceType === 'Patient'
+    const { response } = bundleSubmission.body.response.body.entry.find((entry) =>
+      entry.response.location.startsWith('Patient')
     );
 
-    const response = await request
-      .get(`/fhir/Patient/${resource.id}/$everything`)
+    const patientId = response.location.split('/')[1];
+
+    const res = await request
+      .get(`/fhir/Patient/${patientId}/$everything`)
       .set('Content-Type', 'application/fhir+json')
       .expect(200);
-    responseBody = response.body;
+    responseBody = res.body;
   }
 );
 
