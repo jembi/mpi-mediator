@@ -10,6 +10,8 @@ import { mpiMdmQueryLinksMiddleware } from '../middlewares/mpi-mdm-query-links';
 import { validationMiddleware } from '../middlewares/validation';
 import { buildOpenhimResponseObject } from '../utils/utils';
 import { fetchEverythingByRef } from './handlers/fetchPatientResources';
+import { mpiMdmSummaryMiddleware } from '../middlewares/mpi-mdm-summary';
+import { fetchPatientSummaryByRef } from './handlers/fetchPatientSummaries';
 
 const routes = express.Router();
 
@@ -62,6 +64,17 @@ routes.get(
   mpiMdmEverythingMiddleware,
   asyncHandler(async (req, res) => {
     const { status, body } = await fetchEverythingByRef(`Patient/${req.params.patientId}`);
+
+    res.set('Content-Type', 'application/openhim+json');
+    res.status(status).send(body);
+  })
+);
+
+routes.get(
+  '/fhir/Patient/:patientId/\\$summary',
+  mpiMdmSummaryMiddleware,
+  asyncHandler(async (req, res) => {
+    const { status, body } = await fetchPatientSummaryByRef(req.params.patientId);
 
     res.set('Content-Type', 'application/openhim+json');
     res.status(status).send(body);
