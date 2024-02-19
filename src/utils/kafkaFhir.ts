@@ -222,12 +222,14 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
 
   //Add the patient's managing organization and extensions
   let transformedPatient = Object.assign({}, clientRegistryResponse.body);
+
   if (patientResource) {
     if (patientMpiTransformResult.extension?.length) {
       transformedPatient = Object.assign({}, transformedPatient, {
         extension: patientMpiTransformResult.extension,
       });
     }
+
     if (patientMpiTransformResult.managingOrganization) {
       transformedPatient = Object.assign({}, transformedPatient, {
         managingOrganization: patientMpiTransformResult.managingOrganization,

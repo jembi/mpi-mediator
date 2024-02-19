@@ -1,6 +1,6 @@
 {
   "name": "mpi-mediator",
-  "version": "v1.1.1",
+  "version": "v1.2.1",
   "description": "An OpenHIM mediator to handle all interactions with an MPI component",
   "main": "index.ts",
   "scripts": {
@@ -8,7 +8,7 @@
     "start": "ts-node -r dotenv/config src/index.ts",
     "format": "prettier --check --write '{src,tests}/**/*.ts'",
     "lint": "eslint . --ext .ts,.js --fix",
-    "docker:build": "npm run build; docker build -t jembi/mpi-mediator:v1.1.1 .",
+    "docker:build": "npm run build; docker build -t jembi/mpi-mediator:latest .",
     "build": "npm install; tsc -p tsconfig.build.json",
     "test:unit": "LOG_LEVEL='fatal' MODE='testing' mocha -r ts-node/register 'tests/unit/*.ts' --timeout 15000",
     "test:cucumber": "CUCUMBER_DEFAULT_TIMEOUT=20000 MODE='testing' cucumber-js 'tests/cucumber/features/**/*.feature' --no-color --exit --logLevel='error' --require 'tests/cucumber/step-definitions/*.ts' --require-module 'ts-node/register' --require-module 'dotenv/config' dotenv_config_path=.env.test --format-options \"{\\\"snippetInterface\\\": \\\"async-await\\\"}\" --format summary --format progress-bar",
@@ -57,11 +57,11 @@
   },
   "dependencies": {
     "@types/sinon": "^10.0.13",
+    "date-fns": "^2.29.3",
     "express": "^4.18.2",
     "express-async-handler": "^1.2.0",
-    "kafkajs": "^2.2.2",
-    "date-fns": "^2.29.3",
     "http-proxy-middleware": "^2.0.6",
+    "kafkajs": "^2.2.2",
     "node-fetch": "^2.6.7",
     "openhim-mediator-utils": "^0.2.4",
     "pino": "^8.7.0",

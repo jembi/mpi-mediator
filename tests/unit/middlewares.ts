@@ -8,7 +8,6 @@ import { mpiMdmEverythingMiddleware } from '../../src/middlewares/mpi-mdm-everyt
 import { mpiMdmQueryLinksMiddleware } from '../../src/middlewares/mpi-mdm-query-links';
 import { validationMiddleware } from '../../src/middlewares/validation';
 import { mpiAuthMiddleware } from '../../src/middlewares/mpi-auth';
-import format from 'date-fns/format';
 
 const config = getConfig();
 

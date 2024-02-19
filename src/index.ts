@@ -5,6 +5,7 @@ import logger from './logger';
 import routes from './routes/index';
 import { asyncPatientMatchHandler } from './routes/handlers/kafkaAsyncPatientHandler';
 import { setupMediator } from './openhim/openhim';
+import { asyncGoldenIdUpdater } from './routes/handlers/kafkaAsyncGoldenIdUpdater';
 
 const config = getConfig();
 const app = express();
@@ -18,6 +19,11 @@ if (config.runningMode !== 'testing') {
     if (config.registerMediator) {
       setupMediator(path.resolve(__dirname, './openhim/mediatorConfig.json'));
     }
+
     asyncPatientMatchHandler();
+
+    if (config.enableJempiGoldenIdUpdate) {
+      asyncGoldenIdUpdater();
+    }
   });
 }

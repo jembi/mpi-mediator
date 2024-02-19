@@ -6,6 +6,10 @@ import { ClientOAuth2, OAuth2Token } from './client-oauth2';
 // Singleton instance of MPI Token stored in memory
 export let mpiToken: OAuth2Token | null = null;
 
+export const resetMpiToken = () => {
+  mpiToken = null;
+};
+
 /**
  * Returns an instance of MPI token, it does renew the token when expired.
  */
