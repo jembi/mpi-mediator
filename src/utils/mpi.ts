@@ -46,7 +46,12 @@ export const fetchMpiResourceByRef = async <T extends Resource>(
     headers['Authorization'] = `Bearer ${token.accessToken}`;
   }
 
-  const response = await getData(protocol, host, port, `/fhir/${ref}`, headers);
+  // Search using golden Id or interaction Id
+  let response = await getData(protocol, host, port, `/fhir/links/${ref}`, headers);
+
+  if (!isHttpStatusOk(response.status)) {
+    response = await getData(protocol, host, port, `/fhir/${ref}`, headers);
+  }
 
   return isHttpStatusOk(response.status) ? (response.body as T) : undefined;
 };
