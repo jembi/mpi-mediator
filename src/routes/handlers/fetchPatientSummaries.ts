@@ -19,10 +19,7 @@ export const fetchAllPatientSummariesByRefs = async (
   patientRefs: string[]
 ): Promise<Bundle> => {
   const patientExternalRefs = patientRefs.map((ref) => {
-    //TODO: Not sure if the Patient/ prefix is there, need to add this to test
     const path = `/fhir/${ref}/$summary`;
-
-    //TODO: Not sure on the behavior of $summary will need to see if this causes problems
 
     return getData(protocol, host, port, path, {
       'Content-Type': 'application/fhir+json',

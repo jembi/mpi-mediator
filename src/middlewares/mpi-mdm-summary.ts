@@ -9,13 +9,11 @@ const fetchAllLinkedPatientSummary = async (patientId: string) => {
     const patientRef = `Patient/${patientId}`;
     const patientRefs: string[] = [];
 
-    // Fetch all linked patients refs from the MPI
     await fetchMpiPatientLinks(patientRef, patientRefs);
-    //console.debug(`Fetched linked patient refs from the MPI: ${patientRefs}`);
 
     const bundle = await fetchAllPatientSummariesByRefs(patientRefs);
 
-    console.debug(`Fetched all patient summaries from the MPI: ${bundle}`);
+    logger.debug(`Fetched all patient summaries from the MPI: ${bundle}`);
 
     return {
       status: 200,
