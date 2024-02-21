@@ -179,67 +179,11 @@ describe('Match Patient Synchronously', (): void => {
 
       expect(handlerResponse.status).to.be.equal(500);
       expect(handlerResponse.body.status).to.be.equal('Failed');
-      expect(handlerResponse.body.response.body).to.deep.equal(error);
+      expect(handlerResponse.body.response.body).to.deep.equal({ errors: [error] });
       stub.restore();
     });
 
-    it('should return error response when patient referenced does not exist the in Client Registry', async (): Promise<void> => {
-      const patientId: string = '1234';
-      const bundle: Bundle = {
-        type: 'document',
-        resourceType: 'Bundle',
-        id: '12',
-        entry: [
-          {
-            fullUrl: 'Encounter/1234',
-            resource: {
-              resourceType: 'Encounter',
-              id: '1233',
-              subject: {
-                reference: `Patient/${patientId}`,
-              },
-              status: 'planned',
-            },
-          },
-        ],
-      };
-      const error = {
-        error: 'Resource not found',
-      };
-
-      mockSuccefullValidation();
-
-      nock(`${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}`)
-        .get(`/fhir/Patient/${patientId}`)
-        .reply(404, error);
-
-      const stub = sinon.stub(Auth, 'getMpiAuthToken');
-      stub.callsFake(async (): Promise<OAuth2Token> => {
-        const clientData = {
-          clientId: '',
-          clientSecret: 'secret',
-          accessTokenUri: 'test',
-          scopes: [],
-        };
-        const client = new ClientOAuth2(clientData);
-
-        const oauth2 = new OAuth2Token(client, {
-          token_type: 'bearer',
-          access_token: 'accessToken',
-          refresh_token: 'refreshToken',
-          expires_in: '3',
-        });
-        return oauth2;
-      });
-      const handlerResponse = await matchSyncHandler(bundle);
-
-      expect(handlerResponse.status).to.be.equal(404);
-      expect(handlerResponse.body.status).to.be.equal('Failed');
-      expect(handlerResponse.body.response.body).to.deep.equal(error);
-      stub.restore();
-    });
-
-    it('should send to the FHir store and Kafka when patient exists in the Client Registry', async (): Promise<void> => {
+    it('should send to the FHIR store and Kafka when patient exists in the Client Registry', async (): Promise<void> => {
       const patientId: string = 'testPatient';
       const bundle: Bundle = {
         type: 'document',
@@ -271,7 +215,7 @@ describe('Match Patient Synchronously', (): void => {
               resourceType: 'Encounter',
               id: '1233',
               subject: {
-                reference: `${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}/fhir/Patient/${patientId}`,
+                reference: `Patient/${patientId}`,
               },
               status: 'planned',
             },
@@ -345,7 +289,7 @@ describe('Match Patient Synchronously', (): void => {
       stub1.restore();
     });
 
-    it('should send to the FHir store and Kafka when patient is created in the Client Registry', async (): Promise<void> => {
+    it('should send gutted patient and clinical data to the FHIR store and Kafka when patient is created in the Client Registry', async (): Promise<void> => {
       const patientId: string = 'testPatient';
       const bundle: Bundle = {
         type: 'document',
@@ -372,7 +316,6 @@ describe('Match Patient Synchronously', (): void => {
           },
         ],
       };
-      const clientRegistryRef = `${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}/fhir/Patient/${patientId}`;
 
       const modifiedBundle: Bundle = {
         resourceType: 'Bundle',
@@ -385,13 +328,31 @@ describe('Match Patient Synchronously', (): void => {
               resourceType: 'Encounter',
               id: '1233',
               subject: {
-                reference: clientRegistryRef,
+                reference: `Patient/12333`,
               },
               status: 'planned',
             },
             request: {
               method: 'PUT',
               url: 'Encounter/1233',
+            },
+          },
+          {
+            fullUrl: 'Patient/12333',
+            request: {
+              method: 'PUT',
+              url: 'Patient/testPatient',
+            },
+            resource: {
+              link: [
+                {
+                  other: {
+                    reference: 'http://santedb-mpi:8080/fhir/Patient/testPatient',
+                  },
+                  type: 'refer',
+                },
+              ],
+              resourceType: 'Patient',
             },
           },
         ],
@@ -427,16 +388,29 @@ describe('Match Patient Synchronously', (): void => {
       });
       const stub1 = sinon.stub(kafkaFhir, 'sendToFhirAndKafka');
       stub1.callsFake(
-        async (
-          requestDetails,
-          bundle,
-          patient,
-          newPatientRef
-        ): Promise<MpiMediatorResponseObject> => {
+        async (requestDetails, bundle, newPatientRef): Promise<MpiMediatorResponseObject> => {
           expect(requestDetails).to.deep.equal(fhirDatastoreRequestDetailsOrg);
           expect(bundle).to.be.deep.equal(modifiedBundle);
-          expect(patient).to.be.deep.equal(clientRegistryResponse);
-          expect(newPatientRef).to.equal(clientRegistryRef);
+          expect(newPatientRef).to.deep.equal({
+            'Patient/12333': {
+              mpiResponsePatient: {
+                id: 'testPatient',
+                resourceType: 'Patient',
+              },
+              mpiTransformResult: {
+                extension: undefined,
+                managingOrganization: undefined,
+                patient: {
+                  id: '12333',
+                  resourceType: 'Patient',
+                },
+              },
+              restoredPatient: {
+                id: 'testPatient',
+                resourceType: 'Patient',
+              },
+            },
+          });
 
           return {
             status: 200,

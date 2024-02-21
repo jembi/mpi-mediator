@@ -1,27 +1,23 @@
 import { Kafka, logLevel } from 'kafkajs';
 
-import { Bundle, BundleEntry, Patient, Resource } from 'fhir/r3';
+import { Bundle, BundleEntry, Patient } from 'fhir/r3';
 import { getConfig } from '../config/config';
 import { RequestDetails } from '../types/request';
-import {
-  MpiMediatorResponseObject,
-  ResponseObject,
-  MpiTransformResult,
-} from '../types/response';
+import { MpiMediatorResponseObject, ResponseObject } from '../types/response';
 import {
   createHandlerResponseObject,
-  createNewPatientRef,
-  extractPatientId,
-  extractPatientResource,
+  extractPatientEntries,
   isHttpStatusOk,
   modifyBundle,
   postData,
+  restorePatientResource,
   sendRequest,
   transformPatientResourceForMPI,
 } from './utils';
 import logger from '../logger';
 import { getMpiAuthToken } from './mpi';
 import { OAuth2Token } from './client-oauth2';
+import { NewPatientMap } from '../types/newPatientMap';
 
 const config = getConfig();
 
@@ -57,8 +53,7 @@ export const sendToKafka = async (bundle: Bundle, topic: string): Promise<Error 
 export const sendToFhirAndKafka = async (
   requestDetails: RequestDetails,
   bundle: Bundle,
-  patient: Patient | null = null,
-  newPatientRef = ''
+  newPatientRef: NewPatientMap = {}
 ): Promise<MpiMediatorResponseObject> => {
   const { protocol, host, port, path, headers } = requestDetails;
 
@@ -78,39 +73,36 @@ export const sendToFhirAndKafka = async (
 
     transactionStatus = 'Success';
 
-    if (patient) {
-      const patientEntry: BundleEntry = {
-        fullUrl: newPatientRef,
-        resource: Object.assign(
-          {
-            id: '',
-            resourceType: '',
+    // Restore full patient resources to the bundle for sending to Kafka
+    Object.keys(newPatientRef).forEach((fullUrl) => {
+      const patientData = newPatientRef[fullUrl];
+
+      if (patientData.restoredPatient && bundle.entry) {
+        const patientEntry: BundleEntry = {
+          fullUrl: fullUrl,
+          resource: patientData.restoredPatient,
+          request: {
+            method: 'PUT',
+            url: `Patient/${patientData.mpiResponsePatient?.id}`,
           },
-          patient
-        ),
-        request: {
-          method: 'PUT',
-          url: newPatientRef,
-        },
-      };
+        };
 
-      bundle.entry?.push(patientEntry);
+        // Replace entry with matching fullUrl, else push new entry
+        const index = bundle.entry.findIndex((entry) => entry.fullUrl === fullUrl);
 
-      const entry: BundleEntry[] = [];
-      const newBundle = Object.assign({ entry: entry }, response.body);
-
-      newBundle.entry.push(patientEntry);
-      response.body = newBundle;
-    }
-
-    if (newPatientRef && patient) {
-      bundle = JSON.parse(
-        JSON.stringify(bundle).replace(
-          new RegExp(newPatientRef, 'g'),
-          `Patient/${patient?.id}`
-        )
-      );
-    }
+        if (index !== -1) {
+          logger.debug(
+            `Replacing patient (fullUrl: ${fullUrl}) resource in bundle with restored copy`
+          );
+          bundle.entry[index] = patientEntry;
+        } else {
+          logger.debug(
+            `Adding restored patient (fullUrl: ${fullUrl}) resource to bundle, no matching entry found`
+          );
+          bundle.entry.push(patientEntry);
+        }
+      }
+    });
 
     const kafkaResponseError: Error | null = await sendToKafka(
       bundle,
@@ -160,12 +152,12 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
   const fhirDatastoreRequestDetails: RequestDetails = { ...fhirDatastoreRequestDetailsOrg };
   const clientRegistryRequestDetails: RequestDetails = { ...clientRegistryRequestDetailsOrg };
 
-  const patientResource: Resource | null = extractPatientResource(bundle);
-  const patientId: string | null = extractPatientId(bundle);
-  let patientMpiTransformResult: MpiTransformResult = {};
+  const patientEntries = extractPatientEntries(bundle);
 
-  if (!(patientResource || patientId)) {
-    logger.info('No Patient resource or Patient reference was found in Fhir Bundle!');
+  if (patientEntries.length === 0) {
+    logger.info(
+      'No Patient resource was found in Fhir Bundle, sending directly to Fhir Datastore and Kafka'
+    );
 
     const handlerResponse: MpiMediatorResponseObject = await sendToFhirAndKafka(
       fhirDatastoreRequestDetails,
@@ -184,64 +176,67 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
     };
   }
 
-  if (!patientResource && patientId) {
-    clientRegistryRequestDetails.path = `/fhir/Patient/${patientId}`;
-    clientRegistryRequestDetails.method = 'GET';
-    delete clientRegistryRequestDetails.data;
-  } else {
-    patientMpiTransformResult = transformPatientResourceForMPI(patientResource as Resource);
-    clientRegistryRequestDetails.data = JSON.stringify(patientMpiTransformResult.patient);
-  }
+  const newPatientMap: NewPatientMap = {};
 
-  const clientRegistryResponse: ResponseObject = await sendRequest(
-    clientRegistryRequestDetails
-  );
-
-  if (!isHttpStatusOk(clientRegistryResponse.status)) {
-    if (patientResource) {
-      logger.error(
-        `Patient resource creation in Client Registry failed: ${JSON.stringify(
-          clientRegistryResponse.body
-        )}`
-      );
-    } else {
-      logger.error(
-        `Checking of patient with id ${patientId} failed in Client Registry: ${JSON.stringify(
-          clientRegistryResponse.body
-        )}`
+  // transform and send each patient resource and submit to MPI
+  const promises = patientEntries.map(async (patientEntry) => {
+    if (patientEntry.fullUrl) {
+      newPatientMap[patientEntry.fullUrl] = {
+        mpiTransformResult: transformPatientResourceForMPI(patientEntry.resource as Patient),
+      };
+      clientRegistryRequestDetails.data = JSON.stringify(
+        newPatientMap[patientEntry.fullUrl].mpiTransformResult?.patient
       );
     }
 
-    return createHandlerResponseObject('Failed', clientRegistryResponse);
-  }
+    return sendRequest(clientRegistryRequestDetails);
+  });
 
-  const newPatientRef: string = createNewPatientRef(
-    JSON.parse(JSON.stringify(clientRegistryResponse.body))['id']
+  const clientRegistryResponses = await Promise.all(promises);
+
+  const failedRequests = clientRegistryResponses.filter(
+    (clientRegistryResponse) => !isHttpStatusOk(clientRegistryResponse.status)
   );
-  const modifiedBundle: Bundle = modifyBundle(bundle, `Patient/${patientId}`, newPatientRef);
 
-  //Add the patient's managing organization and extensions
-  let transformedPatient = Object.assign({}, clientRegistryResponse.body);
+  if (failedRequests.length > 0) {
+    logger.error(
+      `Patient resource creation in Client Registry failed: ${JSON.stringify(failedRequests)}`
+    );
 
-  if (patientResource) {
-    if (patientMpiTransformResult.extension?.length) {
-      transformedPatient = Object.assign({}, transformedPatient, {
-        extension: patientMpiTransformResult.extension,
-      });
-    }
+    // combine all failed requests into a single response
+    const combinedResponse: ResponseObject = failedRequests.reduce(
+      (combined: { status: number; body: { errors: any[] } }, current) => {
+        combined.body.errors.push(current.body);
 
-    if (patientMpiTransformResult.managingOrganization) {
-      transformedPatient = Object.assign({}, transformedPatient, {
-        managingOrganization: patientMpiTransformResult.managingOrganization,
-      });
-    }
+        return combined;
+      },
+      { status: failedRequests[0].status, body: { errors: [] } }
+    );
+
+    return createHandlerResponseObject('Failed', combinedResponse);
   }
+
+  clientRegistryResponses.map((clientRegistryResponse, index) => {
+    const fullUrl = patientEntries[index]?.fullUrl;
+
+    if (fullUrl) {
+      newPatientMap[fullUrl].mpiResponsePatient = JSON.parse(
+        JSON.stringify(clientRegistryResponse.body)
+      );
+    }
+  });
+
+  // create a new bundle with stripped out patient and references to the MPI patient
+  const modifiedBundle: Bundle = modifyBundle(bundle, newPatientMap);
+
+  Object.values(newPatientMap).forEach((patientData) => {
+    restorePatientResource(patientData);
+  });
 
   const handlerResponse: MpiMediatorResponseObject = await sendToFhirAndKafka(
     fhirDatastoreRequestDetails,
     modifiedBundle,
-    transformedPatient as Patient,
-    newPatientRef
+    newPatientMap
   );
 
   return handlerResponse;
