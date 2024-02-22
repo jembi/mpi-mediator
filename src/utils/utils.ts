@@ -11,7 +11,8 @@ import {
   MpiTransformResult,
 } from '../types/response';
 import { RequestDetails } from '../types/request';
-import { Bundle, BundleEntry, BundleLink, FhirResource, Resource } from 'fhir/r3';
+import { Bundle, BundleEntry, BundleLink, FhirResource, Patient } from 'fhir/r3';
+import { PatientData } from '../types/newPatientMap';
 
 const config = getConfig();
 
@@ -110,73 +111,87 @@ export const buildOpenhimResponseObject = (
   };
 };
 
-export const extractPatientResource = (bundle: Bundle): Resource | null => {
+export const extractPatientEntries = (bundle: Bundle): BundleEntry<Patient>[] => {
   if (!bundle || !bundle.entry || !bundle.entry.length) {
-    return null;
+    return [];
   }
 
-  const patientEntry: BundleEntry | undefined = bundle.entry.find((val) => {
-    if (val.resource?.resourceType === 'Patient') {
-      return true;
-    }
-  });
-
-  return patientEntry?.resource || null;
-};
-
-export const extractPatientId = (bundle: Bundle): string | null => {
-  const patientRefs: string[] = Array.from(
-    new Set(JSON.stringify(bundle).match(/Patient\/[^/^"]*/g))
+  const patientEntries = bundle.entry.filter(
+    (val) => val.resource?.resourceType === 'Patient'
   );
 
-  if (!patientRefs.length) {
-    return null;
-  }
-
-  const splitRef: string[] = patientRefs[0].split('/');
-
-  return splitRef.length === 2 ? splitRef[1] : null;
+  return patientEntries as BundleEntry<Patient>[];
 };
 
 /*
-  This method modifies the bundle by replacing the temporary patient reference with the Client
-  Registry's patient reference, after creating the patient resource in the Client Registry.
-  It also adds the request property to the bundle entries. For bundles of type 'document'.
-  The Patient resouce is also removed from the bundle. Only clinical data is stored in the Fhir Datastore
+  This function modifies the bundle by gutting all patient resources and leaving a link to the
+  newly created client registry Patient resource.
+  It also adds the request property to the bundle entries for bundles of type 'document'.
 */
 export const modifyBundle = (
   bundle: Bundle,
-  tempPatientRef = '',
-  clientRegistryPatientRef = ''
+  newPatientIdMap: {
+    [key: string]: {
+      mpiTransformResult?: MpiTransformResult;
+      mpiResponsePatient?: Patient;
+    };
+  } = {}
 ): Bundle => {
-  let modifiedBundle = Object.assign({}, bundle);
+  const modifiedBundle = Object.assign({}, bundle);
 
   if (modifiedBundle.type === 'document') {
     logger.info('Converting document bundle to transaction bundle');
     modifiedBundle.type = 'transaction';
   }
 
-  const newEntry = modifiedBundle.entry
-    ?.filter((val) => val.resource?.resourceType !== 'Patient')
-    .map((entry) => {
+  const newEntry = modifiedBundle.entry?.map((entry) => {
+    if (
+      entry.resource?.resourceType === 'Patient' &&
+      entry.fullUrl &&
+      newPatientIdMap[entry.fullUrl]
+    ) {
+      // strip out patient details and replace with reference to new patient in MPI
+      const newPatientId = newPatientIdMap[entry.fullUrl].mpiResponsePatient?.id;
+
+      if (!newPatientId) {
+        logger.error('ID in MPI response is missing');
+        throw new Error('ID in MPI response is missing');
+      }
+
+      return {
+        fullUrl: entry.fullUrl,
+        resource: {
+          resourceType: 'Patient',
+          link: [
+            {
+              other: {
+                reference: createNewPatientRef(newPatientId),
+              },
+              type: 'refer',
+            },
+          ],
+        },
+        request: {
+          method: 'PUT',
+          url: `Patient/${newPatientId}`,
+        },
+      };
+    }
+
+    // Add request property to the bundle entries if missing, default to using upserts
+    if (!entry.request) {
       return Object.assign({}, entry, {
         request: {
           method: 'PUT',
           url: `${entry.resource?.resourceType}/${entry.resource?.id}`,
         },
       });
-    });
+    }
 
-  modifiedBundle.entry = newEntry;
+    return entry;
+  });
 
-  if (tempPatientRef && clientRegistryPatientRef) {
-    modifiedBundle = JSON.parse(
-      JSON.stringify(modifiedBundle).replace(
-        new RegExp(tempPatientRef, 'g'),
-        clientRegistryPatientRef
-      )
-    );
-  }
+  modifiedBundle.entry = newEntry as BundleEntry<FhirResource>[];
 
   return modifiedBundle;
 };
@@ -186,7 +201,7 @@ export const modifyBundle = (
  * references will result in validation errors.
  * The function returns a tranformed patient, extension and managing organization.
  */
-export const transformPatientResourceForMPI = (patient: Resource): MpiTransformResult => {
+export const transformPatientResourceForMPI = (patient: Patient): MpiTransformResult => {
   const transformedPatient = JSON.parse(JSON.stringify(patient));
 
   const extension = transformedPatient.extension;
@@ -200,6 +215,25 @@ export const transformPatientResourceForMPI = (patient: Resource): MpiTransformR
     managingOrganization,
     extension,
   };
+};
+
+/**
+ * This method restores the patient's original managing organization and extensions
+ */
+export const restorePatientResource = (patientData: PatientData) => {
+  patientData.restoredPatient = patientData.mpiResponsePatient;
+
+  if (patientData.mpiTransformResult?.extension?.length) {
+    patientData.restoredPatient = Object.assign({}, patientData.restoredPatient, {
+      extension: patientData.mpiTransformResult.extension,
+    });
+  }
+
+  if (patientData.mpiTransformResult?.managingOrganization) {
+    patientData.restoredPatient = Object.assign({}, patientData.restoredPatient, {
+      managingOrganization: patientData.mpiTransformResult.managingOrganization,
+    });
+  }
 };
 
 export const createNewPatientRef = (patientId: string): string => {

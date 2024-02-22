@@ -12,10 +12,12 @@ import { buildOpenhimResponseObject } from '../utils/utils';
 import { fetchEverythingByRef } from './handlers/fetchPatientResources';
 import { mpiMdmSummaryMiddleware } from '../middlewares/mpi-mdm-summary';
 import { fetchPatientSummaryByRef } from './handlers/fetchPatientSummaries';
+import { getConfig } from '../config/config';
 
 const routes = express.Router();
 
-const jsonBodyParser = express.json({ type: 'application/fhir+json' });
+const { bodySizeLimit } = getConfig();
+const jsonBodyParser = express.json({ type: 'application/fhir+json', limit: bodySizeLimit });
 
 routes.post(
   '/fhir',
@@ -74,7 +76,7 @@ routes.get(
   '/fhir/Patient/:patientId/\\$summary',
   mpiMdmSummaryMiddleware,
   asyncHandler(async (req, res) => {
-    const { status, body } = await fetchPatientSummaryByRef(req.params.patientId);
+    const { status, body } = await fetchPatientSummaryByRef(`Patient/${req.params.patientId}`);
 
     res.set('Content-Type', 'application/openhim+json');
     res.status(status).send(body);

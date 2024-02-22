@@ -1,13 +1,12 @@
 import { expect } from 'chai';
 import nock from 'nock';
-import { Bundle, FhirResource } from 'fhir/r3';
+import { Bundle, FhirResource, Patient } from 'fhir/r3';
 
 import { getConfig } from '../../src/config/config';
 import {
   buildOpenhimResponseObject,
   sendRequest,
-  extractPatientResource,
-  extractPatientId,
+  extractPatientEntries,
   modifyBundle,
   createNewPatientRef,
   createHandlerResponseObject,
@@ -21,6 +20,7 @@ import {
 } from '../../src/types/response';
 import { RequestDetails } from '../../src/types/request';
 import format from 'date-fns/format';
+import { NewPatientMap } from '../../src/types/newPatientMap';
 
 const config = getConfig();
 
@@ -128,8 +128,8 @@ describe('Utils', (): void => {
     });
   });
 
-  describe('*extractPatientResource', (): void => {
-    it('should return null when bundle is invalid (zero entries)', (): void => {
+  describe('*extractPatientEntries', (): void => {
+    it('should return an empty array when bundle is invalid (zero entries)', (): void => {
       const bundle: Bundle = {
         id: '12',
         entry: [],
@@ -137,10 +137,10 @@ describe('Utils', (): void => {
         type: 'transaction',
       };
 
-      expect(extractPatientResource(bundle)).to.be.null;
+      expect(extractPatientEntries(bundle)).to.be.an('array').that.is.empty;
     });
 
-    it('should return null when bundle does not have patient', (): void => {
+    it('should return empty array when bundle does not have patient', (): void => {
       const bundle: Bundle = {
         id: '12',
         entry: [
@@ -157,7 +157,7 @@ describe('Utils', (): void => {
         type: 'transaction',
       };
 
-      expect(extractPatientResource(bundle)).to.be.null;
+      expect(extractPatientEntries(bundle)).to.be.an('array').that.is.empty;
     });
 
     it('should return patient', (): void => {
@@ -169,6 +169,14 @@ describe('Utils', (): void => {
         id: '12',
         entry: [
           {
+            fullUrl: 'Encounter/1234',
+            resource: {
+              resourceType: 'Encounter',
+              id: '1233',
+              status: 'planned',
+            },
+          },
+          {
             fullUrl: 'Patient/1234',
             resource: patient,
           },
@@ -177,7 +185,7 @@ describe('Utils', (): void => {
         type: 'transaction',
       };
 
-      expect(extractPatientResource(bundle)).to.deep.equal(patient);
+      expect(extractPatientEntries(bundle)).to.deep.equal([bundle.entry?.[1]]);
     });
   });
 
@@ -203,7 +211,7 @@ describe('Utils', (): void => {
             },
           },
         ],
-      };
+      } as Patient;
       const expectdPatient = {
         id: '436b1164-bbd8-4f78-a63b-a1e291bbb7f3',
         resourceType: 'Patient',
@@ -218,52 +226,6 @@ describe('Utils', (): void => {
     });
   });
 
-  describe('*extractPatientId', (): void => {
-    it('should return null when patient ref does not exist in the bundle', (): void => {
-      const bundle: Bundle = {
-        id: '12',
-        entry: [
-          {
-            fullUrl: 'Encounter/1234',
-            resource: {
-              resourceType: 'Encounter',
-              id: '1233',
-              status: 'planned',
-            },
-          },
-        ],
-        resourceType: 'Bundle',
-        type: 'transaction',
-      };
-
-      expect(extractPatientId(bundle)).to.be.null;
-    });
-
-    it('should return patient id', (): void => {
-      const patientId: string = 'testPatient1';
-      const bundle: Bundle = {
-        id: '12',
-        entry: [
-          {
-            fullUrl: 'Encounter/1234',
-            resource: {
-              resourceType: 'Encounter',
-              id: '1233',
-              subject: {
-                reference: `Patient/${patientId}`,
-              },
-              status: 'planned',
-            },
-          },
-        ],
-        resourceType: 'Bundle',
-        type: 'transaction',
-      };
-
-      expect(extractPatientId(bundle)).to.be.equal(patientId);
-    });
-  });
-
   describe('*modifyBundle', (): void => {
     it('should change the bundle type to transaction from document', (): void => {
       const bundle: Bundle = {
@@ -273,9 +235,7 @@ describe('Utils', (): void => {
         type: 'document',
       };
 
-      expect(modifyBundle(bundle, 'patientRef', 'clientRegistryPatientRef').type).to.be.equal(
-        'transaction'
-      );
+      expect(modifyBundle(bundle).type).to.be.equal('transaction');
     });
 
     it('should add the request property to the entries', (): void => {
@@ -314,13 +274,10 @@ describe('Utils', (): void => {
         ],
       };
 
-      expect(modifyBundle(bundle, 'patientRef', 'clientRegistryPatientRef')).to.be.deep.equal(
-        expectedBundle
-      );
+      expect(modifyBundle(bundle)).to.be.deep.equal(expectedBundle);
     });
 
-    it('should replace tempPatientRef', (): void => {
-      const tempPatientRef: string = 'Patient/1233';
+    it('should gut the patient resource, link to MPI patient and set patient to be upserted using MPI id', (): void => {
       const bundle: Bundle = {
         type: 'document',
         resourceType: 'Bundle',
@@ -332,56 +289,7 @@ describe('Utils', (): void => {
               resourceType: 'Encounter',
               id: '1233',
               subject: {
-                reference: tempPatientRef,
-              },
-              status: 'planned',
-            },
-          },
-        ],
-      };
-      const clientRegistryPatientRef: string = 'http://client-registry:8080/fhir/Patient/1455';
-      const expectedBundle: Bundle = {
-        resourceType: 'Bundle',
-        type: 'transaction',
-        id: '12',
-        entry: [
-          {
-            fullUrl: 'Encounter/1234',
-            resource: {
-              resourceType: 'Encounter',
-              id: '1233',
-              subject: {
-                reference: clientRegistryPatientRef,
-              },
-              status: 'planned',
-            },
-            request: {
-              method: 'PUT',
-              url: 'Encounter/1233',
-            },
-          },
-        ],
-      };
-
-      expect(modifyBundle(bundle, tempPatientRef, clientRegistryPatientRef)).to.be.deep.equal(
-        expectedBundle
-      );
-    });
-
-    it('should remove patient resource', (): void => {
-      const tempPatientRef: string = 'Patient/1233';
-      const bundle: Bundle = {
-        type: 'document',
-        resourceType: 'Bundle',
-        id: '12',
-        entry: [
-          {
-            fullUrl: 'Encounter/1234',
-            resource: {
-              resourceType: 'Encounter',
-              id: '1233',
-              subject: {
-                reference: tempPatientRef,
+                reference: 'Patient/1233',
               },
               status: 'planned',
             },
@@ -392,7 +300,7 @@ describe('Utils', (): void => {
               resourceType: 'Encounter',
               id: '1111',
               subject: {
-                reference: tempPatientRef,
+                reference: 'Patient/1233',
               },
               status: 'planned',
             },
@@ -402,11 +310,16 @@ describe('Utils', (): void => {
             resource: {
               resourceType: 'Patient',
               id: '1233',
+              name: [
+                {
+                  given: ['John'],
+                  family: 'Doe',
+                },
+              ],
             },
           },
         ],
       };
-      const clientRegistryPatientRef: string = 'http://client-registry:8080/fhir/Patient/1455';
       const expectedBundle: Bundle = {
         resourceType: 'Bundle',
         type: 'transaction',
@@ -418,7 +331,7 @@ describe('Utils', (): void => {
               resourceType: 'Encounter',
               id: '1233',
               subject: {
-                reference: clientRegistryPatientRef,
+                reference: 'Patient/1233',
               },
               status: 'planned',
             },
@@ -433,7 +346,7 @@ describe('Utils', (): void => {
               resourceType: 'Encounter',
               id: '1111',
               subject: {
-                reference: clientRegistryPatientRef,
+                reference: 'Patient/1233',
               },
               status: 'planned',
             },
@@ -442,11 +355,92 @@ describe('Utils', (): void => {
               url: 'Encounter/1111',
             },
           },
+          {
+            fullUrl: 'Patient/1234',
+            resource: {
+              resourceType: 'Patient',
+              link: [
+                {
+                  type: 'refer',
+                  other: {
+                    reference: 'http://santedb-mpi:8080/fhir/Patient/xxx',
+                  },
+                },
+              ],
+            },
+            request: {
+              method: 'PUT',
+              url: 'Patient/xxx',
+            },
+          },
         ],
       };
 
-      expect(modifyBundle(bundle, tempPatientRef, clientRegistryPatientRef)).to.be.deep.equal(
-        expectedBundle
+      const newPatientIdMap: NewPatientMap = {
+        'Patient/1234': {
+          mpiResponsePatient: {
+            id: 'xxx',
+            resourceType: 'Patient',
+          },
+        },
+      };
+
+      expect(modifyBundle(bundle, newPatientIdMap)).to.be.deep.equal(expectedBundle);
+    });
+
+    it('should throw if MPI id is missing in response', (): void => {
+      const bundle: Bundle = {
+        type: 'document',
+        resourceType: 'Bundle',
+        id: '12',
+        entry: [
+          {
+            fullUrl: 'Encounter/1234',
+            resource: {
+              resourceType: 'Encounter',
+              id: '1233',
+              subject: {
+                reference: 'Patient/1233',
+              },
+              status: 'planned',
+            },
+          },
+          {
+            fullUrl: 'Encounter/1111',
+            resource: {
+              resourceType: 'Encounter',
+              id: '1111',
+              subject: {
+                reference: 'Patient/1233',
+              },
+              status: 'planned',
+            },
+          },
+          {
+            fullUrl: 'Patient/1234',
+            resource: {
+              resourceType: 'Patient',
+              id: '1233',
+              name: [
+                {
+                  given: ['John'],
+                  family: 'Doe',
+                },
+              ],
+            },
+          },
+        ],
+      };
+      const newPatientIdMap: NewPatientMap = {
+        'Patient/1234': {
+          mpiResponsePatient: {
+            resourceType: 'Patient',
+          },
+        },
+      };
+
+      expect(() => modifyBundle(bundle, newPatientIdMap)).to.throw(
+        'ID in MPI response is missing'
       );
     });
   });
@@ -479,6 +473,7 @@ describe('Utils', (): void => {
       });
     });
   });
+
   describe('*mergeBundles', (): void => {
     it('should merge  bundles', async (): Promise<void> => {
       const clientRegistryPatientRef: string = 'http://client-registry:8080/fhir/Patient/1455';

@@ -1,6 +1,6 @@
 {
   "urn": "urn:mediator:mpi-mediator",
-  "version": "v1.2.0",
+  "version": "v2.0.0",
   "name": "MPI mediator",
   "description": "A mediator handling interactions between the OpenHIM Core service, Sante MPI, Hapi-FHIR, and Kafka",
   "defaultChannelConfig": [

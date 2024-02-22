@@ -43,5 +43,6 @@ export const getConfig = () => {
     enableJempiGoldenIdUpdate:
       process.env.ENABLE_JEMPI_GOLDEN_ID_UPDATE == 'true' ? true : false,
     kafkaJempiAuditTopic: process.env.KAFKA_JEMPI_AUDIT_TOPIC ?? 'JeMPI-audit-trail',
+    bodySizeLimit: process.env.BODY_SIZE_LIMIT || '50mb',
   });
 };

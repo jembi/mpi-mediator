@@ -75,7 +75,7 @@ When(
       .post('/fhir')
       .send(invalidPatientRefBundle)
       .set('content-type', 'application/fhir+json')
-      .expect(404);
+      .expect(400);
 
     responseBody = response.body;
   }
@@ -97,12 +97,14 @@ When(
 Then('a patient should be created on the client registry', async (): Promise<void> => {
   const auth = await getMpiAuthToken();
 
-  const { resource } = responseBody.response.body.entry.find(
-    (resource) => resource.resource?.resourceType === 'Patient'
+  const { response } = responseBody.response.body.entry.find((entry) =>
+    entry.response.location.startsWith('Patient')
   );
 
-  const response = await fetch(
-    `${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}/fhir/Patient/${resource.id}`,
+  const patientId = response.location.split('/')[1];
+
+  const res = await fetch(
+    `${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}/fhir/Patient/${patientId}`,
     {
       headers: {
         Authorization: `Bearer ${auth.accessToken}`,
@@ -111,7 +113,7 @@ Then('a patient should be created on the client registry', async (): Promise<voi
     }
   );
 
-  expect(response.status).to.be.equal(200);
+  expect(res.status).to.be.equal(200);
 });
 
 Then(`it's clinical data should be stored in the fhir datastore`, async (): Promise<void> => {
