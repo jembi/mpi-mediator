@@ -187,6 +187,10 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
       clientRegistryRequestDetails.data = JSON.stringify(
         newPatientMap[patientEntry.fullUrl].mpiTransformResult?.patient
       );
+    } else {
+      const error = 'Patient entry in bundle is missing the "fullUrl"!';
+      logger.error(error);
+      return Promise.resolve(createHandlerResponseObject('Failed', {status: 400, body: {error}}));
     }
 
     return sendRequest(clientRegistryRequestDetails);

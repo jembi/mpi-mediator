@@ -24,19 +24,20 @@ export const fetchAllPatientSummariesByRefs = async (
     return getData(protocol, host, port, path, {
       'Content-Type': 'application/fhir+json',
     }).then((response) => {
-      if (!isHttpStatusOk(response.status)) {
-        // We throw an error if one of the requests fails
+      if (!isHttpStatusOk(response.status) && response.status != 404) {
+        // We throw an error if one of the requests fails ( except for cases where a patient link does not exist in the datastore)
         throw response;
       }
 
       return response;
     });
   });
-  const bundles = (await Promise.all(patientExternalRefs)).map(
-    (response) => response?.body as Bundle
-  );
 
-  console.debug(`Fetched all patient summaries from the MPI: ${bundles}`);
+  const bundles = (await Promise.all(patientExternalRefs))
+    .filter((res) => isHttpStatusOk(res.status))
+    .map((response) => response?.body as Bundle);
+
+  logger.debug(`Fetched all patient summaries from the MPI: ${bundles}`);
 
   return mergeBundles(bundles, 'document');
 };
