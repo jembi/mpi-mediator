@@ -16,8 +16,6 @@ const patientRef = 'Patient/testPatient';
 const { fhirDatastoreProtocol, fhirDatastoreHost, fhirDatastorePort } = config;
 const fhirDatastoreUrl = `${fhirDatastoreProtocol}://${fhirDatastoreHost}:${fhirDatastorePort}`;
 
-const refUrl = `http://santedb-mpi:8080/fhir/${patientRef}`;
-
 const emptyBundle: Bundle = {
   resourceType: 'Bundle',
   entry: [],
@@ -101,13 +99,13 @@ describe('FetchPatientResources handler', (): void => {
   describe('*fetchAllPatientResources', (): void => {
     it('should return an empty bundle', async () => {
       nock(fhirDatastoreUrl)
-        .get(`/fhir/Encounter?subject=${encodeURIComponent(refUrl)}`)
+        .get(`/fhir/Encounter?subject=${encodeURIComponent(patientRef)}`)
         .reply(200, {});
       nock(fhirDatastoreUrl)
-        .get(`/fhir/Observation?subject=${encodeURIComponent(refUrl)}`)
+        .get(`/fhir/Observation?subject=${encodeURIComponent(patientRef)}`)
         .reply(200, {});
       nock(fhirDatastoreUrl)
-        .get(`/fhir/Appointment?patient=${encodeURIComponent(refUrl)}`)
+        .get(`/fhir/Appointment?patient=${encodeURIComponent(patientRef)}`)
         .reply(200, {});
 
       const result = await fetchAllPatientResourcesByRefs([patientRef]);
@@ -115,10 +113,10 @@ describe('FetchPatientResources handler', (): void => {
     });
     it('should return a bundle of resources', async () => {
       nock(fhirDatastoreUrl)
-        .get(`/fhir/Encounter?subject=${encodeURIComponent(refUrl)}`)
+        .get(`/fhir/Encounter?subject=${encodeURIComponent(patientRef)}`)
         .reply(200, Encounters);
       nock(fhirDatastoreUrl)
-        .get(`/fhir/Observation?subject=${encodeURIComponent(refUrl)}`)
+        .get(`/fhir/Observation?subject=${encodeURIComponent(patientRef)}`)
         .reply(200, Observations);
 
       const result = await fetchAllPatientResourcesByRefs([patientRef]);
@@ -128,13 +126,13 @@ describe('FetchPatientResources handler', (): void => {
   describe('*FetchPatientResources', (): void => {
     it('should return an empty bundle', async () => {
       nock(fhirDatastoreUrl)
-        .get(`/fhir/Encounter?subject=${encodeURIComponent(refUrl)}`)
+        .get(`/fhir/Encounter?subject=${encodeURIComponent(patientRef)}`)
         .reply(200, {});
       nock(fhirDatastoreUrl)
-        .get(`/fhir/Observation?subject=${encodeURIComponent(refUrl)}`)
+        .get(`/fhir/Observation?subject=${encodeURIComponent(patientRef)}`)
         .reply(200, {});
       nock(fhirDatastoreUrl)
-        .get(`/fhir/Appointment?patient=${encodeURIComponent(refUrl)}`)
+        .get(`/fhir/Appointment?patient=${encodeURIComponent(patientRef)}`)
         .reply(200, {});
 
       const result: MpiMediatorResponseObject = await fetchEverythingByRef(patientRef);
@@ -143,10 +141,10 @@ describe('FetchPatientResources handler', (): void => {
 
     it('should succesfully return bundle of various resources', async (): Promise<void> => {
       nock(fhirDatastoreUrl)
-        .get(`/fhir/Encounter?subject=${encodeURIComponent(refUrl)}`)
+        .get(`/fhir/Encounter?subject=${encodeURIComponent(patientRef)}`)
         .reply(200, Encounters);
       nock(fhirDatastoreUrl)
-        .get(`/fhir/Observation?subject=${encodeURIComponent(refUrl)}`)
+        .get(`/fhir/Observation?subject=${encodeURIComponent(patientRef)}`)
         .reply(200, Observations);
 
       const result: MpiMediatorResponseObject = await fetchEverythingByRef(patientRef);

@@ -323,20 +323,20 @@ describe('Middlewares', (): void => {
     });
 
     it('should perform MDM expansion when mdm param is supplied', async () => {
-      nock(mpiUrl).post('/auth/oauth2_token').reply(200, newOauth2TokenGenerated);
+      nock(mpiUrl).persist().post('/auth/oauth2_token').reply(200, newOauth2TokenGenerated);
       nock(mpiUrl).get('/fhir/Patient/1').reply(200, patientFhirResource1);
       nock(mpiUrl).get('/fhir/Patient/2').reply(200, patientFhirResource2);
       nock(fhirDatastoreUrl)
         .get(
           `/fhir/Encounter?subject=${encodeURIComponent(
-            'http://santedb-mpi:8080/fhir/Patient/1,http://santedb-mpi:8080/fhir/Patient/2'
+            'Patient/1,Patient/2'
           )}`
         )
         .reply(200, Encounters);
       nock(fhirDatastoreUrl)
         .get(
           `/fhir/Observation?subject=${encodeURIComponent(
-            'http://santedb-mpi:8080/fhir/Patient/1,http://santedb-mpi:8080/fhir/Patient/2'
+            'Patient/1,Patient/2'
           )}`
         )
         .reply(200, Observations);
@@ -390,7 +390,7 @@ describe('Middlewares', (): void => {
     });
 
     it('should preform MDM expansion when mdm param is supplied', async () => {
-      nock(mpiUrl).post('/auth/oauth2_token').reply(200, newOauth2TokenGenerated);
+      nock(mpiUrl).persist().post('/auth/oauth2_token').reply(200, newOauth2TokenGenerated);
       nock(mpiUrl).get('/fhir/Patient/1').reply(200, patientFhirResource1);
       nock(mpiUrl).get('/fhir/Patient/2').reply(200, patientFhirResource2);
       nock(fhirDatastoreUrl)
@@ -442,7 +442,7 @@ describe('Middlewares', (): void => {
     });
 
     it('should perform MDM expansion when mdm param is supplied', async () => {
-      nock(mpiUrl).post('/auth/oauth2_token').reply(200, {});
+      nock(mpiUrl).persist().post('/auth/oauth2_token').reply(200, {});
       nock(mpiUrl).get('/fhir/Patient/1').reply(200, patientFhirResource1);
       nock(mpiUrl).get('/fhir/Patient/2').reply(200, patientFhirResource2);
       const request = {
