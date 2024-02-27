@@ -1,6 +1,6 @@
 {
   "name": "mpi-mediator",
-  "version": "v2.0.0",
+  "version": "v2.0.1",
   "description": "An OpenHIM mediator to handle all interactions with an MPI component",
   "main": "index.ts",
   "scripts": {

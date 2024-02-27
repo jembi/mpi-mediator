@@ -8,6 +8,7 @@ import { mpiMdmEverythingMiddleware } from '../../src/middlewares/mpi-mdm-everyt
 import { mpiMdmQueryLinksMiddleware } from '../../src/middlewares/mpi-mdm-query-links';
 import { validationMiddleware } from '../../src/middlewares/validation';
 import { mpiAuthMiddleware } from '../../src/middlewares/mpi-auth';
+import { mpiMdmSummaryMiddleware } from '../../src/middlewares/mpi-mdm-summary';
 
 const config = getConfig();
 
@@ -108,6 +109,79 @@ const Observations: Bundle = {
           reference: 'http://sante-mpi:8080/fhir/Patient/2',
         },
         code: {},
+      },
+    },
+  ],
+};
+
+const patientRefSummary1 = 'Patient/1';
+const patientRefSummary2 = 'Patient/2';
+
+const patientSummary1: Bundle = {
+  resourceType: 'Bundle',
+  id: 'testBundle',
+  type: 'document',
+  entry: [
+    {
+      fullUrl: 'urn:uuid:545e5dba-10a0-4070-b8d2-93bbc135ed9c',
+      resource: {
+        resourceType: 'Composition',
+        status: 'final',
+        type: {
+          coding: [
+            {
+              system: 'http://loinc.org',
+              code: '60591-5',
+              display: 'Patient Summary Document',
+            },
+          ],
+        },
+        subject: {
+          reference: 'urn:uuid:99286c8f-3849-4e29-b9aa-c9a563e1a54c',
+        },
+        date: '2024-02-14T13:12:57.901+00:00',
+        author: [
+          {
+            reference: 'urn:uuid:01fa1e49-bed8-4a09-8249-2f569343874e',
+          },
+        ],
+        title: 'Patient Summary as of 02/14/2024',
+        confidentiality: 'N',
+      },
+    },
+  ],
+};
+
+const patientSummary2: Bundle = {
+  resourceType: 'Bundle',
+  id: 'testBundle',
+  type: 'document',
+  entry: [
+    {
+      fullUrl: 'urn:uuid:545e5dba-10a0-4070-b8d2-93bbc135ed9c',
+      resource: {
+        resourceType: 'Composition',
+        status: 'final',
+        type: {
+          coding: [
+            {
+              system: 'http://loinc.org',
+              code: '60591-5',
+              display: 'Patient Summary Document',
+            },
+          ],
+        },
+        subject: {
+          reference: 'urn:uuid:99286c8f-3849-4e29-b9aa-c9a563e1a54c',
+        },
+        date: '2024-02-14T13:12:57.901+00:00',
+        author: [
+          {
+            reference: 'urn:uuid:01fa1e49-bed8-4a09-8249-2f569343874e',
+          },
+        ],
+        title: 'Patient Summary as of 02/14/2024',
+        confidentiality: 'N',
       },
     },
   ],
@@ -249,20 +323,20 @@ describe('Middlewares', (): void => {
     });
 
     it('should perform MDM expansion when mdm param is supplied', async () => {
-      nock(mpiUrl).post('/auth/oauth2_token').reply(200, newOauth2TokenGenerated);
+      nock(mpiUrl).persist().post('/auth/oauth2_token').reply(200, newOauth2TokenGenerated);
       nock(mpiUrl).get('/fhir/Patient/1').reply(200, patientFhirResource1);
       nock(mpiUrl).get('/fhir/Patient/2').reply(200, patientFhirResource2);
       nock(fhirDatastoreUrl)
         .get(
           `/fhir/Encounter?subject=${encodeURIComponent(
-            'http://santedb-mpi:8080/fhir/Patient/1,http://santedb-mpi:8080/fhir/Patient/2'
+            'Patient/1,Patient/2'
           )}`
         )
         .reply(200, Encounters);
       nock(fhirDatastoreUrl)
         .get(
           `/fhir/Observation?subject=${encodeURIComponent(
-            'http://santedb-mpi:8080/fhir/Patient/1,http://santedb-mpi:8080/fhir/Patient/2'
+            'Patient/1,Patient/2'
           )}`
         )
         .reply(200, Observations);
@@ -294,6 +368,68 @@ describe('Middlewares', (): void => {
     });
   });
 
+  describe('*mpiMdmSummaryMiddleware', async () => {
+    it('should forward requests when mdm is not supplied', async () => {
+      const request = {
+        body: {},
+        headers: {},
+        query: {},
+      } as any as Request;
+
+      let result: any = null;
+      const response = {
+        send: function (body: any) {
+          result = body;
+        },
+        status: function () {
+          return this;
+        },
+      } as any as Response;
+      await mpiMdmSummaryMiddleware(request, response, () => {});
+      expect(result).to.deep.equal(null);
+    });
+
+    it('should preform MDM expansion when mdm param is supplied', async () => {
+      nock(mpiUrl).persist().post('/auth/oauth2_token').reply(200, newOauth2TokenGenerated);
+      nock(mpiUrl).get('/fhir/Patient/1').reply(200, patientFhirResource1);
+      nock(mpiUrl).get('/fhir/Patient/2').reply(200, patientFhirResource2);
+      nock(fhirDatastoreUrl)
+        .get(`/fhir/${patientRefSummary1}/$summary`)
+        .reply(200, patientSummary1);
+      nock(fhirDatastoreUrl)
+        .get(`/fhir/${patientRefSummary2}/$summary`)
+        .reply(200, patientSummary2);
+
+      const request = {
+        body: {},
+        headers: {},
+        query: { _mdm: 'true' },
+        params: { patientId: '1' },
+      } as any as Request;
+
+      let result: any = null;
+      let statusCode: number = 0;
+
+      const response = {
+        send: function (body: any) {
+          result = body;
+        },
+        status: function (code: number) {
+          statusCode = code;
+          return this;
+        },
+        set: () => {},
+      } as any as Response;
+
+      await mpiMdmSummaryMiddleware(request, response, () => {});
+      expect(statusCode).to.equal(200);
+      expect(result.status).to.equal('Success');
+      expect(result.response.body.total).to.equal(2);
+      expect(result.response.body.entry.length).to.equal(2);
+      nock.cleanAll();
+    });
+  });
+
   describe('*mpiMdmQueryLinksMiddleware', (): void => {
     it('should forward request when mdm param is not supplied', async () => {
       const request = {
@@ -306,7 +442,7 @@ describe('Middlewares', (): void => {
     });
 
     it('should perform MDM expansion when mdm param is supplied', async () => {
-      nock(mpiUrl).post('/auth/oauth2_token').reply(200, {});
+      nock(mpiUrl).persist().post('/auth/oauth2_token').reply(200, {});
       nock(mpiUrl).get('/fhir/Patient/1').reply(200, patientFhirResource1);
       nock(mpiUrl).get('/fhir/Patient/2').reply(200, patientFhirResource2);
       const request = {

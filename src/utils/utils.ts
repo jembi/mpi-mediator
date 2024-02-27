@@ -260,7 +260,10 @@ export const createHandlerResponseObject = (
   };
 };
 
-export const mergeBundles = async (fhirRequests: (Bundle<FhirResource> | null)[]) => {
+export const mergeBundles = async (
+  fhirRequests: (Bundle<FhirResource> | null)[],
+  type = 'searchset'
+) => {
   const fhirBundles = fhirRequests.filter((bundle) => !!bundle) as Bundle[];
   // Combine all bundles into a single one
   const bundle = fhirBundles.reduce(
@@ -290,7 +293,7 @@ export const mergeBundles = async (fhirRequests: (Bundle<FhirResource> | null)[]
       meta: {
         lastUpdated: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
       },
-      type: 'searchset',
+      type,
       total: 0,
       link: [],
       entry: [],

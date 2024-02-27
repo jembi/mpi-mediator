@@ -23,13 +23,9 @@ const {
 export const fetchAllPatientResourcesByRefs = async (
   patientRefs: string[]
 ): Promise<Bundle> => {
-  const patientExternalRefs = patientRefs.map(
-    (ref) => `${mpiProtocol}://${mpiHost}:${mpiPort}/fhir/${ref}`
-  );
-
   const responsePromises = resources.map((resource) => {
     const path = `/fhir/${resource}?${PATIENT_RESOURCES[resource]}=${encodeURIComponent(
-      patientExternalRefs.join(',')
+      patientRefs.join(',')
     )}`;
 
     return getData(protocol, host, port, path, {
