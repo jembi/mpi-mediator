@@ -43,7 +43,8 @@ const createFhirAccessProxy = (): RequestHandler => {
     logProvider,
     pathRewrite(_path, req) {
       // Re-compute the path, since http-proxy-middleware relies on req.originalUrl
-      return `${req.path}?${qs.stringify(req.query)}`;
+      const queryString = qs.stringify(req.query, { indices: false });
+      return `${req.path}?${queryString}`;
     },
     onError(err, _req, _res) {
       logger.error(err);
