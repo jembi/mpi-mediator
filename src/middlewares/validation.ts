@@ -4,8 +4,13 @@ import logger from '../logger';
 import { ResponseObject } from '../types/response';
 import { buildOpenhimResponseObject, isHttpStatusOk, postData } from '../utils/utils';
 
-const { fhirDatastoreProtocol, fhirDatastoreHost, fhirDatastorePort, contentType, disableValidation } =
-  getConfig();
+const {
+  fhirDatastoreProtocol,
+  fhirDatastoreHost,
+  fhirDatastorePort,
+  contentType,
+  disableValidation,
+} = getConfig();
 
 export const validationMiddleware: RequestHandler = async (req, res, next) => {
   logger.info('Validating Fhir Resources');
@@ -21,7 +26,7 @@ export const validationMiddleware: RequestHandler = async (req, res, next) => {
       status: 400,
     };
   } else if (disableValidation) {
-      return next();
+    return next();
   } else {
     response = await postData(
       fhirDatastoreProtocol,
@@ -56,6 +61,6 @@ export const validationMiddleware: RequestHandler = async (req, res, next) => {
     response.body
   );
 
-  res.set('Content-Type', 'application/openhim+json');
+  res.set('Content-Type', 'application/json+openhim');
   res.status(response.status).send(responseBody);
 };
