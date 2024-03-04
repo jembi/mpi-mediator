@@ -109,7 +109,7 @@ describe('Match Patient Synchronously', (): void => {
               response: {
                 status: 200,
                 headers: { 'content-type': 'application/json' },
-                body: { mesage: 'Success' },
+                body: '',
                 timestamp: '12/02/1991',
               },
             },
@@ -179,7 +179,9 @@ describe('Match Patient Synchronously', (): void => {
 
       expect(handlerResponse.status).to.be.equal(500);
       expect(handlerResponse.body.status).to.be.equal('Failed');
-      expect(handlerResponse.body.response.body).to.deep.equal({ errors: [error] });
+      expect(JSON.parse(handlerResponse.body.response.body)).to.deep.equal({
+        errors: [error],
+      });
       stub.restore();
     });
 
@@ -254,7 +256,7 @@ describe('Match Patient Synchronously', (): void => {
               response: {
                 status: 200,
                 headers: { 'content-type': 'application/json' },
-                body: { mesage: 'Success' },
+                body: '',
                 timestamp: '12/02/1991',
               },
             },
@@ -420,7 +422,7 @@ describe('Match Patient Synchronously', (): void => {
               response: {
                 status: 200,
                 headers: { 'Content-Type': 'application/json' },
-                body: { mesage: 'Success' },
+                body: '',
                 timestamp: '12/02/1991',
               },
             },

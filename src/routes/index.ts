@@ -26,7 +26,7 @@ routes.post(
   asyncHandler(async (req, res) => {
     const result = await matchSyncHandler(req.body);
 
-    res.set('Content-Type', 'application/openhim+json');
+    res.set('Content-Type', 'application/json+openhim');
     res.status(result.status).send(result.body);
   })
 );
@@ -40,7 +40,7 @@ routes.post(
 
     const responseBody = buildOpenhimResponseObject(transactionStatus, status, body);
 
-    res.set('Content-Type', 'application/openhim+json');
+    res.set('Content-Type', 'application/json+openhim');
     res.status(status).send(responseBody);
   })
 );
@@ -67,7 +67,7 @@ routes.get(
   asyncHandler(async (req, res) => {
     const { status, body } = await fetchEverythingByRef(`Patient/${req.params.patientId}`);
 
-    res.set('Content-Type', 'application/openhim+json');
+    res.set('Content-Type', 'application/json+openhim');
     res.status(status).send(body);
   })
 );
@@ -81,7 +81,7 @@ routes.get(
       req.query
     );
 
-    res.set('Content-Type', 'application/openhim+json');
+    res.set('Content-Type', 'application/json+openhim');
     res.status(status).send(body);
   })
 );
@@ -93,7 +93,7 @@ routes.post(
   asyncHandler(async (req, res) => {
     const result = await matchAsyncHandler(req.body);
 
-    res.set('Content-Type', 'application/openhim+json');
+    res.set('Content-Type', 'application/json+openhim');
     res.status(result.status).send(result.body);
   })
 );

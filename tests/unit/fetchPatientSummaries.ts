@@ -211,7 +211,7 @@ describe('FetchPatientSummaries handler', (): void => {
   describe('fetchPatientSummariesByRefs', async () => {
     it('should return an empty bundle', async () => {
       nock(fhirDatastoreUrl).get(`/fhir/${emptyPatientRef1}/$summary`).reply(200, {});
-
+      
       const result = await fetchPatientSummaryByRef(emptyPatientRef1, {});
       expect(result.body.response.body).to.deep.equal(emptyBundle);
     });

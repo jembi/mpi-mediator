@@ -69,6 +69,6 @@ export const mpiMdmEverythingMiddleware: RequestHandler = async (req, res, next)
 
   const { status, body } = await fetchAllLinkedPatientResources(req.params.patientId);
 
-  res.set('Content-Type', 'application/openhim+json');
+  res.set('Content-Type', 'application/json+openhim');
   res.status(status).send(body);
 };

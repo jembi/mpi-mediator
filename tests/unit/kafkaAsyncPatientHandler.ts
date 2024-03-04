@@ -46,7 +46,7 @@ describe('Kafka Async Patient Handler', (): void => {
             'x-mediator-urn': '123',
             response: {
               status: 200,
-              body: {},
+              body: '',
               timestamp: '12-12-2012',
               headers: {
                 'content-type': 'application/json',
@@ -111,7 +111,7 @@ describe('Kafka Async Patient Handler', (): void => {
             'x-mediator-urn': '123',
             response: {
               status: 200,
-              body: {},
+              body: '',
               timestamp: '12-12-2012',
               headers: {
                 'content-type': 'application/json',
@@ -201,7 +201,7 @@ describe('Kafka Async Patient Handler', (): void => {
             'x-mediator-urn': '123',
             response: {
               status: 200,
-              body: {},
+              body: '',
               timestamp: '12-12-2012',
               headers: {
                 'content-type': 'application/json',

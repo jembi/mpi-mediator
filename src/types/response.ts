@@ -1,6 +1,6 @@
 export interface Response {
   status: number;
-  body: object;
+  body: string;
   timestamp: string;
   headers: HeadersInit;
 }

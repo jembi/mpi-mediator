@@ -97,7 +97,7 @@ When(
 Then('a patient should be created on the client registry', async (): Promise<void> => {
   const auth = await getMpiAuthToken();
 
-  const { response } = responseBody.response.body.entry.find((entry) =>
+  const { response } = JSON.parse(responseBody.response.body).entry.find((entry) =>
     entry.response.location.startsWith('Patient')
   );
 
