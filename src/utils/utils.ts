@@ -95,12 +95,12 @@ export const buildOpenhimResponseObject = (
   openhimTransactionStatus: string,
   httpResponseStatusCode: number,
   responseBody: object,
-  contentType = 'application/json'
+  contentType = 'application/fhir+json'
 ): OpenHimResponseObject => {
   const response: Response = {
     status: httpResponseStatusCode,
     headers: { 'Content-Type': contentType },
-    body: responseBody,
+    body: JSON.stringify(responseBody),
     timestamp: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"),
   };
 

@@ -24,6 +24,8 @@ export const openhimProxyResponseInterceptor = responseInterceptor(
 
     const responseBody = buildOpenhimResponseObject(transactionStatus, statusCode, body);
 
+    _res.setHeader('Content-Type', 'application/json+openhim');
+
     return JSON.stringify(responseBody);
   }
 );

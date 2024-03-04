@@ -327,18 +327,10 @@ describe('Middlewares', (): void => {
       nock(mpiUrl).get('/fhir/Patient/1').reply(200, patientFhirResource1);
       nock(mpiUrl).get('/fhir/Patient/2').reply(200, patientFhirResource2);
       nock(fhirDatastoreUrl)
-        .get(
-          `/fhir/Encounter?subject=${encodeURIComponent(
-            'Patient/1,Patient/2'
-          )}`
-        )
+        .get(`/fhir/Encounter?subject=${encodeURIComponent('Patient/1,Patient/2')}`)
         .reply(200, Encounters);
       nock(fhirDatastoreUrl)
-        .get(
-          `/fhir/Observation?subject=${encodeURIComponent(
-            'Patient/1,Patient/2'
-          )}`
-        )
+        .get(`/fhir/Observation?subject=${encodeURIComponent('Patient/1,Patient/2')}`)
         .reply(200, Observations);
 
       const request = {
@@ -362,8 +354,8 @@ describe('Middlewares', (): void => {
       await mpiMdmEverythingMiddleware(request, response, () => {});
       expect(statusCode).to.equal(200);
       expect(result.status).to.equal('Success');
-      expect(result.response.body.total).to.equal(4);
-      expect(result.response.body.entry.length).to.equal(4);
+      expect(JSON.parse(result.response.body).total).to.equal(4);
+      expect(JSON.parse(result.response.body).entry.length).to.equal(4);
       nock.cleanAll();
     });
   });
@@ -424,8 +416,8 @@ describe('Middlewares', (): void => {
       await mpiMdmSummaryMiddleware(request, response, () => {});
       expect(statusCode).to.equal(200);
       expect(result.status).to.equal('Success');
-      expect(result.response.body.total).to.equal(2);
-      expect(result.response.body.entry.length).to.equal(2);
+      expect(JSON.parse(result.response.body).total).to.equal(2);
+      expect(JSON.parse(result.response.body).entry.length).to.equal(2);
       nock.cleanAll();
     });
   });

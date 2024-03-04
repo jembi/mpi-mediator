@@ -136,7 +136,7 @@ describe('FetchPatientResources handler', (): void => {
         .reply(200, {});
 
       const result: MpiMediatorResponseObject = await fetchEverythingByRef(patientRef);
-      expect(result.body.response.body).to.deep.equal(emptyBundle);
+      expect(JSON.parse(result.body.response.body)).to.deep.equal(emptyBundle);
     });
 
     it('should succesfully return bundle of various resources', async (): Promise<void> => {
@@ -149,7 +149,7 @@ describe('FetchPatientResources handler', (): void => {
 
       const result: MpiMediatorResponseObject = await fetchEverythingByRef(patientRef);
 
-      expect(result.body.response.body).to.deep.equal(bundle);
+      expect(JSON.parse(result.body.response.body)).to.deep.equal(bundle);
     });
   });
 });

@@ -47,7 +47,7 @@ describe('Utils', (): void => {
       expect(returnedObject.response.headers).to.deep.equal({
         'Content-Type': contentType,
       });
-      expect(returnedObject.response.body).to.deep.equal(body);
+      expect(JSON.parse(returnedObject.response.body)).to.deep.equal(body);
     });
   });
 
@@ -468,7 +468,7 @@ describe('Utils', (): void => {
       );
 
       expect(handlerResponse.status).to.equal(200);
-      expect(handlerResponse.body.response.body).to.deep.equal({
+      expect(JSON.parse(handlerResponse.body.response.body)).to.deep.equal({
         message: 'Success',
       });
     });
