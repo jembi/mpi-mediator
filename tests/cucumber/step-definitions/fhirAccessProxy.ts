@@ -41,7 +41,7 @@ Then(
   'a successful response containing a bundle of related patient resources is sent back',
   (): void => {
     expect(responseBody.status).to.equal('Success');
-    expect(responseBody.response.body.resourceType).to.equal('Bundle');
+    expect(JSON.parse(responseBody.response.body).resourceType).to.equal('Bundle');
     server.close();
   }
 );
@@ -55,7 +55,7 @@ When(
       .set('content-type', 'application/fhir+json')
       .expect(200);
 
-    const { response } = bundleSubmission.body.response.body.entry.find((entry) =>
+    const { response } = JSON.parse(bundleSubmission.body.response.body).entry.find((entry) =>
       entry.response.location.startsWith('Patient')
     );
 
@@ -71,7 +71,7 @@ When(
 
 Then('a successful response containing a bundle is sent back', (): void => {
   expect(responseBody.status).to.equal('Success');
-  expect(responseBody.response.body.resourceType).to.equal('Bundle');
+  expect(JSON.parse(responseBody.response.body).resourceType).to.equal('Bundle');
   server.close();
 });
 

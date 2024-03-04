@@ -33,7 +33,8 @@ When('a post request without body was sent to get patients', async (): Promise<v
 });
 
 Then('we should get an error response', (): void => {
-  expect(responseBody.response.body.error,
+  expect(
+    responseBody.response.body.error,
     `Invalid Content! Type should be "${config.contentType}" and Length should be greater than 0"`
   );
   server.close();
@@ -51,8 +52,8 @@ When('a post request with body was sent to get patients', async (): Promise<void
           resource: {
             resourceType: 'Patient',
             text: {
-              div: '<div xmlns=\"http://www.w3.org/1999/xhtml\">Patient</div>',
-              status: 'generated'
+              div: '<div xmlns="http://www.w3.org/1999/xhtml">Patient</div>',
+              status: 'generated',
             },
             name: [
               {
@@ -79,6 +80,6 @@ When('a post request with body was sent to get patients', async (): Promise<void
 });
 
 Then('a response should be sent back', (): void => {
-  expect(responseBody.response.body.id).not.empty;
+  expect(JSON.parse(responseBody.response.body).id).not.empty;
   server.close();
 });
