@@ -76,7 +76,10 @@ routes.get(
   '/fhir/Patient/:patientId/\\$summary',
   mpiMdmSummaryMiddleware,
   asyncHandler(async (req, res) => {
-    const { status, body } = await fetchPatientSummaryByRef(`Patient/${req.params.patientId}`);
+    const { status, body } = await fetchPatientSummaryByRef(
+      `Patient/${req.params.patientId}`,
+      req.query
+    );
 
     res.set('Content-Type', 'application/openhim+json');
     res.status(status).send(body);
