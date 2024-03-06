@@ -44,5 +44,6 @@ export const getConfig = () => {
       process.env.ENABLE_JEMPI_GOLDEN_ID_UPDATE == 'true' ? true : false,
     kafkaJempiAuditTopic: process.env.KAFKA_JEMPI_AUDIT_TOPIC ?? 'JeMPI-audit-trail',
     bodySizeLimit: process.env.BODY_SIZE_LIMIT || '50mb',
+    patientProfileForStubPatient: process.env.PATIENT_PROFILE_FOR_STUB_PATIENT || '',
   });
 };

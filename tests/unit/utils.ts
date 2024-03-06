@@ -388,6 +388,122 @@ describe('Utils', (): void => {
       expect(modifyBundle(bundle, newPatientIdMap)).to.be.deep.equal(expectedBundle);
     });
 
+    it('should set a patient profile on the gutted patient resource if configured to do so', (): void => {
+      const bundle: Bundle = {
+        type: 'document',
+        resourceType: 'Bundle',
+        id: '12',
+        entry: [
+          {
+            fullUrl: 'Encounter/1234',
+            resource: {
+              resourceType: 'Encounter',
+              id: '1233',
+              subject: {
+                reference: 'Patient/1233',
+              },
+              status: 'planned',
+            },
+          },
+          {
+            fullUrl: 'Encounter/1111',
+            resource: {
+              resourceType: 'Encounter',
+              id: '1111',
+              subject: {
+                reference: 'Patient/1233',
+              },
+              status: 'planned',
+            },
+          },
+          {
+            fullUrl: 'Patient/1234',
+            resource: {
+              resourceType: 'Patient',
+              id: '1233',
+              name: [
+                {
+                  given: ['John'],
+                  family: 'Doe',
+                },
+              ],
+            },
+          },
+        ],
+      };
+      const expectedBundle: Bundle = {
+        resourceType: 'Bundle',
+        type: 'transaction',
+        id: '12',
+        entry: [
+          {
+            fullUrl: 'Encounter/1234',
+            resource: {
+              resourceType: 'Encounter',
+              id: '1233',
+              subject: {
+                reference: 'Patient/1233',
+              },
+              status: 'planned',
+            },
+            request: {
+              method: 'PUT',
+              url: 'Encounter/1233',
+            },
+          },
+          {
+            fullUrl: 'Encounter/1111',
+            resource: {
+              resourceType: 'Encounter',
+              id: '1111',
+              subject: {
+                reference: 'Patient/1233',
+              },
+              status: 'planned',
+            },
+            request: {
+              method: 'PUT',
+              url: 'Encounter/1111',
+            },
+          },
+          {
+            fullUrl: 'Patient/1234',
+            resource: {
+              meta: {
+                profile: ['http://example.com/patient-profile'],
+              },
+              resourceType: 'Patient',
+              link: [
+                {
+                  type: 'refer',
+                  other: {
+                    reference: 'http://santedb-mpi:8080/fhir/Patient/xxx',
+                  },
+                },
+              ],
+            },
+            request: {
+              method: 'PUT',
+              url: 'Patient/xxx',
+            },
+          },
+        ],
+      };
+
+      const newPatientIdMap: NewPatientMap = {
+        'Patient/1234': {
+          mpiResponsePatient: {
+            id: 'xxx',
+            resourceType: 'Patient',
+          },
+        },
+      };
+
+      expect(
+        modifyBundle(bundle, newPatientIdMap, 'http://example.com/patient-profile')
+      ).to.be.deep.equal(expectedBundle);
+    });
+
     it('should throw if MPI id is missing in response', (): void => {
       const bundle: Bundle = {
         type: 'document',
