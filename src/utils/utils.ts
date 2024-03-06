@@ -135,7 +135,8 @@ export const modifyBundle = (
       mpiTransformResult?: MpiTransformResult;
       mpiResponsePatient?: Patient;
     };
-  } = {}
+  } = {},
+  patientProfileForStubPatient?: string
 ): Bundle => {
   const modifiedBundle = Object.assign({}, bundle);
 
@@ -158,7 +159,7 @@ export const modifyBundle = (
         throw new Error('ID in MPI response is missing');
       }
 
-      return {
+      const stubPatient: BundleEntry<Patient> = {
         fullUrl: entry.fullUrl,
         resource: {
           resourceType: 'Patient',
@@ -176,6 +177,14 @@ export const modifyBundle = (
           url: `Patient/${newPatientId}`,
         },
       };
+
+      if (patientProfileForStubPatient && stubPatient.resource) {
+        stubPatient.resource.meta = {
+          profile: [patientProfileForStubPatient],
+        };
+      }
+
+      return stubPatient;
     }
 
     // Add request property to the bundle entries if missing, default to using upserts

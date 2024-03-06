@@ -189,8 +189,12 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
       );
     } else {
       const error = 'Patient entry in bundle is missing the "fullUrl"!';
+
       logger.error(error);
-      return Promise.resolve(createHandlerResponseObject('Failed', {status: 400, body: {error}}));
+
+      return Promise.resolve(
+        createHandlerResponseObject('Failed', { status: 400, body: { error } })
+      );
     }
 
     return sendRequest(clientRegistryRequestDetails);
@@ -231,7 +235,11 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
   });
 
   // create a new bundle with stripped out patient and references to the MPI patient
-  const modifiedBundle: Bundle = modifyBundle(bundle, newPatientMap);
+  const modifiedBundle: Bundle = modifyBundle(
+    bundle,
+    newPatientMap,
+    config.patientProfileForStubPatient
+  );
 
   Object.values(newPatientMap).forEach((patientData) => {
     restorePatientResource(patientData);
