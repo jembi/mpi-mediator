@@ -163,6 +163,7 @@ export const modifyBundle = (
         fullUrl: entry.fullUrl,
         resource: {
           resourceType: 'Patient',
+          id: entry.resource.id,
           link: [
             {
               other: {
@@ -174,7 +175,7 @@ export const modifyBundle = (
         },
         request: {
           method: 'PUT',
-          url: `Patient/${newPatientId}`,
+          url: `Patient/${entry.resource.id}`,
         },
       };
 
