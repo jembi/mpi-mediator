@@ -213,13 +213,13 @@ describe('FetchPatientSummaries handler', (): void => {
       nock(fhirDatastoreUrl).get(`/fhir/${emptyPatientRef1}/$summary`).reply(200, {});
       
       const result = await fetchPatientSummaryByRef(emptyPatientRef1, {});
-      expect(result.body.response.body).to.deep.equal(emptyBundle);
+      expect(JSON.parse(result.body.response.body)).to.deep.equal(emptyBundle);
     });
     it('should return a bundle with 2 entries for 1 given patient', async () => {
       nock(fhirDatastoreUrl).get(`/fhir/${patientRef3}/$summary`).reply(200, patientSummary3);
 
       const result = await fetchPatientSummaryByRef(patientRef3, {});
-      expect(result.body.response.body).to.deep.equal(combinedBundle2);
+      expect(JSON.parse(result.body.response.body)).to.deep.equal(combinedBundle2);
     });
   });
 });
