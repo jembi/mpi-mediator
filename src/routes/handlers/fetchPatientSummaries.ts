@@ -16,10 +16,20 @@ const {
 } = getConfig();
 
 export const fetchAllPatientSummariesByRefs = async (
-  patientRefs: string[]
+  patientRefs: string[],
+  queryParams?: object
 ): Promise<Bundle> => {
   const patientExternalRefs = patientRefs.map((ref) => {
-    const path = `/fhir/${ref}/$summary`;
+    const params = Object.entries(queryParams ?? {});
+    let combinedParams = null;
+
+    if (params.length > 0) {
+      combinedParams = params
+        .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+        .join('&');
+    }
+
+    const path = `/fhir/${ref}/$summary${combinedParams ? `?${combinedParams}` : ''}`;
 
     return getData(protocol, host, port, path, {
       'Content-Type': 'application/fhir+json',
@@ -43,10 +53,11 @@ export const fetchAllPatientSummariesByRefs = async (
 };
 
 export const fetchPatientSummaryByRef = async (
-  ref: string
+  ref: string,
+  queryParams: object
 ): Promise<MpiMediatorResponseObject> => {
   try {
-    const bundle = await fetchAllPatientSummariesByRefs([ref]);
+    const bundle = await fetchAllPatientSummariesByRefs([ref], queryParams);
     const responseBody = buildOpenhimResponseObject('Successful', 200, bundle);
 
     logger.info(`Successfully fetched patient summary with id ${ref}`);
