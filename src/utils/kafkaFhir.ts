@@ -80,7 +80,7 @@ export const sendToFhirAndKafka = async (
 
       if (patientData.restoredPatient && bundle.entry) {
         const patientEntry: BundleEntry = {
-          fullUrl: fullUrl,
+          fullUrl,
           resource: patientData.restoredPatient,
           request: {
             method: 'PUT',
