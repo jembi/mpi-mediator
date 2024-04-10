@@ -76,14 +76,15 @@ export const sendToFhirAndKafka = async (
     // Restore full patient resources to the bundle for sending to Kafka
     Object.keys(newPatientRef).forEach((fullUrl) => {
       const patientData = newPatientRef[fullUrl];
+      const url = `Patient/${patientData.mpiResponsePatient?.id}`;
 
       if (patientData.restoredPatient && bundle.entry) {
         const patientEntry: BundleEntry = {
-          fullUrl: fullUrl,
+          fullUrl,
           resource: patientData.restoredPatient,
           request: {
             method: 'PUT',
-            url: `Patient/${patientData.mpiResponsePatient?.id}`,
+            url
           },
         };
 
@@ -100,6 +101,13 @@ export const sendToFhirAndKafka = async (
             `Adding restored patient (fullUrl: ${fullUrl}) resource to bundle, no matching entry found`
           );
           bundle.entry.push(patientEntry);
+        }
+
+        // Replace the old patient reference in the resources
+        const oldId = fullUrl.split('/').pop();
+
+        if (oldId) {
+          bundle = JSON.parse(JSON.stringify(bundle).replace(RegExp(`Patient/${oldId}`, 'g'), url));
         }
       }
     });
