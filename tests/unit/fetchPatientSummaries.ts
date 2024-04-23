@@ -205,7 +205,7 @@ describe('FetchPatientSummaries handler', (): void => {
       nock(fhirDatastoreUrl).get(`/fhir/${patientRef2}/$summary`).reply(200, patientSummary2);
 
       const orchestrations: Orchestration[] = [];
-      const result = await fetchAllPatientSummariesByRefs([patientRef1, patientRef2], orchestrations);
+      const result = await fetchAllPatientSummariesByRefs([patientRef1, patientRef2], {}, orchestrations);
       expect(result).to.deep.equal(combinedBundle1);
       expect(orchestrations.length).to.be.greaterThan(0);
     });
@@ -214,14 +214,13 @@ describe('FetchPatientSummaries handler', (): void => {
   describe('fetchPatientSummariesByRefs', async () => {
     it('should return an empty bundle', async () => {
       nock(fhirDatastoreUrl).get(`/fhir/${emptyPatientRef1}/$summary`).reply(200, {});
-
-      const result = await fetchPatientSummaryByRef(emptyPatientRef1);
+      const result = await fetchPatientSummaryByRef(emptyPatientRef1, {});
       expect(JSON.parse(result.body.response.body)).to.deep.equal(emptyBundle);
     });
     it('should return a bundle with 2 entries for 1 given patient', async () => {
       nock(fhirDatastoreUrl).get(`/fhir/${patientRef3}/$summary`).reply(200, patientSummary3);
 
-      const result = await fetchPatientSummaryByRef(patientRef3);
+      const result = await fetchPatientSummaryByRef(patientRef3, {});
       expect(JSON.parse(result.body.response.body)).to.deep.equal(combinedBundle2);
     });
   });

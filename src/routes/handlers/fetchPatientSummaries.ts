@@ -19,10 +19,21 @@ const {
 
 export const fetchAllPatientSummariesByRefs = async (
   patientRefs: string[],
+  queryParams?: object,
   orchestrations: Orchestration[] = []
 ): Promise<Bundle> => {
   const patientExternalRefs = patientRefs.map((ref) => {
-    const path = `/fhir/${ref}/$summary`;
+    const params = Object.entries(queryParams ?? {});
+    let combinedParams = null;
+
+    if (params.length > 0) {
+      combinedParams = params
+        .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+        .join('&');
+    }
+
+    const path = `/fhir/${ref}/$summary${combinedParams ? `?${combinedParams}` : ''}`;
+
     const headers: HeadersInit = {'Content-Type': 'application/fhir+json'};
 
     const orchestration: Orchestration = {
@@ -34,7 +45,7 @@ export const fetchAllPatientSummariesByRefs = async (
         timestamp: ''
       }
     };
-
+  
     return getData(protocol, host, port, path, {
       'Content-Type': 'application/fhir+json',
     }).then((response) => {
@@ -65,12 +76,13 @@ export const fetchAllPatientSummariesByRefs = async (
 };
 
 export const fetchPatientSummaryByRef = async (
-  ref: string
+  ref: string,
+  queryParams: object
 ): Promise<MpiMediatorResponseObject> => {
   const orchestrations: Orchestration[] = [];
 
   try {
-    const bundle = await fetchAllPatientSummariesByRefs([ref], orchestrations);
+    const bundle = await fetchAllPatientSummariesByRefs([ref], queryParams, orchestrations);
     const responseBody = buildOpenhimResponseObject('Successful', 200, bundle, 'application/fhir+json', orchestrations);
 
     logger.info(`Successfully fetched patient summary with id ${ref}`);

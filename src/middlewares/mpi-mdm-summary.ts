@@ -5,7 +5,7 @@ import { buildOpenhimResponseObject } from '../utils/utils';
 import { fetchAllPatientSummariesByRefs } from '../routes/handlers/fetchPatientSummaries';
 import { Orchestration } from '../types/response';
 
-const fetchAllLinkedPatientSummary = async (patientId: string) => {
+const fetchAllLinkedPatientSummary = async (patientId: string, params: object) => {
   const orchestrations: Orchestration[] = [];
 
   try {
@@ -14,7 +14,7 @@ const fetchAllLinkedPatientSummary = async (patientId: string) => {
 
     await fetchMpiPatientLinks(patientRef, patientRefs);
 
-    const bundle = await fetchAllPatientSummariesByRefs(patientRefs, orchestrations);
+    const bundle = await fetchAllPatientSummariesByRefs(patientRefs, params, orchestrations);
 
     logger.debug(`Fetched all patient summaries from the MPI: ${bundle}`);
 
@@ -43,7 +43,9 @@ export const mpiMdmSummaryMiddleware: RequestHandler = async (req, res, next) =>
     return next();
   }
 
-  const { status, body } = await fetchAllLinkedPatientSummary(req.params.patientId);
+  delete req.query._mdm;
+
+  const { status, body } = await fetchAllLinkedPatientSummary(req.params.patientId, req.query);
 
   res.set('Content-Type', 'application/json+openhim');
   res.status(status).send(body);
