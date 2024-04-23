@@ -1,9 +1,10 @@
 import { Kafka, logLevel } from 'kafkajs';
-
+import format from 'date-fns/format';
 import { Bundle, BundleEntry, Patient } from 'fhir/r3';
+
 import { getConfig } from '../config/config';
 import { RequestDetails } from '../types/request';
-import { MpiMediatorResponseObject, ResponseObject } from '../types/response';
+import { MpiMediatorResponseObject, Orchestration, ResponseObject } from '../types/response';
 import {
   createHandlerResponseObject,
   extractPatientEntries,
@@ -53,9 +54,12 @@ export const sendToKafka = async (bundle: Bundle, topic: string): Promise<Error 
 export const sendToFhirAndKafka = async (
   requestDetails: RequestDetails,
   bundle: Bundle,
-  newPatientRef: NewPatientMap = {}
+  newPatientRef: NewPatientMap = {},
+  orchestrations: Orchestration[] = []
 ): Promise<MpiMediatorResponseObject> => {
   const { protocol, host, port, path, headers } = requestDetails;
+
+  const requestStartTime = format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 
   const response: ResponseObject = await postData(
     protocol,
@@ -65,6 +69,27 @@ export const sendToFhirAndKafka = async (
     JSON.stringify(bundle),
     headers
   );
+
+  const orchestration: Orchestration = {
+    name: 'Saving data in Fhir Datastore - hapi-fhir',
+    request: {
+      protocol,
+      host,
+      port,
+      method: 'POST',
+      path,
+      body: JSON.stringify(bundle),
+      headers,
+      timestamp: requestStartTime
+    },
+    response: {
+      status: response.status,
+      body: JSON.stringify(response.body),
+      timestamp: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"),
+      headers: {'Content-Type': 'application/fhir+json'}
+    }
+  }
+  orchestrations.push(orchestration);
 
   let transactionStatus: string;
 
@@ -112,10 +137,26 @@ export const sendToFhirAndKafka = async (
       }
     });
 
+    const orchestration: Orchestration = {
+      name: 'Sending to message bus - kafka',
+      request: {
+        host: config.kafkaBrokers,
+        timestamp: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+      },
+      response: {
+        status: 200,
+        body: JSON.stringify({success: true}),
+        timestamp: '',
+        headers: { 'Content-Type': 'application/fhir+json' }
+      }
+    };
+
     const kafkaResponseError: Error | null = await sendToKafka(
       bundle,
       config.kafkaBundleTopic
     );
+
+    orchestration.response.timestamp = format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 
     if (kafkaResponseError) {
       logger.error(
@@ -125,9 +166,14 @@ export const sendToFhirAndKafka = async (
       transactionStatus = 'Failed';
       response.body = { kafkaResponseError };
       response.status = 500;
+
+      orchestration.response.status = 500;
+      orchestration.response.body = JSON.stringify(kafkaResponseError);
     } else {
       logger.info('Successfully sent Fhir bundle to Kafka');
     }
+
+    orchestrations.push(orchestration);
   } else {
     logger.error(
       `Error in sending Fhir bundle to Fhir Datastore: ${JSON.stringify(response.body)}!`
@@ -135,7 +181,7 @@ export const sendToFhirAndKafka = async (
     transactionStatus = 'Failed';
   }
 
-  return createHandlerResponseObject(transactionStatus, response);
+  return createHandlerResponseObject(transactionStatus, response, orchestrations);
 };
 
 const clientRegistryRequestDetailsOrg: RequestDetails = {
@@ -185,6 +231,7 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
   }
 
   const newPatientMap: NewPatientMap = {};
+  const orchestrations: Orchestration[] = [];
 
   // transform and send each patient resource and submit to MPI
   const promises = patientEntries.map(async (patientEntry) => {
@@ -204,11 +251,28 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
         createHandlerResponseObject('Failed', { status: 400, body: { error } })
       );
     }
-
+    orchestrations.push({
+      name: `Request to Client Registry - ${patientEntry.fullUrl}`,
+      request: {...clientRegistryRequestDetails, timestamp: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")},
+      response: {
+        status: 201,
+        body: '',
+        timestamp: ''
+      }
+    })
     return sendRequest(clientRegistryRequestDetails);
   });
 
   const clientRegistryResponses = await Promise.all(promises);
+
+  clientRegistryResponses.forEach((resp, index) => {
+    orchestrations[index].response = {
+      status: resp.status,
+      body: JSON.stringify(resp.body),
+      timestamp: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"),
+      headers: { 'Content-Type': 'application/fhir+json' }
+    }
+  });
 
   const failedRequests = clientRegistryResponses.filter(
     (clientRegistryResponse) => !isHttpStatusOk(clientRegistryResponse.status)
@@ -229,7 +293,7 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
       { status: failedRequests[0].status, body: { errors: [] } }
     );
 
-    return createHandlerResponseObject('Failed', combinedResponse);
+    return createHandlerResponseObject('Failed', combinedResponse, orchestrations);
   }
 
   clientRegistryResponses.map((clientRegistryResponse, index) => {
@@ -252,11 +316,11 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
   Object.values(newPatientMap).forEach((patientData) => {
     restorePatientResource(patientData);
   });
-
   const handlerResponse: MpiMediatorResponseObject = await sendToFhirAndKafka(
     fhirDatastoreRequestDetails,
     modifiedBundle,
-    newPatientMap
+    newPatientMap,
+    orchestrations
   );
 
   return handlerResponse;

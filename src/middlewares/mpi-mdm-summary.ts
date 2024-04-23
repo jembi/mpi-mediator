@@ -3,28 +3,31 @@ import logger from '../logger';
 import { fetchMpiPatientLinks } from '../utils/mpi';
 import { buildOpenhimResponseObject } from '../utils/utils';
 import { fetchAllPatientSummariesByRefs } from '../routes/handlers/fetchPatientSummaries';
+import { Orchestration } from '../types/response';
 
 const fetchAllLinkedPatientSummary = async (patientId: string) => {
+  const orchestrations: Orchestration[] = [];
+
   try {
     const patientRef = `Patient/${patientId}`;
     const patientRefs: string[] = [];
 
     await fetchMpiPatientLinks(patientRef, patientRefs);
 
-    const bundle = await fetchAllPatientSummariesByRefs(patientRefs);
+    const bundle = await fetchAllPatientSummariesByRefs(patientRefs, orchestrations);
 
     logger.debug(`Fetched all patient summaries from the MPI: ${bundle}`);
 
     return {
       status: 200,
-      body: buildOpenhimResponseObject('Success', 200, bundle),
+      body: buildOpenhimResponseObject('Success', 200, bundle, 'application/fhir+json', orchestrations),
     };
   } catch (e) {
     logger.error('Unable to fetch all linked patient resources (MDM expansion)', e);
 
     return {
       status: 500,
-      body: buildOpenhimResponseObject('Failed', 500, e as Error),
+      body: buildOpenhimResponseObject('Failed', 500, e as Error, 'application/fhir+json', orchestrations),
     };
   }
 };

@@ -9,6 +9,7 @@ import {
   Response,
   MpiMediatorResponseObject,
   MpiTransformResult,
+  Orchestration,
 } from '../types/response';
 import { RequestDetails } from '../types/request';
 import { Bundle, BundleEntry, BundleLink, FhirResource, Patient } from 'fhir/r3';
@@ -95,7 +96,8 @@ export const buildOpenhimResponseObject = (
   openhimTransactionStatus: string,
   httpResponseStatusCode: number,
   responseBody: object,
-  contentType = 'application/fhir+json'
+  contentType = 'application/fhir+json',
+  orchestrations: Orchestration[] = []
 ): OpenHimResponseObject => {
   const response: Response = {
     status: httpResponseStatusCode,
@@ -108,6 +110,7 @@ export const buildOpenhimResponseObject = (
     'x-mediator-urn': config.mediatorUrn,
     status: openhimTransactionStatus,
     response,
+    orchestrations
   };
 };
 
@@ -255,12 +258,15 @@ export const createNewPatientRef = (patientId: string): string => {
 
 export const createHandlerResponseObject = (
   transactionStatus: string,
-  response: ResponseObject
+  response: ResponseObject,
+  orchestrations?: Orchestration[]
 ): MpiMediatorResponseObject => {
   const responseBody = buildOpenhimResponseObject(
     transactionStatus,
     response.status,
-    response.body
+    response.body,
+    'application/fhir+json',
+    orchestrations
   );
 
   return {
