@@ -356,6 +356,7 @@ describe('Middlewares', (): void => {
       expect(result.status).to.equal('Success');
       expect(JSON.parse(result.response.body).total).to.equal(4);
       expect(JSON.parse(result.response.body).entry.length).to.equal(4);
+      expect(result.orchestrations.length).to.be.greaterThan(0);
       nock.cleanAll();
     });
   });
@@ -418,6 +419,7 @@ describe('Middlewares', (): void => {
       expect(result.status).to.equal('Success');
       expect(JSON.parse(result.response.body).total).to.equal(2);
       expect(JSON.parse(result.response.body).entry.length).to.equal(2);
+      expect(result.orchestrations.length).to.be.greaterThan(0);
       nock.cleanAll();
     });
   });
