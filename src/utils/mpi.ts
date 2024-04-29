@@ -1,6 +1,6 @@
 import { Patient, Resource } from 'fhir/r3';
 import { getConfig } from '../config/config';
-import { getData, isHttpStatusOk } from './utils';
+import { createNewPatientRef, getData, isHttpStatusOk } from './utils';
 import { ClientOAuth2, OAuth2Token } from './client-oauth2';
 
 // Singleton instance of MPI Token stored in memory
@@ -60,24 +60,59 @@ export const fetchMpiResourceByRef = async <T extends Resource>(
   return isHttpStatusOk(response.status) ? (response.body as T) : undefined;
 };
 
-/**
- * Recursively fetch linked patient refs from the MPI
- */
 export const fetchMpiPatientLinks = async (patientRef: string, patientLinks: string[]) => {
-  patientLinks.push(patientRef);
+  const {
+    mpiProtocol: protocol,
+    mpiHost: host,
+    mpiPort: port,
+    mpiAuthEnabled,
+    fhirDatastoreHost,
+    fhirDatastorePort,
+    fhirDatastoreProtocol,
+  } = getConfig();
+  const headers: HeadersInit = {
+    'Content-Type': 'application/fhir+json',
+  };
 
-  const patient = await fetchMpiResourceByRef<Patient>(patientRef);
+  if (mpiAuthEnabled) {
+    const token = await getMpiAuthToken();
 
-  if (patient?.link) {
-    const linkedRefs = patient.link.map(({ other }) => other.reference);
-    const refsToFetch = linkedRefs.filter((ref) => {
-      return ref && !patientLinks.includes(ref);
-    }) as string[];
-
-    if (refsToFetch.length > 0) {
-      const promises = refsToFetch.map((ref) => fetchMpiPatientLinks(ref, patientLinks));
-
-      await Promise.all(promises);
-    }
+    headers['Authorization'] = `Bearer ${token.accessToken}`;
   }
+
+  const guttedPatient = await getData(
+    fhirDatastoreProtocol,
+    fhirDatastoreHost,
+    fhirDatastorePort,
+    `/fhir/${patientRef}`,
+    headers
+  );
+
+  // Fetch patient links from MPI
+  const mpiPatient = await getData(
+    protocol,
+    host,
+    port,
+    `/fhir/links/Patient/${Object.assign(guttedPatient.body)
+      .link[0].other.reference.split('/')
+      .pop()}`,
+    headers
+  );
+
+  const links: string[] = Object.assign(mpiPatient.body).link.map(
+    (element: { other: { reference: string } }) =>
+      createNewPatientRef(element.other.reference.split('/').pop() || '')
+  );
+
+  const guttedPatients = await getData(
+    fhirDatastoreProtocol,
+    fhirDatastoreHost,
+    fhirDatastorePort,
+    `/fhir/Patient?link=${encodeURIComponent(links.join(','))}`,
+    headers
+  );
+
+  Object.assign(guttedPatients.body).entry.forEach((patient: { fullUrl: string }) => {
+    patientLinks.push(patient.fullUrl);
+  });
 };
