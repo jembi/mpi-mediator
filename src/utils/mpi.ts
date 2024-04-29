@@ -61,6 +61,9 @@ export const fetchMpiResourceByRef = async <T extends Resource>(
 };
 
 export const fetchMpiPatientLinks = async (patientRef: string, patientLinks: string[]) => {
+  const patientLinksSet: Set<string> = new Set();
+  patientLinksSet.add(patientRef);
+
   const {
     mpiProtocol: protocol,
     mpiHost: host,
@@ -99,8 +102,9 @@ export const fetchMpiPatientLinks = async (patientRef: string, patientLinks: str
     headers
   );
 
+  // Cater for SanteMpi client registry
   if (!isHttpStatusOk(mpiPatient.status)) {
-    await getData(
+    mpiPatient = await getData(
       protocol,
       host,
       port,
@@ -124,7 +128,8 @@ export const fetchMpiPatientLinks = async (patientRef: string, patientLinks: str
     headers
   );
 
-  Object.assign(guttedPatients.body).entry.forEach((patient: { fullUrl: string }) => {
-    patientLinks.push(patient.fullUrl);
+  Object.assign(guttedPatients.body).entry?.forEach((patient: { fullUrl: string }) => {
+    patientLinksSet.add(patient.fullUrl);
   });
+  patientLinks.push(...patientLinksSet);
 };
