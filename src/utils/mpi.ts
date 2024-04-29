@@ -89,7 +89,7 @@ export const fetchMpiPatientLinks = async (patientRef: string, patientLinks: str
   );
 
   // Fetch patient links from MPI
-  const mpiPatient = await getData(
+  let mpiPatient = await getData(
     protocol,
     host,
     port,
@@ -98,6 +98,18 @@ export const fetchMpiPatientLinks = async (patientRef: string, patientLinks: str
       .pop()}`,
     headers
   );
+
+  if (!isHttpStatusOk(mpiPatient.status)) {
+    await getData(
+      protocol,
+      host,
+      port,
+      `/fhir/Patient/${Object.assign(guttedPatient.body)
+        .link[0].other.reference.split('/')
+        .pop()}`,
+      headers
+    );
+  }
 
   const links: string[] = Object.assign(mpiPatient.body).link.map(
     (element: { other: { reference: string } }) =>
