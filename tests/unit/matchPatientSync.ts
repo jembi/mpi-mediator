@@ -343,9 +343,10 @@ describe('Match Patient Synchronously', (): void => {
             fullUrl: 'Patient/12333',
             request: {
               method: 'PUT',
-              url: 'Patient/testPatient',
+              url: 'Patient/12333',
             },
             resource: {
+              id: '12333',
               link: [
                 {
                   other: {

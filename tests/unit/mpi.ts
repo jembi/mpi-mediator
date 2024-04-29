@@ -9,12 +9,16 @@ import {
   fetchMpiResourceByRef,
   fetchMpiPatientLinks,
 } from '../../src/utils/mpi';
+import { createNewPatientRef } from '../../src/utils/utils';
 
 const config = getConfig();
 
 const { mpiProtocol, mpiHost, mpiPort, mpiClientId, mpiClientSecret } = config;
 
 const mpiUrl = `${mpiProtocol}://${mpiHost}:${mpiPort}`;
+
+const { fhirDatastoreProtocol, fhirDatastoreHost, fhirDatastorePort } = config;
+const fhirDatastoreUrl = `${fhirDatastoreProtocol}://${fhirDatastoreHost}:${fhirDatastorePort}`;
 
 const newOauth2TokenGenerated = {
   token_type: 'bearer',
@@ -51,7 +55,7 @@ const patientFhirResource1: Patient = {
   link: [
     {
       other: {
-        reference: 'Patient/2',
+        reference: 'Patient/0x4',
       },
       type: 'refer',
     },
@@ -64,7 +68,7 @@ const patientFhirResource2: Patient = {
   link: [
     {
       other: {
-        reference: 'Patient/1',
+        reference: 'Patient/0x7',
       },
       type: 'seealso',
     },
@@ -140,8 +144,13 @@ describe('MPI', (): void => {
 
   describe('*fetchMpiPatientLinks', async (): Promise<void> => {
     it('should fetch patient links from MPI fhir', async (): Promise<void> => {
-      nock(mpiUrl).get('/fhir/Patient/1').reply(200, patientFhirResource1);
+      nock(mpiUrl).persist().post('/auth/oauth2_token').reply(200, newOauth2TokenGenerated);
+      nock(mpiUrl).get('/fhir/links/Patient/0x4').reply(200, {...patientFhirResource1, link: [{other: {reference: 'Patient/0x4'}}, {other: {reference: 'Patient/0x7'}}]});
       nock(mpiUrl).get('/fhir/Patient/2').reply(200, patientFhirResource2);
+      const links = encodeURIComponent([createNewPatientRef('0x4'),createNewPatientRef('0x7')].join(','))
+      nock(fhirDatastoreUrl).get(`/fhir/Patient?link=${links}`).reply(200, {entry: [{fullUrl: 'Patient/1'}, {fullUrl: 'Patient/2'}]});
+      nock(fhirDatastoreUrl).get('/fhir/Patient/1').reply(200, patientFhirResource1);
+
       const refs: string[] = [];
       await fetchMpiPatientLinks(`Patient/1`, refs);
       expect(refs).to.deep.equal(['Patient/1', 'Patient/2']);

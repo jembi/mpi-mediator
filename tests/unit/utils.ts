@@ -359,6 +359,7 @@ describe('Utils', (): void => {
             fullUrl: 'Patient/1234',
             resource: {
               resourceType: 'Patient',
+              id: '1233',
               link: [
                 {
                   type: 'refer',
@@ -370,7 +371,7 @@ describe('Utils', (): void => {
             },
             request: {
               method: 'PUT',
-              url: 'Patient/xxx',
+              url: 'Patient/1233',
             },
           },
         ],
@@ -473,6 +474,7 @@ describe('Utils', (): void => {
                 profile: ['http://example.com/patient-profile'],
               },
               resourceType: 'Patient',
+              id: '1233',
               link: [
                 {
                   type: 'refer',
@@ -484,7 +486,7 @@ describe('Utils', (): void => {
             },
             request: {
               method: 'PUT',
-              url: 'Patient/xxx',
+              url: 'Patient/1233',
             },
           },
         ],
