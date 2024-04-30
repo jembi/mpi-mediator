@@ -29,6 +29,16 @@ Given('MPI and FHIR services are up and running', async (): Promise<void> => {
   request = supertest(server);
 });
 
+When('there is data', async (): Promise<void> => {
+  const response = await request
+    .post('/fhir')
+    .send(bundle)
+    .set('content-type', 'application/fhir+json')
+    .expect(200);
+
+  responseBody = response.body;
+});
+
 When('an $everything search request is sent', async (): Promise<void> => {
   const response = await request
     .get('/fhir/Patient/testPatient/$everything?_mdm=true')
