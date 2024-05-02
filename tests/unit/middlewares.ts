@@ -9,6 +9,7 @@ import { mpiMdmQueryLinksMiddleware } from '../../src/middlewares/mpi-mdm-query-
 import { validationMiddleware } from '../../src/middlewares/validation';
 import { mpiAuthMiddleware } from '../../src/middlewares/mpi-auth';
 import { mpiMdmSummaryMiddleware } from '../../src/middlewares/mpi-mdm-summary';
+import { createNewPatientRef } from '../../src/utils/utils';
 
 const config = getConfig();
 
@@ -31,7 +32,7 @@ const patientFhirResource1: Patient = {
   link: [
     {
       other: {
-        reference: 'Patient/2',
+        reference: 'Patient/0x4',
       },
       type: 'refer',
     },
@@ -44,7 +45,7 @@ const patientFhirResource2: Patient = {
   link: [
     {
       other: {
-        reference: 'Patient/1',
+        reference: 'Patient/0x7',
       },
       type: 'seealso',
     },
@@ -324,8 +325,11 @@ describe('Middlewares', (): void => {
 
     it('should perform MDM expansion when mdm param is supplied', async () => {
       nock(mpiUrl).persist().post('/auth/oauth2_token').reply(200, newOauth2TokenGenerated);
-      nock(mpiUrl).get('/fhir/Patient/1').reply(200, patientFhirResource1);
+      nock(mpiUrl).get('/fhir/links/Patient/0x4').reply(200, {...patientFhirResource1, link: [{other: {reference: 'Patient/0x4'}}, {other: {reference: 'Patient/0x7'}}]});
       nock(mpiUrl).get('/fhir/Patient/2').reply(200, patientFhirResource2);
+      const links = encodeURIComponent([createNewPatientRef('0x4'),createNewPatientRef('0x7')].join(','))
+      nock(fhirDatastoreUrl).get(`/fhir/Patient?link=${links}`).reply(200, {entry: [{fullUrl: 'Patient/1'}, {fullUrl: 'Patient/2'}]});
+      nock(fhirDatastoreUrl).get('/fhir/Patient/1').reply(200, patientFhirResource1);
       nock(fhirDatastoreUrl)
         .get(`/fhir/Encounter?subject=${encodeURIComponent('Patient/1,Patient/2')}`)
         .reply(200, Encounters);
@@ -383,8 +387,11 @@ describe('Middlewares', (): void => {
 
     it('should preform MDM expansion when mdm param is supplied', async () => {
       nock(mpiUrl).persist().post('/auth/oauth2_token').reply(200, newOauth2TokenGenerated);
-      nock(mpiUrl).get('/fhir/Patient/1').reply(200, patientFhirResource1);
+      nock(mpiUrl).get('/fhir/links/Patient/0x4').reply(200, {...patientFhirResource1, link: [{other: {reference: 'Patient/0x4'}}, {other: {reference: 'Patient/0x7'}}]});
       nock(mpiUrl).get('/fhir/Patient/2').reply(200, patientFhirResource2);
+      const links = encodeURIComponent([createNewPatientRef('0x4'),createNewPatientRef('0x7')].join(','))
+      nock(fhirDatastoreUrl).get(`/fhir/Patient?link=${links}`).reply(200, {entry: [{fullUrl: 'Patient/1'}, {fullUrl: 'Patient/2'}]});
+      nock(fhirDatastoreUrl).get('/fhir/Patient/1').reply(200, patientFhirResource1);
       nock(fhirDatastoreUrl)
         .get(`/fhir/${patientRefSummary1}/$summary`)
         .reply(200, patientSummary1);
@@ -435,8 +442,12 @@ describe('Middlewares', (): void => {
 
     it('should perform MDM expansion when mdm param is supplied', async () => {
       nock(mpiUrl).persist().post('/auth/oauth2_token').reply(200, {});
-      nock(mpiUrl).get('/fhir/Patient/1').reply(200, patientFhirResource1);
+      nock(mpiUrl).get('/fhir/links/Patient/0x4').reply(200, {...patientFhirResource1, link: [{other: {reference: 'Patient/0x4'}}, {other: {reference: 'Patient/0x7'}}]});
       nock(mpiUrl).get('/fhir/Patient/2').reply(200, patientFhirResource2);
+      const links = encodeURIComponent([createNewPatientRef('0x4'),createNewPatientRef('0x7')].join(','))
+      nock(fhirDatastoreUrl).get(`/fhir/Patient?link=${links}`).reply(200, {entry: [{fullUrl: 'Patient/1'}, {fullUrl: 'Patient/2'}]});
+      nock(fhirDatastoreUrl).get('/fhir/Patient/1').reply(200, patientFhirResource1);
+
       const request = {
         body: {},
         headers: {},
