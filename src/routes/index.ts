@@ -95,7 +95,7 @@ routes.get('/fhir/Patient/:patientId', async (req, res) => {
       patient.link && patient.link[0]?.other.reference?.match(/Patient\/([^/]+)/)?.[1];
 
     if (interactionId) {
-      upsteamId = interactionId;
+      upstreamId = interactionId;
       logger.debug(`Swapping source ID ${requestedId} for interaction ID ${upsteamId}`);
     }
   }
