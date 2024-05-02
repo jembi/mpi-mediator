@@ -100,7 +100,7 @@ routes.get('/fhir/Patient/:patientId', async (req, res) => {
     }
   }
 
-  logger.debug(`Fetching patient ${upsteamId} from MPI`);
+  logger.debug(`Fetching patient ${upstreamId} from MPI`);
 
   const headers: HeadersInit = {
     'Content-Type': 'application/fhir+json',
