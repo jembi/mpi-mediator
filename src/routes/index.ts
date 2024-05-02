@@ -87,7 +87,7 @@ routes.get('/fhir/Patient/:patientId', async (req, res) => {
     {}
   );
 
-  let upsteamId = requestedId;
+  let upstreamId = requestedId;
 
   if (fhirResponse.status === 200) {
     const patient = fhirResponse.body as Patient;
