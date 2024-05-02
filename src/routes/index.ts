@@ -126,7 +126,7 @@ routes.get('/fhir/Patient/:patientId', async (req, res) => {
 
     patient.id = requestedId;
     logger.debug(
-      `Mapped upstream ID ${upsteamId} to requested ID ${requestedId} in response body`
+      `Mapped upstream ID ${upstreamId} to requested ID ${requestedId} in response body`
     );
   }
 
