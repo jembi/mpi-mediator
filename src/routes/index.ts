@@ -96,7 +96,7 @@ routes.get('/fhir/Patient/:patientId', async (req, res) => {
 
     if (interactionId) {
       upstreamId = interactionId;
-      logger.debug(`Swapping source ID ${requestedId} for interaction ID ${upsteamId}`);
+      logger.debug(`Swapping source ID ${requestedId} for interaction ID ${upstreamId}`);
     }
   }
 
