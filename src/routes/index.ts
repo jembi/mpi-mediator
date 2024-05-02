@@ -116,7 +116,7 @@ routes.get('/fhir/Patient/:patientId', async (req, res) => {
     mpiProtocol,
     mpiHost,
     mpiPort,
-    `/fhir/links/Patient/${upsteamId}`,
+    `/fhir/links/Patient/${upstreamId}`,
     {}
   );
 
