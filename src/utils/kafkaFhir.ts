@@ -185,12 +185,24 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
         method: 'GET',
         path: `/fhir/Patient/${patientEntry.fullUrl.split('/').pop()}`,
       });
+
       if (isHttpStatusOk(guttedPatient.status)) {
-        const mpiPatient = await sendRequest({
+        const id: string = Object.assign(guttedPatient.body).link[0].other.reference.split('/').pop();
+
+        let mpiPatient = await sendRequest({
           ...clientRegistryRequestDetails,
           method: 'GET',
-          path: `/fhir/links/Patient/${Object.assign(guttedPatient.body).link[0].other.reference}`,
+          path: `/fhir/links/Patient/${id}`,
         });
+
+        if (!isHttpStatusOk(mpiPatient.status)) {
+          mpiPatient = await sendRequest({
+            ...clientRegistryRequestDetails,
+            method: 'GET',
+            path: `/fhir/Patient/${id}`,
+          });
+        }
+
         clientRegistryRequestDetails.method = 'PUT';
         clientRegistryRequestDetails.path = `/fhir/Patient/${
           Object.assign(mpiPatient.body).id
