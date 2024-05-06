@@ -152,8 +152,7 @@ const fhirDatastoreRequestDetailsOrg: RequestDetails = {
   port: config.fhirDatastorePort,
   headers: { 'Content-Type': 'application/fhir+json' },
   method: 'POST',
-  path: '/fhir',
-  data: '',
+  path: '/fhir'
 };
 
 export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponseObject> => {
@@ -185,10 +184,38 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
   }
 
   const newPatientMap: NewPatientMap = {};
-
   // transform and send each patient resource and submit to MPI
   const promises = patientEntries.map(async (patientEntry) => {
     if (patientEntry.fullUrl) {
+      // Check if patient already exists and perform update
+      const guttedPatient = await sendRequest({
+        ...fhirDatastoreRequestDetails,
+        method: 'GET',
+        path: `/fhir/Patient/${patientEntry.fullUrl.split('/').pop()}`,
+      });
+
+      if (isHttpStatusOk(guttedPatient.status)) {
+        const id: string = Object.assign(guttedPatient.body).link[0].other.reference.split('/').pop();
+
+        let mpiPatient = await sendRequest({
+          ...clientRegistryRequestDetails,
+          method: 'GET',
+          path: `/fhir/links/Patient/${id}`,
+        });
+
+        if (!isHttpStatusOk(mpiPatient.status)) {
+          mpiPatient = await sendRequest({
+            ...clientRegistryRequestDetails,
+            method: 'GET',
+            path: `/fhir/Patient/${id}`,
+          });
+        }
+
+        clientRegistryRequestDetails.method = 'PUT';
+        clientRegistryRequestDetails.path = `/fhir/Patient/${
+          Object.assign(mpiPatient.body).id
+        }`;
+      }
       newPatientMap[patientEntry.fullUrl] = {
         mpiTransformResult: transformPatientResourceForMPI(patientEntry.resource as Patient),
       };

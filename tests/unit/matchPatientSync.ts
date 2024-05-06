@@ -28,7 +28,6 @@ describe('Match Patient Synchronously', (): void => {
       headers: { 'Content-Type': 'application/fhir+json' },
       method: 'POST',
       path: '/fhir',
-      data: '',
     };
 
     it('should return error when validation fails', async (): Promise<void> => {
