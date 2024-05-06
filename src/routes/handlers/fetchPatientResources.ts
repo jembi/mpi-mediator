@@ -33,7 +33,7 @@ export const fetchAllPatientResourcesByRefs = async (
     const headers: HeadersInit = {'Content-Type': 'application/fhir+json'};
 
     const orchestration: Orchestration = {
-      name: `Request to fhir datatstore - ${path}`,
+      name: `Request to fhir datastore - ${path}`,
       request: {protocol, host, path, port, method: 'GET', headers, timestamp: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")},
       response: {
         status: 200,
