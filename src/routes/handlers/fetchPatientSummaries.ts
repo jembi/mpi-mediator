@@ -18,8 +18,11 @@ const {
 export const fetchAllPatientSummariesByRefs = async (
   patientRefs: string[]
 ): Promise<Bundle> => {
+  // remove duplicates
+  patientRefs = Array.from(new Set(patientRefs.map(ref => ref?.split('/').pop() || '')));
+
   const patientExternalRefs = patientRefs.map((ref) => {
-    const path = `/fhir/${ref}/$summary`;
+    const path = `/fhir/Patient/${ref}/$summary`;
 
     return getData(protocol, host, port, path, {
       'Content-Type': 'application/fhir+json',
