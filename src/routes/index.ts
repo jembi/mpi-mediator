@@ -87,7 +87,7 @@ routes.get('/fhir/Patient/:patientId', async (req, res) => {
     {}
   );
 
-  let upsteamId = requestedId;
+  let upstreamId = requestedId;
 
   if (fhirResponse.status === 200) {
     const patient = fhirResponse.body as Patient;
@@ -95,12 +95,12 @@ routes.get('/fhir/Patient/:patientId', async (req, res) => {
       patient.link && patient.link[0]?.other.reference?.match(/Patient\/([^/]+)/)?.[1];
 
     if (interactionId) {
-      upsteamId = interactionId;
-      logger.debug(`Swapping source ID ${requestedId} for interaction ID ${upsteamId}`);
+      upstreamId = interactionId;
+      logger.debug(`Swapping source ID ${requestedId} for interaction ID ${upstreamId}`);
     }
   }
 
-  logger.debug(`Fetching patient ${upsteamId} from MPI`);
+  logger.debug(`Fetching patient ${upstreamId} from MPI`);
 
   const headers: HeadersInit = {
     'Content-Type': 'application/fhir+json',
@@ -116,7 +116,7 @@ routes.get('/fhir/Patient/:patientId', async (req, res) => {
     mpiProtocol,
     mpiHost,
     mpiPort,
-    `/fhir/links/Patient/${upsteamId}`,
+    `/fhir/links/Patient/${upstreamId}`,
     {}
   );
 
@@ -129,7 +129,7 @@ routes.get('/fhir/Patient/:patientId', async (req, res) => {
     if (req.query.projection === 'partial') mpiResponse.body = patientProjector(patient);
 
     logger.debug(
-      `Mapped upstream ID ${upsteamId} to requested ID ${requestedId} in response body`
+      `Mapped upstream ID ${upstreamId} to requested ID ${requestedId} in response body`
     );
   }
 
@@ -151,7 +151,10 @@ routes.get(
   '/fhir/Patient/:patientId/\\$summary',
   mpiMdmSummaryMiddleware,
   asyncHandler(async (req, res) => {
-    const { status, body } = await fetchPatientSummaryByRef(`Patient/${req.params.patientId}`);
+    const { status, body } = await fetchPatientSummaryByRef(
+      `Patient/${req.params.patientId}`,
+      req.query
+    );
 
     res.set('Content-Type', 'application/json+openhim');
     res.status(status).send(body);
