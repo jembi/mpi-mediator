@@ -186,16 +186,19 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
   const newPatientMap: NewPatientMap = {};
   // transform and send each patient resource and submit to MPI
   const promises = patientEntries.map(async (patientEntry) => {
+    let guttedPatient: ResponseObject;
+    let id: string;
+
     if (patientEntry.fullUrl) {
       // Check if patient already exists and perform update
-      const guttedPatient = await sendRequest({
+      guttedPatient = await sendRequest({
         ...fhirDatastoreRequestDetails,
         method: 'GET',
         path: `/fhir/Patient/${patientEntry.fullUrl.split('/').pop()}`,
       });
 
       if (isHttpStatusOk(guttedPatient.status)) {
-        const id: string = Object.assign(guttedPatient.body).link[0].other.reference.split('/').pop();
+        id = Object.assign(guttedPatient.body).link[0].other.reference.split('/').pop();
 
         let mpiPatient = await sendRequest({
           ...clientRegistryRequestDetails,
@@ -232,7 +235,12 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
       );
     }
 
-    return sendRequest(clientRegistryRequestDetails);
+    return sendRequest(clientRegistryRequestDetails).then(response => {
+      if (isHttpStatusOk(guttedPatient.status)) {
+        return {status: response.status, body: {...response.body, id}}
+      }
+      return response;
+    });
   });
 
   const clientRegistryResponses = await Promise.all(promises);

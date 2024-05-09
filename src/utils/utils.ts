@@ -233,6 +233,10 @@ export const transformPatientResourceForMPI = (patient: Patient): MpiTransformRe
 export const restorePatientResource = (patientData: PatientData) => {
   patientData.restoredPatient = patientData.mpiResponsePatient;
 
+  // restore the source uuid of the patient
+  const id = Object.assign({id: ''}, patientData.mpiTransformResult?.patient).id;
+  patientData.restoredPatient = Object.assign({}, patientData.restoredPatient, {id});
+
   if (patientData.mpiTransformResult?.extension?.length) {
     patientData.restoredPatient = Object.assign({}, patientData.restoredPatient, {
       extension: patientData.mpiTransformResult.extension,
@@ -311,4 +315,15 @@ export const mergeBundles = async (
   );
 
   return bundle;
+};
+
+export const patientProjector = (patient: Patient) : Patient => {
+  return {
+    resourceType: patient.resourceType,
+    id: patient.id,
+    identifier: patient.identifier,
+    name: patient.name,
+    birthDate: patient.birthDate,
+    gender: patient.gender
+  }
 };

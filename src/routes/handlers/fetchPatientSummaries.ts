@@ -19,6 +19,9 @@ export const fetchAllPatientSummariesByRefs = async (
   patientRefs: string[],
   queryParams?: object
 ): Promise<Bundle> => {
+  // remove duplicates
+  patientRefs = Array.from(new Set(patientRefs.map(ref => ref?.split('/').pop() || '')));
+
   const patientExternalRefs = patientRefs.map((ref) => {
     const params = Object.entries(queryParams ?? {});
     let combinedParams = null;
@@ -29,7 +32,7 @@ export const fetchAllPatientSummariesByRefs = async (
         .join('&');
     }
 
-    const path = `/fhir/${ref}/$summary${combinedParams ? `?${combinedParams}` : ''}`;
+    const path = `/fhir/Patient/${ref}/$summary${combinedParams ? `?${combinedParams}` : ''}`;
 
     return getData(protocol, host, port, path, {
       'Content-Type': 'application/fhir+json',

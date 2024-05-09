@@ -408,7 +408,7 @@ describe('Match Patient Synchronously', (): void => {
                 },
               },
               restoredPatient: {
-                id: 'testPatient',
+                id: '12333',
                 resourceType: 'Patient',
               },
             },

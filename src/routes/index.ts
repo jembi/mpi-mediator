@@ -8,7 +8,7 @@ import { matchAsyncHandler } from './handlers/matchPatientAsync';
 import { matchSyncHandler } from './handlers/matchPatientSync';
 import { mpiMdmQueryLinksMiddleware } from '../middlewares/mpi-mdm-query-links';
 import { validationMiddleware } from '../middlewares/validation';
-import { buildOpenhimResponseObject, getData } from '../utils/utils';
+import { buildOpenhimResponseObject, getData, patientProjector } from '../utils/utils';
 import { fetchEverythingByRef } from './handlers/fetchPatientResources';
 import { mpiMdmSummaryMiddleware } from '../middlewares/mpi-mdm-summary';
 import { fetchPatientSummaryByRef } from './handlers/fetchPatientSummaries';
@@ -125,6 +125,9 @@ routes.get('/fhir/Patient/:patientId', async (req, res) => {
     const patient = mpiResponse.body as Patient;
 
     patient.id = requestedId;
+
+    if (req.query.projection === 'partial') mpiResponse.body = patientProjector(patient);
+
     logger.debug(
       `Mapped upstream ID ${upstreamId} to requested ID ${requestedId} in response body`
     );
