@@ -25,14 +25,7 @@ const {
 export const fetchPatientByQuery = async (
   query: object
 ): Promise<MpiMediatorResponseObject> => {
-  const params = Object.entries(query);
-  let combinedParams = '';
-
-  if (params.length > 0) {
-    combinedParams = params
-      .map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`)
-      .join('&');
-  }
+  const combinedParams = new URLSearchParams(query as Record<string, string>).toString();
 
   const headers: HeadersInit = {
     'Content-Type': 'application/fhir+json',
