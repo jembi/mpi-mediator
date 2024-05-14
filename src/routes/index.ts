@@ -8,14 +8,16 @@ import { matchAsyncHandler } from './handlers/matchPatientAsync';
 import { matchSyncHandler } from './handlers/matchPatientSync';
 import { mpiMdmQueryLinksMiddleware } from '../middlewares/mpi-mdm-query-links';
 import { validationMiddleware } from '../middlewares/validation';
-import { buildOpenhimResponseObject, getData, patientProjector } from '../utils/utils';
+import { buildOpenhimResponseObject } from '../utils/utils';
 import { fetchEverythingByRef } from './handlers/fetchPatientResources';
 import { mpiMdmSummaryMiddleware } from '../middlewares/mpi-mdm-summary';
 import { fetchPatientSummaryByRef } from './handlers/fetchPatientSummaries';
 import { getConfig } from '../config/config';
-import { Patient } from 'fhir/r3';
-import { getMpiAuthToken } from '../utils/mpi';
 import logger from '../logger';
+import {
+  fetchPatientById,
+  fetchPatientByQuery,
+} from './handlers/fetchPatient';
 
 const routes = express.Router();
 
@@ -70,70 +72,19 @@ routes.get('/fhir/Patient/:patientId', async (req, res) => {
 
   logger.debug(`Fetching patient ${requestedId} from FHIR store`);
 
-  const {
-    fhirDatastoreProtocol: fhirProtocol,
-    fhirDatastoreHost: fhirHost,
-    fhirDatastorePort: fhirPort,
-    mpiProtocol: mpiProtocol,
-    mpiHost: mpiHost,
-    mpiPort: mpiPort,
-    mpiAuthEnabled,
-  } = getConfig();
-  const fhirResponse = await getData(
-    fhirProtocol,
-    fhirHost,
-    fhirPort,
-    `/fhir/Patient/${requestedId}`,
-    {}
-  );
+  const { status, body } = await fetchPatientById(requestedId, String(req.query?.projection));
 
-  let upstreamId = requestedId;
+  res.set('Content-Type', 'application/json+openhim');
+  res.status(status).send(body);
+});
 
-  if (fhirResponse.status === 200) {
-    const patient = fhirResponse.body as Patient;
-    const interactionId =
-      patient.link && patient.link[0]?.other.reference?.match(/Patient\/([^/]+)/)?.[1];
+routes.get('/fhir/Patient', async (req, res) => {
+  logger.debug(`Fetching patient from Client registry using query params`);
 
-    if (interactionId) {
-      upstreamId = interactionId;
-      logger.debug(`Swapping source ID ${requestedId} for interaction ID ${upstreamId}`);
-    }
-  }
+  const { status, body } = await fetchPatientByQuery(req.query);
 
-  logger.debug(`Fetching patient ${upstreamId} from MPI`);
-
-  const headers: HeadersInit = {
-    'Content-Type': 'application/fhir+json',
-  };
-
-  if (mpiAuthEnabled) {
-    const token = await getMpiAuthToken();
-
-    headers['Authorization'] = `Bearer ${token.accessToken}`;
-  }
-
-  const mpiResponse = await getData(
-    mpiProtocol,
-    mpiHost,
-    mpiPort,
-    `/fhir/links/Patient/${upstreamId}`,
-    {}
-  );
-
-  // Map the upstreamId to the requestedId
-  if (mpiResponse.status === 200) {
-    const patient = mpiResponse.body as Patient;
-
-    patient.id = requestedId;
-
-    if (req.query.projection === 'partial') mpiResponse.body = patientProjector(patient);
-
-    logger.debug(
-      `Mapped upstream ID ${upstreamId} to requested ID ${requestedId} in response body`
-    );
-  }
-
-  res.status(mpiResponse.status).send(mpiResponse.body);
+  res.set('Content-Type', 'application/json+openhim');
+  res.status(status).send(body);
 });
 
 routes.get(
