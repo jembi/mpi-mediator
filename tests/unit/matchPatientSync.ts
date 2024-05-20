@@ -29,7 +29,6 @@ describe('Match Patient Synchronously', (): void => {
       headers: { 'Content-Type': 'application/fhir+json' },
       method: 'POST',
       path: '/fhir',
-      data: '',
     };
 
     it('should return error when validation fails', async (): Promise<void> => {
@@ -356,9 +355,10 @@ describe('Match Patient Synchronously', (): void => {
             fullUrl: 'Patient/12333',
             request: {
               method: 'PUT',
-              url: 'Patient/testPatient',
+              url: 'Patient/12333',
             },
             resource: {
+              id: '12333',
               link: [
                 {
                   other: {
@@ -421,7 +421,7 @@ describe('Match Patient Synchronously', (): void => {
                 },
               },
               restoredPatient: {
-                id: 'testPatient',
+                id: '12333',
                 resourceType: 'Patient',
               },
             },

@@ -12,6 +12,7 @@ import {
   createHandlerResponseObject,
   mergeBundles,
   transformPatientResourceForMPI,
+  patientProjector,
 } from '../../src/utils/utils';
 import {
   MpiMediatorResponseObject,
@@ -359,6 +360,7 @@ describe('Utils', (): void => {
             fullUrl: 'Patient/1234',
             resource: {
               resourceType: 'Patient',
+              id: '1233',
               link: [
                 {
                   type: 'refer',
@@ -370,7 +372,7 @@ describe('Utils', (): void => {
             },
             request: {
               method: 'PUT',
-              url: 'Patient/xxx',
+              url: 'Patient/1233',
             },
           },
         ],
@@ -473,6 +475,7 @@ describe('Utils', (): void => {
                 profile: ['http://example.com/patient-profile'],
               },
               resourceType: 'Patient',
+              id: '1233',
               link: [
                 {
                   type: 'refer',
@@ -484,7 +487,7 @@ describe('Utils', (): void => {
             },
             request: {
               method: 'PUT',
-              url: 'Patient/xxx',
+              url: 'Patient/1233',
             },
           },
         ],
@@ -587,6 +590,113 @@ describe('Utils', (): void => {
       expect(JSON.parse(handlerResponse.body.response.body)).to.deep.equal({
         message: 'Success',
       });
+    });
+  });
+
+  describe('*patientProjector', (): void => {
+    it('should project patient', (): void => {
+      const patient: Patient = {
+        resourceType: 'Patient',
+        id: '642b83d3-a43c-41ef-a578-2b730f276bfb',
+        extension: [
+          {
+            url: 'http://hl7.org/fhir/StructureDefinition/patient-religion',
+            valueCodeableConcept: {
+              coding: [
+                {
+                  system: 'http://terminology.hl7.org/ValueSet/v3-ReligiousAffiliation',
+                  code: '1036',
+                  display: 'Orthodox',
+                },
+              ],
+            },
+          },
+          {
+            url: 'http://hl7.org/fhir/StructureDefinition/patient-relatedPerson',
+            valueReference: {
+              reference: 'RelatedPerson/f8b7dccb-f1ef-4365-9323-29303479d02bRelatedPerson481',
+            },
+          },
+          {
+            url: 'http://cdr.aacahb.gov.et/EducationalLevel',
+            valueCodeableConcept: {
+              coding: [
+                {
+                  system: 'http://terminology.hl7.org/CodeSystem/v3-EducationLevel',
+                  code: 'ELEM',
+                  display: 'Elementary School',
+                },
+              ],
+            },
+          },
+          {
+            url: 'http://cdr.aacahb.gov.et/Occupation',
+            valueString: 'Foreman',
+          },
+        ],
+        identifier: [
+          {
+            system: 'http://cdr.aacahb.gov.et/SmartCareID',
+            value: '642b83d3-a43c-41ef-a578-2b730f276bfb',
+          },
+          {
+            system: 'http://cdr.aacahb.gov.et/NationalID',
+            value: 'MRN-642b83d3-a43c-41ef-a578-2b730f476bf9',
+          },
+          {
+            system: 'http://cdr.aacahb.gov.et/UAN',
+            value: 'UAN-642b83d3-a43c-41ef-a578-2b730f276bfb',
+          },
+        ],
+        name: [
+          {
+            use: 'official',
+            family: 'Rodrigues',
+            given: ['Liniee'],
+          },
+        ],
+        telecom: [
+          {
+            system: 'phone',
+            value: '+2519000000',
+            use: 'home',
+          },
+        ],
+        gender: 'female',
+        birthDate: '1999-06-19',
+        address: [
+          {
+            type: 'physical',
+            text: 'Urban',
+            state: 'Addis Ababa',
+            city: 'Cherkos sub city',
+            district: '10',
+            line: ['17', '927/5'],
+          },
+        ],
+        maritalStatus: {
+          coding: [
+            {
+              system: 'http://terminology.hl7.org/CodeSystem/v3-MaritalStatus',
+              code: 'M',
+              display: 'Married',
+            },
+          ],
+        },
+        managingOrganization: {
+          reference: 'Organization/009a6a861c1b45778c0cbedadefe52a4',
+        },
+      };
+
+      const result: Patient = patientProjector(patient);
+
+      expect(result).to.haveOwnProperty('birthDate');
+      expect(result).to.haveOwnProperty('id');
+      expect(result).to.haveOwnProperty('name');
+      expect(result).to.haveOwnProperty('resourceType');
+      expect(result).to.haveOwnProperty('gender');
+      expect(result).to.haveOwnProperty('identifier');
+      expect(result).to.not.haveOwnProperty('address')
     });
   });
 

@@ -13,6 +13,11 @@ import { fetchEverythingByRef } from './handlers/fetchPatientResources';
 import { mpiMdmSummaryMiddleware } from '../middlewares/mpi-mdm-summary';
 import { fetchPatientSummaryByRef } from './handlers/fetchPatientSummaries';
 import { getConfig } from '../config/config';
+import logger from '../logger';
+import {
+  fetchPatientById,
+  fetchPatientByQuery,
+} from './handlers/fetchPatient';
 
 const routes = express.Router();
 
@@ -60,6 +65,27 @@ routes.post(
   mpiAuthMiddleware,
   mpiAccessProxyMiddleware
 );
+
+// swap source ID for interaction ID
+routes.get('/fhir/Patient/:patientId', async (req, res) => {
+  const requestedId = req.params.patientId;
+
+  logger.debug(`Fetching patient ${requestedId} from FHIR store`);
+
+  const { status, body } = await fetchPatientById(requestedId, String(req.query?.projection));
+
+  res.set('Content-Type', 'application/json+openhim');
+  res.status(status).send(body);
+});
+
+routes.get('/fhir/Patient', async (req, res) => {
+  logger.debug(`Fetching patient from Client registry using query params`);
+
+  const { status, body } = await fetchPatientByQuery(req.query);
+
+  res.set('Content-Type', 'application/json+openhim');
+  res.status(status).send(body);
+});
 
 routes.get(
   '/fhir/Patient/:patientId/\\$everything',

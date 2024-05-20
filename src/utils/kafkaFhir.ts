@@ -80,15 +80,15 @@ export const sendToFhirAndKafka = async (
       path,
       body: JSON.stringify(bundle),
       headers,
-      timestamp: requestStartTime
+      timestamp: requestStartTime,
     },
     response: {
       status: response.status,
       body: JSON.stringify(response.body),
       timestamp: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"),
-      headers: {'Content-Type': 'application/fhir+json'}
-    }
-  }
+      headers: { 'Content-Type': 'application/fhir+json' },
+    },
+  };
   orchestrations.push(orchestration);
 
   let transactionStatus: string;
@@ -96,7 +96,7 @@ export const sendToFhirAndKafka = async (
   if (isHttpStatusOk(response.status)) {
     logger.info('Successfully sent Fhir bundle to the Fhir Datastore!');
 
-    transactionStatus = 'Success';
+    transactionStatus = 'Successful';
 
     // Restore full patient resources to the bundle for sending to Kafka
     Object.keys(newPatientRef).forEach((fullUrl) => {
@@ -109,7 +109,7 @@ export const sendToFhirAndKafka = async (
           resource: patientData.restoredPatient,
           request: {
             method: 'PUT',
-            url
+            url,
           },
         };
 
@@ -132,7 +132,9 @@ export const sendToFhirAndKafka = async (
         const oldId = fullUrl.split('/').pop();
 
         if (oldId) {
-          bundle = JSON.parse(JSON.stringify(bundle).replace(RegExp(`Patient/${oldId}`, 'g'), url));
+          bundle = JSON.parse(
+            JSON.stringify(bundle).replace(RegExp(`Patient/${oldId}`, 'g'), url)
+          );
         }
       }
     });
@@ -141,14 +143,14 @@ export const sendToFhirAndKafka = async (
       name: 'Sending to message bus - kafka',
       request: {
         host: config.kafkaBrokers,
-        timestamp: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+        timestamp: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"),
       },
       response: {
         status: 200,
-        body: JSON.stringify({success: true}),
+        body: JSON.stringify({ success: true }),
         timestamp: '',
-        headers: { 'Content-Type': 'application/fhir+json' }
-      }
+        headers: { 'Content-Type': 'application/fhir+json' },
+      },
     };
 
     const kafkaResponseError: Error | null = await sendToKafka(
@@ -199,7 +201,6 @@ const fhirDatastoreRequestDetailsOrg: RequestDetails = {
   headers: { 'Content-Type': 'application/fhir+json' },
   method: 'POST',
   path: '/fhir',
-  data: '',
 };
 
 export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponseObject> => {
@@ -235,7 +236,39 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
 
   // transform and send each patient resource and submit to MPI
   const promises = patientEntries.map(async (patientEntry) => {
+    let guttedPatient: ResponseObject;
+    let id: string;
+
     if (patientEntry.fullUrl) {
+      // Check if patient already exists and perform update
+      guttedPatient = await sendRequest({
+        ...fhirDatastoreRequestDetails,
+        method: 'GET',
+        path: `/fhir/Patient/${patientEntry.fullUrl.split('/').pop()}`,
+      });
+
+      if (isHttpStatusOk(guttedPatient.status)) {
+        id = Object.assign(guttedPatient.body).link[0].other.reference.split('/').pop();
+
+        let mpiPatient = await sendRequest({
+          ...clientRegistryRequestDetails,
+          method: 'GET',
+          path: `/fhir/links/Patient/${id}`,
+        });
+
+        if (!isHttpStatusOk(mpiPatient.status)) {
+          mpiPatient = await sendRequest({
+            ...clientRegistryRequestDetails,
+            method: 'GET',
+            path: `/fhir/Patient/${id}`,
+          });
+        }
+
+        clientRegistryRequestDetails.method = 'PUT';
+        clientRegistryRequestDetails.path = `/fhir/Patient/${
+          Object.assign(mpiPatient.body).id
+        }`;
+      }
       newPatientMap[patientEntry.fullUrl] = {
         mpiTransformResult: transformPatientResourceForMPI(patientEntry.resource as Patient),
       };
@@ -253,14 +286,23 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
     }
     orchestrations.push({
       name: `Request to Client Registry - ${patientEntry.fullUrl}`,
-      request: {...clientRegistryRequestDetails, timestamp: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")},
+      request: {
+        ...clientRegistryRequestDetails,
+        timestamp: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"),
+      },
       response: {
         status: 201,
         body: '',
-        timestamp: ''
+        timestamp: '',
+      },
+    });
+
+    return sendRequest(clientRegistryRequestDetails).then((response) => {
+      if (isHttpStatusOk(guttedPatient.status)) {
+        return { status: response.status, body: { ...response.body, id } };
       }
-    })
-    return sendRequest(clientRegistryRequestDetails);
+      return response;
+    });
   });
 
   const clientRegistryResponses = await Promise.all(promises);
@@ -270,8 +312,8 @@ export const processBundle = async (bundle: Bundle): Promise<MpiMediatorResponse
       status: resp.status,
       body: JSON.stringify(resp.body),
       timestamp: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"),
-      headers: { 'Content-Type': 'application/fhir+json' }
-    }
+      headers: { 'Content-Type': 'application/fhir+json' },
+    };
   });
 
   const failedRequests = clientRegistryResponses.filter(

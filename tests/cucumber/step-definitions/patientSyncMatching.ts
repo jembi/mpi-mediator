@@ -103,8 +103,20 @@ Then('a patient should be created on the client registry', async (): Promise<voi
 
   const patientId = response.location.split('/')[1];
 
+  const fhirPatient = await fetch(
+    `${config.fhirDatastoreProtocol}://${config.fhirDatastoreHost}:${config.fhirDatastorePort}/fhir/Patient/${patientId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${auth.accessToken}`,
+      },
+      method: 'GET',
+    }
+  );
+
+  const jsonPatient = await fhirPatient.json()
+
   const res = await fetch(
-    `${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}/fhir/Patient/${patientId}`,
+    jsonPatient.link[0].other.reference,
     {
       headers: {
         Authorization: `Bearer ${auth.accessToken}`,
