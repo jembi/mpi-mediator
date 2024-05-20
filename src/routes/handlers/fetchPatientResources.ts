@@ -7,6 +7,7 @@ import { MpiMediatorResponseObject, Orchestration } from '../../types/response';
 import { PATIENT_RESOURCES } from '../../utils/constants';
 import {
   buildOpenhimResponseObject,
+  createFhirDatastoreOrcherstation,
   getData,
   isHttpStatusOk,
   mergeBundles,
@@ -30,24 +31,16 @@ export const fetchAllPatientResourcesByRefs = async (
     const path = `/fhir/${resource}?${PATIENT_RESOURCES[resource]}=${encodeURIComponent(
       patientRefs.join(',')
     )}`;
-    const headers: HeadersInit = {'Content-Type': 'application/fhir+json'};
+    const headers: HeadersInit = { 'Content-Type': 'application/fhir+json' };
 
-    const orchestration: Orchestration = {
-      name: `Request to fhir datatstore - ${path}`,
-      request: {protocol, host, path, port, method: 'GET', headers, timestamp: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")},
-      response: {
-        status: 200,
-        body: '',
-        timestamp: ''
-      }
-    };
+    const orchestration: Orchestration = createFhirDatastoreOrcherstation('Get patient resouces', path);
 
     return getData(protocol, host, port, path, headers).then((response) => {
       orchestration.response = {
         status: response.status,
         body: JSON.stringify(response.body),
         timestamp: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"),
-        headers
+        headers,
       };
       orchestrations.push(orchestration);
 
@@ -76,7 +69,13 @@ export const fetchEverythingByRef = async (
 
   try {
     const bundle = await fetchAllPatientResourcesByRefs([patientRef], orchestrations);
-    const responseBody = buildOpenhimResponseObject('Success', 200, bundle, 'application/fhir+json', orchestrations);
+    const responseBody = buildOpenhimResponseObject(
+      'Success',
+      200,
+      bundle,
+      'application/fhir+json',
+      orchestrations
+    );
 
     logger.info(`Successfully fetched resources for patient with id ${patientRef}!`);
 
@@ -91,7 +90,13 @@ export const fetchEverythingByRef = async (
     const body = (err as any).body || {};
 
     return {
-      body: buildOpenhimResponseObject('Failed', status, body, 'application/fhir+json', orchestrations),
+      body: buildOpenhimResponseObject(
+        'Failed',
+        status,
+        body,
+        'application/fhir+json',
+        orchestrations
+      ),
       status: status,
     };
   }

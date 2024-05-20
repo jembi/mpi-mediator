@@ -4,6 +4,7 @@ import format from 'date-fns/format';
 import { getConfig } from '../../config/config';
 import {
   buildOpenhimResponseObject,
+  createFhirDatastoreOrcherstation,
   getData,
   isHttpStatusOk,
   mergeBundles,
@@ -39,15 +40,7 @@ export const fetchAllPatientSummariesByRefs = async (
 
     const headers: HeadersInit = {'Content-Type': 'application/fhir+json'};
 
-    const orchestration: Orchestration = {
-      name: `Request to fhir datatstore - ${path}`,
-      request: {protocol, host, path, port, method: 'GET', headers, timestamp: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")},
-      response: {
-        status: 200,
-        body: '',
-        timestamp: ''
-      }
-    };
+    const orchestration: Orchestration = createFhirDatastoreOrcherstation('Get summary', path);
   
     return getData(protocol, host, port, path, {
       'Content-Type': 'application/fhir+json',

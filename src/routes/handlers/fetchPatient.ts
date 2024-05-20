@@ -1,7 +1,9 @@
 import { Bundle } from 'fhir/r3';
+import format from 'date-fns/format';
+
 import { getConfig } from '../../config/config';
 import logger from '../../logger';
-import { MpiMediatorResponseObject } from '../../types/response';
+import { MpiMediatorResponseObject, Orchestration } from '../../types/response';
 import { getMpiAuthToken } from '../../utils/mpi';
 import {
   getData,
@@ -9,6 +11,8 @@ import {
   createNewPatientRef,
   patientProjector,
   createHandlerResponseObject,
+  createClientRegistryOrcherstation,
+  createFhirDatastoreOrcherstation,
 } from '../../utils/utils';
 import { Patient } from 'fhir/r3';
 
@@ -16,26 +20,32 @@ const {
   fhirDatastoreProtocol: fhirProtocol,
   fhirDatastoreHost: fhirHost,
   fhirDatastorePort: fhirPort,
-  mpiProtocol: mpiProtocol,
-  mpiHost: mpiHost,
-  mpiPort: mpiPort,
+  mpiProtocol,
+  mpiHost,
+  mpiPort,
   mpiAuthEnabled,
 } = getConfig();
+
+const headers: HeadersInit = {
+  'Content-Type': 'application/fhir+json',
+};
 
 export const fetchPatientByQuery = async (
   query: object
 ): Promise<MpiMediatorResponseObject> => {
   const combinedParams = new URLSearchParams(query as Record<string, string>).toString();
 
-  const headers: HeadersInit = {
-    'Content-Type': 'application/fhir+json',
-  };
+  const orchestrations: Orchestration[] = [];
 
   if (mpiAuthEnabled) {
     const token = await getMpiAuthToken();
 
     headers['Authorization'] = `Bearer ${token.accessToken}`;
   }
+
+  const path = `/fhir/Patient?${combinedParams}`;
+
+  orchestrations.push(createClientRegistryOrcherstation('Match by query',path));
 
   const mpiResponse = await getData(
     mpiProtocol,
@@ -45,6 +55,10 @@ export const fetchPatientByQuery = async (
     headers
   );
 
+  orchestrations[0].response.status = mpiResponse.status;
+  orchestrations[0].response.body = JSON.stringify(mpiResponse.body);
+  orchestrations[0].response.timestamp = format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+
   const promises: any[] = [];
 
   if (isHttpStatusOk(mpiResponse.status)) {
@@ -52,31 +66,35 @@ export const fetchPatientByQuery = async (
 
     logger.debug(`Adding patient link FHIR store`);
 
-    addPatientLinks(promises, bundle);
+    addPatientLinks(promises, bundle, orchestrations);
   } else {
-    return createHandlerResponseObject('Failed', mpiResponse);
+    return createHandlerResponseObject('Failed', mpiResponse, orchestrations);
   }
 
   try {
     const entries = await Promise.all(promises);
 
-    return createHandlerResponseObject('Successful', {
-      status: 200,
-      body: {
-        resourceType: 'Bundle',
-        id: combinedParams,
-        type: 'searchset',
-        total: entries.length,
-        entries: entries,
+    return createHandlerResponseObject(
+      'Successful',
+      {
+        status: 200,
+        body: {
+          resourceType: 'Bundle',
+          id: combinedParams,
+          type: 'searchset',
+          total: entries.length,
+          entries: entries,
+        },
       },
-    });
+      orchestrations
+    );
   } catch (err) {
     const status = (err as any).status || 500;
     const body = (err as any).body || {};
 
     logger.error('Failed to retrieve patient ', body);
 
-    return createHandlerResponseObject('Failed', { status, body });
+    return createHandlerResponseObject('Failed', { status, body }, orchestrations);
   }
 };
 
@@ -84,13 +102,19 @@ export const fetchPatientById = async (
   requestedId: string,
   projection: string
 ): Promise<MpiMediatorResponseObject> => {
-  const fhirResponse = await getData(
-    fhirProtocol,
-    fhirHost,
-    fhirPort,
-    `/fhir/Patient/${requestedId}`,
-    {}
-  );
+  const headers: HeadersInit = {
+    'Content-Type': 'application/fhir+json',
+  };
+  const orchestrations: Orchestration[] = [];
+  let path: string = `/fhir/Patient/${requestedId}`;
+
+  orchestrations.push(createFhirDatastoreOrcherstation('Get gutted patient', path));
+
+  const fhirResponse = await getData(fhirProtocol, fhirHost, fhirPort, path, headers);
+
+  orchestrations[0].response.status = fhirResponse.status;
+  orchestrations[0].response.body = JSON.stringify(fhirResponse.body);
+  orchestrations[0].response.timestamp = format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 
   let upstreamId = requestedId;
 
@@ -104,14 +128,10 @@ export const fetchPatientById = async (
       logger.debug(`Swapping source ID ${requestedId} for interaction ID ${upstreamId}`);
     }
   } else {
-    return createHandlerResponseObject('Failed', fhirResponse);
+    return createHandlerResponseObject('Failed', fhirResponse, orchestrations);
   }
 
   logger.debug(`Fetching patient ${upstreamId} from MPI`);
-
-  const headers: HeadersInit = {
-    'Content-Type': 'application/fhir+json',
-  };
 
   if (mpiAuthEnabled) {
     const token = await getMpiAuthToken();
@@ -119,13 +139,14 @@ export const fetchPatientById = async (
     headers['Authorization'] = `Bearer ${token.accessToken}`;
   }
 
-  const mpiResponse = await getData(
-    mpiProtocol,
-    mpiHost,
-    mpiPort,
-    `/fhir/links/Patient/${upstreamId}`,
-    headers
-  );
+  path = `/fhir/links/Patient/${upstreamId}`;
+  orchestrations.push(createClientRegistryOrcherstation('Get full patient', path));
+
+  const mpiResponse = await getData(mpiProtocol, mpiHost, mpiPort, path, headers);
+
+  orchestrations[1].response.status = mpiResponse.status;
+  orchestrations[1].response.body = JSON.stringify(mpiResponse.body);
+  orchestrations[1].response.timestamp = format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 
   let transactionStatus = 'Successful';
 
@@ -144,19 +165,26 @@ export const fetchPatientById = async (
     transactionStatus = 'Failed';
   }
 
-  return createHandlerResponseObject(transactionStatus, mpiResponse);
+  return createHandlerResponseObject(transactionStatus, mpiResponse, orchestrations);
 };
 
-const addPatientLinks = (promises: any[], bundle: Bundle): void => {
+const addPatientLinks = (
+  promises: any[],
+  bundle: Bundle,
+  orchestrations: Orchestration[]
+): void => {
   bundle.entry?.forEach((patient, index) => {
+    const path = `/fhir/Patient/${encodeURIComponent(patient.resource?.id || '')}`;
+
     const promise = new Promise(async (resolve, reject) => {
-      const mpiLinksResponse = await getData(
-        mpiProtocol,
-        mpiHost,
-        mpiPort,
-        `/fhir/Patient/${encodeURIComponent(patient.resource?.id || '')}`,
-        {}
-      );
+      const orchestration: Orchestration = createClientRegistryOrcherstation('adding patient links', path);
+
+      const mpiLinksResponse = await getData(mpiProtocol, mpiHost, mpiPort, path, {});
+
+      orchestration.response.status = mpiLinksResponse.status;
+      orchestration.response.body = JSON.stringify(mpiLinksResponse.body);
+      orchestration.response.timestamp = format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+      orchestrations.push(orchestration);
 
       if (isHttpStatusOk(mpiLinksResponse.status)) {
         const patient = mpiLinksResponse.body as Patient;
@@ -165,13 +193,17 @@ const addPatientLinks = (promises: any[], bundle: Bundle): void => {
             createNewPatientRef(link.other.reference?.split('/').pop() || '')
           ) || [];
 
-        const fhirResponse = await getData(
-          fhirProtocol,
-          fhirHost,
-          fhirPort,
-          `/fhir/Patient?link=${encodeURIComponent(links.join(','))}`,
-          {}
+        const path: string = `/fhir/Patient?link=${encodeURIComponent(links.join(','))}`;
+        const orchestration: Orchestration = createFhirDatastoreOrcherstation(
+          'adding patient links',
+          path
         );
+        const fhirResponse = await getData(fhirProtocol, fhirHost, fhirPort, path, {});
+
+        orchestration.response.status = fhirResponse.status;
+        orchestration.response.body = JSON.stringify(fhirResponse.body);
+        orchestration.response.timestamp = format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+        orchestrations.push(orchestration);
 
         if (!isHttpStatusOk(fhirResponse.status)) {
           reject(fhirResponse);
