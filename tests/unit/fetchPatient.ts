@@ -137,6 +137,7 @@ describe('Fetch patient', (): void => {
       expect(JSON.parse(result.body.response.body)).to.haveOwnProperty('birthDate');
       expect(JSON.parse(result.body.response.body)).to.haveOwnProperty('address');
       expect(JSON.parse(result.body.response.body)).to.haveOwnProperty('maritalStatus');
+      expect(result.body.orchestrations.length).to.be.equal(2);
       stub.restore();
     });
 
@@ -247,6 +248,7 @@ describe('Fetch patient', (): void => {
       expect(JSON.parse(result.body.response.body)).to.haveOwnProperty('name');
       expect(JSON.parse(result.body.response.body)).to.haveOwnProperty('gender');
       expect(JSON.parse(result.body.response.body)).to.haveOwnProperty('birthDate');
+      expect(result.body.orchestrations.length).to.be.equal(2);
       stub.restore();
     });
   });
@@ -462,6 +464,7 @@ describe('Fetch patient', (): void => {
 
       expect(result.status).to.be.equal(200);
       expect(JSON.parse(result.body.response.body).total).to.deep.equal(1);
+      expect(result.body.orchestrations.length).to.be.equal(3);
       stub.restore();
     });
   });

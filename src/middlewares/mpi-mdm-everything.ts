@@ -25,7 +25,7 @@ const fetchAllLinkedPatientResources = async (
 
     return {
       status: 200,
-      body: buildOpenhimResponseObject('Success', 200, bundle, 'application/fhir+json', orchestrations),
+      body: buildOpenhimResponseObject('Successful', 200, bundle, 'application/fhir+json', orchestrations),
     };
   } catch (e) {
     logger.error('Unable to fetch all linked patient resources (MDM expansion)', e);

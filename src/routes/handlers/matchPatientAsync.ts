@@ -53,7 +53,7 @@ export const matchAsyncHandler = async (
   logger.info('Fhir bundle successfully sent to Kafka');
 
   return createHandlerResponseObject(
-    'Success',
+    'Successful',
     {
       status: 204,
       body: {},

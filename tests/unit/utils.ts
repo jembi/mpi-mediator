@@ -575,7 +575,7 @@ describe('Utils', (): void => {
 
   describe('*createHandlerResponseObject', (): void => {
     it('should create handler response', (): void => {
-      const transactionStatus: string = 'Success';
+      const transactionStatus: string = 'Successful';
       const response: ResponseObject = {
         status: 200,
         body: { message: 'Success' },

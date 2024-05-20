@@ -70,7 +70,7 @@ export const fetchEverythingByRef = async (
   try {
     const bundle = await fetchAllPatientResourcesByRefs([patientRef], orchestrations);
     const responseBody = buildOpenhimResponseObject(
-      'Success',
+      'Successful',
       200,
       bundle,
       'application/fhir+json',

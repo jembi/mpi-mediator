@@ -108,7 +108,7 @@ describe('Match Patient Synchronously', (): void => {
             status: 200,
             body: {
               'x-mediator-urn': '123',
-              status: 'Success',
+              status: 'Successful',
               response: {
                 status: 200,
                 headers: { 'content-type': 'application/json' },
@@ -124,7 +124,7 @@ describe('Match Patient Synchronously', (): void => {
       const handlerResponse = await matchSyncHandler(bundle);
 
       expect(handlerResponse.status).to.be.equal(200);
-      expect(handlerResponse.body.status).to.be.equal('Success');
+      expect(handlerResponse.body.status).to.be.equal('Successful');
       expect(handlerResponse.body.orchestrations.length).to.equal(0);
       stub.restore();
     });
@@ -263,7 +263,7 @@ describe('Match Patient Synchronously', (): void => {
             status: 200,
             body: {
               'x-mediator-urn': '123',
-              status: 'Success',
+              status: 'Successful',
               response: {
                 status: 200,
                 headers: { 'content-type': 'application/json' },
@@ -298,7 +298,7 @@ describe('Match Patient Synchronously', (): void => {
       const handlerResponse = await matchSyncHandler(bundle);
 
       expect(handlerResponse.status).to.be.equal(200);
-      expect(handlerResponse.body.status).to.be.equal('Success');
+      expect(handlerResponse.body.status).to.be.equal('Successful');
       stub.restore();
       stub1.restore();
     });
@@ -431,7 +431,7 @@ describe('Match Patient Synchronously', (): void => {
             status: 200,
             body: {
               'x-mediator-urn': '123',
-              status: 'Success',
+              status: 'Successful',
               response: {
                 status: 200,
                 headers: { 'Content-Type': 'application/json' },
@@ -447,7 +447,7 @@ describe('Match Patient Synchronously', (): void => {
       const handlerResponse = await matchSyncHandler(bundle);
 
       expect(handlerResponse.status).to.be.equal(200);
-      expect(handlerResponse.body.status).to.be.equal('Success');
+      expect(handlerResponse.body.status).to.be.equal('Successful');
       stub.restore();
       stub.restore();
     });

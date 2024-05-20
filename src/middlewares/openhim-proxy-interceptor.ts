@@ -16,7 +16,7 @@ export const openhimProxyResponseInterceptor = responseInterceptor(
 
     if (isHttpStatusOk(statusCode)) {
       logger.info('Successfully proxied request!');
-      transactionStatus = 'Success';
+      transactionStatus = 'Successful';
     } else {
       logger.error(`Error in validating: ${JSON.stringify(body)}!`);
       transactionStatus = 'Failed';

@@ -59,7 +59,7 @@ describe('Kafka Fhir interaction', (): void => {
       );
 
       expect(response.status).to.be.equal(200);
-      expect(response.body.status).to.be.equal('Success');
+      expect(response.body.status).to.be.equal('Successful');
       expect(response.body.orchestrations.length).to.be.equal(2);
       expect(response.body.orchestrations[0].name).to.equal('Saving data in Fhir Datastore - hapi-fhir');
       expect(response.body.orchestrations[0].response.status).to.equal(200);
@@ -216,7 +216,7 @@ describe('Kafka Fhir interaction', (): void => {
       );
 
       expect(response.status).to.be.equal(200);
-      expect(response.body.status).to.be.equal('Success');
+      expect(response.body.status).to.be.equal('Successful');
       stub.restore();
     });
 
@@ -314,7 +314,7 @@ describe('Kafka Fhir interaction', (): void => {
       );
 
       expect(response.status).to.be.equal(200);
-      expect(response.body.status).to.be.equal('Success');
+      expect(response.body.status).to.be.equal('Successful');
       stub.restore();
     });
   });
