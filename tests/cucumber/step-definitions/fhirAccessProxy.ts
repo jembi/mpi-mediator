@@ -50,7 +50,7 @@ When('an $everything search request is sent', async (): Promise<void> => {
 Then(
   'a successful response containing a bundle of related patient resources is sent back',
   (): void => {
-    expect(responseBody.status).to.equal('Success');
+    expect(responseBody.status).to.equal('Successful');
     expect(JSON.parse(responseBody.response.body).resourceType).to.equal('Bundle');
     server.close();
   }
@@ -80,7 +80,7 @@ When(
 );
 
 Then('a successful response containing a bundle is sent back', (): void => {
-  expect(responseBody.status).to.equal('Success');
+  expect(responseBody.status).to.equal('Successful');
   expect(JSON.parse(responseBody.response.body).resourceType).to.equal('Bundle');
   server.close();
 });
@@ -95,6 +95,6 @@ When('an MDM search request is sent', async (): Promise<void> => {
 });
 
 Then('a successful MDM response is sent back', (): void => {
-  expect(responseBody.status).to.equal('Success');
+  expect(responseBody.status).to.equal('Successful');
   server.close();
 });

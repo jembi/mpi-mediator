@@ -154,7 +154,7 @@ Then('an error, indicating the patient does not exist, should be sent back', ():
 Then(
   'a response, indicating the clinical data has been stored, should be sent back',
   (): void => {
-    expect(responseBody.status).to.equal('Success');
+    expect(responseBody.status).to.equal('Successful');
     sendToKafka.restore();
     server.close();
   }

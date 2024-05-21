@@ -8,7 +8,6 @@ import fetch from 'node-fetch';
 
 import { getConfig } from '../../../src/config/config';
 import { getMpiAuthToken } from '../../../src/utils/mpi';
-import { response } from 'express';
 
 const app = rewire('../../../src/index').__get__('app');
 const config = getConfig();
@@ -65,7 +64,7 @@ When('a patient resource is sent to the MPI mediator', async (): Promise<void> =
   responseBody = response.body;
 });
 Then('a patient resource should be created on the client registry', (): void => {
-  expect(responseBody.status).to.equal('Success');
+  expect(responseBody.status).to.equal('Successful');
   server.close();
 });
 
