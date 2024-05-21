@@ -37,7 +37,7 @@ export const validationMiddleware: RequestHandler = async (req, res, next) => {
       { 'Content-Type': 'application/fhir+json' }
     );
 
-    transactionStatus = 'Success';
+    transactionStatus = 'Successful';
 
     if (isHttpStatusOk(response.status)) {
       logger.info('Successfully validated bundle!');

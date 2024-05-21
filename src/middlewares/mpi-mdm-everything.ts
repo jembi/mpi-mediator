@@ -1,7 +1,7 @@
 import { RequestHandler } from 'express';
 import logger from '../logger';
 import { buildOpenhimResponseObject } from '../utils/utils';
-import { MpiMediatorResponseObject } from '../types/response';
+import { MpiMediatorResponseObject, Orchestration } from '../types/response';
 import { fetchMpiPatientLinks } from '../utils/mpi';
 import { fetchAllPatientResourcesByRefs } from '../routes/handlers/fetchPatientResources';
 
@@ -11,6 +11,8 @@ import { fetchAllPatientResourcesByRefs } from '../routes/handlers/fetchPatientR
 const fetchAllLinkedPatientResources = async (
   patientId: string
 ): Promise<MpiMediatorResponseObject> => {
+  const orchestrations: Orchestration[] = [];
+
   try {
     const patientRef = `Patient/${patientId}`;
     const patientRefs: string[] = [];
@@ -19,18 +21,18 @@ const fetchAllLinkedPatientResources = async (
     await fetchMpiPatientLinks(patientRef, patientRefs);
 
     // Perform requests to HAPI FHIR to get everything for each patient ref
-    const bundle = await fetchAllPatientResourcesByRefs(patientRefs);
+    const bundle = await fetchAllPatientResourcesByRefs(patientRefs, orchestrations);
 
     return {
       status: 200,
-      body: buildOpenhimResponseObject('Success', 200, bundle),
+      body: buildOpenhimResponseObject('Successful', 200, bundle, 'application/fhir+json', orchestrations),
     };
   } catch (e) {
     logger.error('Unable to fetch all linked patient resources (MDM expansion)', e);
 
     return {
       status: 500,
-      body: buildOpenhimResponseObject('Failed', 500, e as Error),
+      body: buildOpenhimResponseObject('Failed', 500, e as Error, 'application/fhir+json', orchestrations),
     };
   }
 };

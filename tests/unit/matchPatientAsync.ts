@@ -50,6 +50,7 @@ describe('Match Patient Asynchronously', (): void => {
 
       const response: MpiMediatorResponseObject = await matchAsyncHandler(bundle);
       expect(response.status).to.be.equal(500);
+      expect(response.body.orchestrations.length).to.be.equal(1);
       stub.restore();
     });
 

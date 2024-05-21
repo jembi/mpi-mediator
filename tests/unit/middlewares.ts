@@ -256,7 +256,7 @@ describe('Middlewares', (): void => {
       nock(fhirDatastoreUrl)
         .post('/fhir/Patient/$validate')
         .reply(200, {
-          status: 'Success',
+          status: 'Successful',
           body: { ...patientFhirResource1 },
         });
 
@@ -357,9 +357,10 @@ describe('Middlewares', (): void => {
       } as any as Response;
       await mpiMdmEverythingMiddleware(request, response, () => {});
       expect(statusCode).to.equal(200);
-      expect(result.status).to.equal('Success');
+      expect(result.status).to.equal('Successful');
       expect(JSON.parse(result.response.body).total).to.equal(4);
       expect(JSON.parse(result.response.body).entry.length).to.equal(4);
+      expect(result.orchestrations.length).to.be.greaterThan(0);
       nock.cleanAll();
     });
   });
@@ -422,9 +423,10 @@ describe('Middlewares', (): void => {
 
       await mpiMdmSummaryMiddleware(request, response, () => {});
       expect(statusCode).to.equal(200);
-      expect(result.status).to.equal('Success');
+      expect(result.status).to.equal('Successful');
       expect(JSON.parse(result.response.body).total).to.equal(2);
       expect(JSON.parse(result.response.body).entry.length).to.equal(2);
+      expect(result.orchestrations.length).to.be.greaterThan(0);
       nock.cleanAll();
     });
   });

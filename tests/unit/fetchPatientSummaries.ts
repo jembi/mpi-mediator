@@ -7,6 +7,7 @@ import {
   fetchPatientSummaryByRef,
 } from '../../src/routes/handlers/fetchPatientSummaries';
 import format from 'date-fns/format';
+import { Orchestration } from '../../src/types/response';
 
 const config = getConfig();
 
@@ -203,8 +204,10 @@ describe('FetchPatientSummaries handler', (): void => {
       nock(fhirDatastoreUrl).get(`/fhir/${patientRef1}/$summary`).reply(200, patientSummary1);
       nock(fhirDatastoreUrl).get(`/fhir/${patientRef2}/$summary`).reply(200, patientSummary2);
 
-      const result = await fetchAllPatientSummariesByRefs([patientRef1, patientRef2]);
+      const orchestrations: Orchestration[] = [];
+      const result = await fetchAllPatientSummariesByRefs([patientRef1, patientRef2], {}, orchestrations);
       expect(result).to.deep.equal(combinedBundle1);
+      expect(orchestrations.length).to.be.greaterThan(0);
     });
   });
 

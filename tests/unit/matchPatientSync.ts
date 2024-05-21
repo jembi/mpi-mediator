@@ -5,11 +5,12 @@ import sinon from 'sinon';
 import * as kafkaFhir from '../../src/utils/kafkaFhir';
 import { getConfig } from '../../src/config/config';
 import { RequestDetails } from '../../src/types/request';
-import { MpiMediatorResponseObject } from '../../src/types/response';
+import { MpiMediatorResponseObject, Orchestration } from '../../src/types/response';
 import { matchSyncHandler } from '../../src/routes/handlers/matchPatientSync';
 import * as Auth from '../../src/utils/mpi';
 import { ClientOAuth2, OAuth2Token } from '../../src/utils/client-oauth2';
 import { Bundle, FhirResource } from 'fhir/r3';
+import { NewPatientMap } from '../../src/types/newPatientMap';
 
 const config = getConfig();
 
@@ -56,6 +57,7 @@ describe('Match Patient Synchronously', (): void => {
     });
 
     it('should process bundle without patient or patient ref', async (): Promise<void> => {
+      const patientfullUrl: string = 'Patient/1234';
       const bundle: Bundle = {
         type: 'document',
         resourceType: 'Bundle',
@@ -95,7 +97,9 @@ describe('Match Patient Synchronously', (): void => {
       stub.callsFake(
         async (
           requestDetails: RequestDetails,
-          bundle: Bundle
+          bundle: Bundle,
+          _p: NewPatientMap | undefined,
+          orchestrations: Orchestration[] = []
         ): Promise<MpiMediatorResponseObject> => {
           expect(requestDetails).to.deep.equal(fhirDatastoreRequestDetailsOrg);
           expect(bundle).to.be.deep.equal(modifiedBundle);
@@ -104,13 +108,14 @@ describe('Match Patient Synchronously', (): void => {
             status: 200,
             body: {
               'x-mediator-urn': '123',
-              status: 'Success',
+              status: 'Successful',
               response: {
                 status: 200,
                 headers: { 'content-type': 'application/json' },
                 body: '',
                 timestamp: '12/02/1991',
               },
+              orchestrations
             },
           };
         }
@@ -119,11 +124,13 @@ describe('Match Patient Synchronously', (): void => {
       const handlerResponse = await matchSyncHandler(bundle);
 
       expect(handlerResponse.status).to.be.equal(200);
-      expect(handlerResponse.body.status).to.be.equal('Success');
+      expect(handlerResponse.body.status).to.be.equal('Successful');
+      expect(handlerResponse.body.orchestrations.length).to.equal(0);
       stub.restore();
     });
 
     it('should return error response when patient creation fails in Client Registry', async (): Promise<void> => {
+      const patientfullUrl: string = 'Patient/1234';
       const bundle: Bundle = {
         type: 'document',
         resourceType: 'Bundle',
@@ -137,7 +144,7 @@ describe('Match Patient Synchronously', (): void => {
             } as FhirResource,
           },
           {
-            fullUrl: 'Patient/1234',
+            fullUrl: patientfullUrl,
             resource: {
               resourceType: 'Patient',
               id: '1233',
@@ -181,6 +188,9 @@ describe('Match Patient Synchronously', (): void => {
       expect(JSON.parse(handlerResponse.body.response.body)).to.deep.equal({
         errors: [error],
       });
+      expect(handlerResponse.body.orchestrations.length).to.equal(1);
+      expect(handlerResponse.body.orchestrations[0].name).to.equal(`Request to Client Registry - ${patientfullUrl}`);
+      expect(handlerResponse.body.orchestrations[0].response.status).to.equal(500);
       stub.restore();
     });
 
@@ -235,14 +245,16 @@ describe('Match Patient Synchronously', (): void => {
       mockSuccefullValidation();
 
       nock(`${config.mpiProtocol}://${config.mpiHost}:${config.mpiPort}`)
-        .get(`/fhir/Patient/${patientId}`)
-        .reply(200, clientRegistryResponse);
+        .post(`/fhir/Patient`)
+        .reply(201, clientRegistryResponse);
 
       const stub = sinon.stub(kafkaFhir, 'sendToFhirAndKafka');
       stub.callsFake(
         async (
           requestDetails: RequestDetails,
-          bundle: Bundle
+          bundle: Bundle,
+          _m: NewPatientMap | undefined,
+          orchestrations: Orchestration[] = []
         ): Promise<MpiMediatorResponseObject> => {
           expect(requestDetails).to.deep.equal(fhirDatastoreRequestDetailsOrg);
           expect(bundle).to.be.deep.equal(modifiedBundle);
@@ -251,13 +263,14 @@ describe('Match Patient Synchronously', (): void => {
             status: 200,
             body: {
               'x-mediator-urn': '123',
-              status: 'Success',
+              status: 'Successful',
               response: {
                 status: 200,
                 headers: { 'content-type': 'application/json' },
                 body: '',
                 timestamp: '12/02/1991',
               },
+              orchestrations
             },
           };
         }
@@ -285,7 +298,7 @@ describe('Match Patient Synchronously', (): void => {
       const handlerResponse = await matchSyncHandler(bundle);
 
       expect(handlerResponse.status).to.be.equal(200);
-      expect(handlerResponse.body.status).to.be.equal('Success');
+      expect(handlerResponse.body.status).to.be.equal('Successful');
       stub.restore();
       stub1.restore();
     });
@@ -418,13 +431,14 @@ describe('Match Patient Synchronously', (): void => {
             status: 200,
             body: {
               'x-mediator-urn': '123',
-              status: 'Success',
+              status: 'Successful',
               response: {
                 status: 200,
                 headers: { 'Content-Type': 'application/json' },
                 body: '',
                 timestamp: '12/02/1991',
               },
+              orchestrations: []
             },
           };
         }
@@ -433,7 +447,7 @@ describe('Match Patient Synchronously', (): void => {
       const handlerResponse = await matchSyncHandler(bundle);
 
       expect(handlerResponse.status).to.be.equal(200);
-      expect(handlerResponse.body.status).to.be.equal('Success');
+      expect(handlerResponse.body.status).to.be.equal('Successful');
       stub.restore();
       stub.restore();
     });

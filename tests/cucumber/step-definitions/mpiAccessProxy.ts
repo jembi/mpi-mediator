@@ -70,7 +70,7 @@ When('a $match search request is sent', async (): Promise<void> => {
 });
 
 Then('a success response is sent back', (): void => {
-  expect(responseBody.status).to.equal('Success');
+  expect(responseBody.status).to.equal('Successful');
   server.close();
 });
 

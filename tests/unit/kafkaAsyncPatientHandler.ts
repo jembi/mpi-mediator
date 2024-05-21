@@ -53,6 +53,7 @@ describe('Kafka Async Patient Handler', (): void => {
               },
             },
             status: 'Success',
+            orchestrations: []
           },
         };
       });
@@ -118,6 +119,7 @@ describe('Kafka Async Patient Handler', (): void => {
               },
             },
             status: 'Success',
+            orchestrations: []
           },
         };
       });
@@ -208,6 +210,7 @@ describe('Kafka Async Patient Handler', (): void => {
               },
             },
             status: 'Success',
+            orchestrations: []
           },
         };
       });

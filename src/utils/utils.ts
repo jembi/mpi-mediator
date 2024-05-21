@@ -9,12 +9,25 @@ import {
   Response,
   MpiMediatorResponseObject,
   MpiTransformResult,
+  Orchestration,
 } from '../types/response';
 import { RequestDetails } from '../types/request';
 import { Bundle, BundleEntry, BundleLink, FhirResource, Patient } from 'fhir/r3';
 import { PatientData } from '../types/newPatientMap';
 
 const config = getConfig();
+const {
+  fhirDatastoreProtocol: fhirProtocol,
+  fhirDatastoreHost: fhirHost,
+  fhirDatastorePort: fhirPort,
+  mpiProtocol,
+  mpiHost,
+  mpiPort
+} = config;
+
+const headers: HeadersInit = {
+  'Content-Type': 'application/fhir+json',
+};
 
 export const isHttpStatusOk = (status: number) => status >= 200 && status < 300;
 
@@ -95,7 +108,8 @@ export const buildOpenhimResponseObject = (
   openhimTransactionStatus: string,
   httpResponseStatusCode: number,
   responseBody: object,
-  contentType = 'application/fhir+json'
+  contentType = 'application/fhir+json',
+  orchestrations: Orchestration[] = []
 ): OpenHimResponseObject => {
   const response: Response = {
     status: httpResponseStatusCode,
@@ -108,6 +122,7 @@ export const buildOpenhimResponseObject = (
     'x-mediator-urn': config.mediatorUrn,
     status: openhimTransactionStatus,
     response,
+    orchestrations,
   };
 };
 
@@ -234,8 +249,8 @@ export const restorePatientResource = (patientData: PatientData) => {
   patientData.restoredPatient = patientData.mpiResponsePatient;
 
   // restore the source uuid of the patient
-  const id = Object.assign({id: ''}, patientData.mpiTransformResult?.patient).id;
-  patientData.restoredPatient = Object.assign({}, patientData.restoredPatient, {id});
+  const id = Object.assign({ id: '' }, patientData.mpiTransformResult?.patient).id;
+  patientData.restoredPatient = Object.assign({}, patientData.restoredPatient, { id });
 
   if (patientData.mpiTransformResult?.extension?.length) {
     patientData.restoredPatient = Object.assign({}, patientData.restoredPatient, {
@@ -260,12 +275,15 @@ export const createNewPatientRef = (patientId: string): string => {
 
 export const createHandlerResponseObject = (
   transactionStatus: string,
-  response: ResponseObject
+  response: ResponseObject,
+  orchestrations?: Orchestration[]
 ): MpiMediatorResponseObject => {
   const responseBody = buildOpenhimResponseObject(
     transactionStatus,
     response.status,
-    response.body
+    response.body,
+    'application/fhir+json',
+    orchestrations
   );
 
   return {
@@ -317,7 +335,7 @@ export const mergeBundles = async (
   return bundle;
 };
 
-export const patientProjector = (patient: Patient) : Patient => {
+export const patientProjector = (patient: Patient): Patient => {
   return {
     resourceType: patient.resourceType,
     id: patient.id,
@@ -325,5 +343,41 @@ export const patientProjector = (patient: Patient) : Patient => {
     name: patient.name,
     birthDate: patient.birthDate,
     gender: patient.gender
-  }
+  };
 };
+
+export const createFhirDatastoreOrcherstation = (name: string, path: string): Orchestration => ({
+  name: `Request to fhir datastore - ${path} : ${name}`,
+  request: {
+    protocol: fhirProtocol,
+    host: fhirHost,
+    path,
+    port: fhirPort,
+    method: 'GET',
+    headers,
+    timestamp: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"),
+  },
+  response: {
+    status: 200,
+    body: '',
+    timestamp: '',
+  },
+});
+
+export const createClientRegistryOrcherstation = (name: string, path: string): Orchestration => ({
+  name: `Request to client registry - ${path} : ${name}`,
+  request: {
+    protocol: mpiProtocol,
+    host: mpiHost,
+    path,
+    port: mpiPort,
+    method: 'GET',
+    headers,
+    timestamp: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"),
+  },
+  response: {
+    status: 200,
+    body: '',
+    timestamp: '',
+  },
+});

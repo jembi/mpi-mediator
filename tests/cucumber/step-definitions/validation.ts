@@ -59,6 +59,6 @@ Then('an error response should be sent back', (): void => {
 });
 
 Then('a success response should be sent back', (): void => {
-  expect(responseBody.status).to.equal('Success');
+  expect(responseBody.status).to.equal('Successful');
   server.close();
 });

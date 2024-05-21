@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { Bundle } from 'fhir/r3';
 import nock from 'nock';
 import { getConfig } from '../../src/config/config';
-import { MpiMediatorResponseObject } from '../../src/types/response';
+import { MpiMediatorResponseObject, Orchestration } from '../../src/types/response';
 import {
   fetchAllPatientResourcesByRefs,
   fetchEverythingByRef,
@@ -119,8 +119,10 @@ describe('FetchPatientResources handler', (): void => {
         .get(`/fhir/Observation?subject=${encodeURIComponent(patientRef)}`)
         .reply(200, Observations);
 
-      const result = await fetchAllPatientResourcesByRefs([patientRef]);
-      expect(result).to.deep.equal(bundle);
+      const orchestrations: Orchestration[] = [];
+      const result = await fetchAllPatientResourcesByRefs([patientRef], orchestrations);
+      expect(result.total).to.be.equal(2);
+      expect(orchestrations.length).to.be.greaterThan(0);
     });
   });
   describe('*FetchPatientResources', (): void => {

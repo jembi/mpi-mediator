@@ -1,13 +1,16 @@
 import { Bundle } from 'fhir/r3';
+import format from 'date-fns/format';
+
 import { getConfig } from '../../config/config';
 import {
   buildOpenhimResponseObject,
+  createFhirDatastoreOrcherstation,
   getData,
   isHttpStatusOk,
   mergeBundles,
 } from '../../utils/utils';
 import logger from '../../logger';
-import { MpiMediatorResponseObject } from '../../types/response';
+import { MpiMediatorResponseObject, Orchestration } from '../../types/response';
 
 const {
   fhirDatastoreProtocol: protocol,
@@ -17,7 +20,8 @@ const {
 
 export const fetchAllPatientSummariesByRefs = async (
   patientRefs: string[],
-  queryParams?: object
+  queryParams?: object,
+  orchestrations: Orchestration[] = []
 ): Promise<Bundle> => {
   // remove duplicates
   patientRefs = Array.from(new Set(patientRefs.map(ref => ref?.split('/').pop() || '')));
@@ -34,9 +38,21 @@ export const fetchAllPatientSummariesByRefs = async (
 
     const path = `/fhir/Patient/${ref}/$summary${combinedParams ? `?${combinedParams}` : ''}`;
 
+    const headers: HeadersInit = {'Content-Type': 'application/fhir+json'};
+
+    const orchestration: Orchestration = createFhirDatastoreOrcherstation('Get summary', path);
+  
     return getData(protocol, host, port, path, {
       'Content-Type': 'application/fhir+json',
     }).then((response) => {
+      orchestration.response = {
+        status: response.status,
+        body: JSON.stringify(response.body),
+        timestamp: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"),
+        headers
+      };
+      orchestrations.push(orchestration);
+
       if (!isHttpStatusOk(response.status) && response.status != 404) {
         // We throw an error if one of the requests fails ( except for cases where a patient link does not exist in the datastore)
         throw response;
@@ -59,9 +75,11 @@ export const fetchPatientSummaryByRef = async (
   ref: string,
   queryParams: object
 ): Promise<MpiMediatorResponseObject> => {
+  const orchestrations: Orchestration[] = [];
+
   try {
-    const bundle = await fetchAllPatientSummariesByRefs([ref], queryParams);
-    const responseBody = buildOpenhimResponseObject('Successful', 200, bundle);
+    const bundle = await fetchAllPatientSummariesByRefs([ref], queryParams, orchestrations);
+    const responseBody = buildOpenhimResponseObject('Successful', 200, bundle, 'application/fhir+json', orchestrations);
 
     logger.info(`Successfully fetched patient summary with id ${ref}`);
 
@@ -76,7 +94,7 @@ export const fetchPatientSummaryByRef = async (
     const body = (err as any).body || {};
 
     return {
-      body: buildOpenhimResponseObject('Failed', status, body),
+      body: buildOpenhimResponseObject('Failed', status, body, 'application/fhir+json', orchestrations),
       status: status,
     };
   }
