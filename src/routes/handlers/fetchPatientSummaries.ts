@@ -11,6 +11,7 @@ import {
 } from '../../utils/utils';
 import logger from '../../logger';
 import { MpiMediatorResponseObject, Orchestration } from '../../types/response';
+import { fetchPatientById } from './fetchPatient';
 
 const {
   fhirDatastoreProtocol: protocol,
@@ -26,7 +27,7 @@ export const fetchAllPatientSummariesByRefs = async (
   // remove duplicates
   patientRefs = Array.from(new Set(patientRefs.map(ref => ref?.split('/').pop() || '')));
 
-  const patientExternalRefs = patientRefs.map((ref) => {
+  const patientExternalRefs = patientRefs.map(async (ref) => {
     const params = Object.entries(queryParams ?? {});
     let combinedParams = null;
 
@@ -34,6 +35,13 @@ export const fetchAllPatientSummariesByRefs = async (
       combinedParams = params
         .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
         .join('&');
+    }
+
+    const fullPatient: MpiMediatorResponseObject = await fetchPatientById(ref, '');
+    orchestrations.push(...fullPatient.body.orchestrations);
+
+    if (!isHttpStatusOk(fullPatient.status) && fullPatient.status != 404) {
+      throw fullPatient;
     }
 
     const path = `/fhir/Patient/${ref}/$summary${combinedParams ? `?${combinedParams}` : ''}`;
@@ -58,7 +66,16 @@ export const fetchAllPatientSummariesByRefs = async (
         throw response;
       }
 
-      return response;
+      // Add patient's demographic data
+      const bundle = response?.body as Bundle;
+
+      const index = bundle.entry?.findIndex(resource => resource.resource?.resourceType?.match(/Patient/));
+
+      if (bundle.entry && index && index > -1) {
+        bundle.entry[index].resource = JSON.parse(fullPatient.body.response.body);
+      }
+
+      return {status: response.status, body: bundle};
     });
   });
 
