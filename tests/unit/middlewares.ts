@@ -1,7 +1,8 @@
 import { expect } from 'chai';
 import { Request, Response } from 'express';
-import { Bundle, Observation, Patient } from 'fhir/r3';
+import { Bundle, Patient } from 'fhir/r3';
 import nock from 'nock';
+import sinon from 'sinon';
 
 import { getConfig } from '../../src/config/config';
 import { mpiMdmEverythingMiddleware } from '../../src/middlewares/mpi-mdm-everything';
@@ -10,6 +11,7 @@ import { validationMiddleware } from '../../src/middlewares/validation';
 import { mpiAuthMiddleware } from '../../src/middlewares/mpi-auth';
 import { mpiMdmSummaryMiddleware } from '../../src/middlewares/mpi-mdm-summary';
 import { createNewPatientRef } from '../../src/utils/utils';
+import * as patientMethods from '../../src/routes/handlers/fetchPatient';
 
 const config = getConfig();
 
@@ -113,6 +115,67 @@ const Observations: Bundle = {
       },
     },
   ],
+};
+const mpiPatient = {
+  id: 123,
+  identifier: [
+    {
+      system: 'http://cdr.aacahb.gov.et/SmartCareID',
+      value: '642b83d3-a43c-41ef-a578-2b730f276bfb',
+    },
+    {
+      system: 'http://cdr.aacahb.gov.et/NationalID',
+      value: 'MRN-642b83d3-a43c-41ef-a578-2b730f476bf9',
+    },
+    {
+      system: 'http://cdr.aacahb.gov.et/UAN',
+      value: 'UAN-642b83d3-a43c-41ef-a578-2b730f276bfb',
+    },
+  ],
+  name: [
+    {
+      use: 'official',
+      family: 'Rodrigues',
+      given: ['Liniee'],
+    },
+  ],
+  telecom: [
+    {
+      system: 'phone',
+      value: '+2519000000',
+      use: 'home',
+    },
+  ],
+  gender: 'female',
+  birthDate: '1999-06-19',
+  address: [
+    {
+      type: 'physical',
+      text: 'Urban',
+      state: 'Addis Ababa',
+      city: 'Cherkos sub city',
+      district: '10',
+      line: ['17', '927/5'],
+    },
+  ],
+  maritalStatus: {
+    coding: [
+      {
+        system: 'http://terminology.hl7.org/CodeSystem/v3-MaritalStatus',
+        code: 'M',
+        display: 'Married',
+      },
+    ],
+  },
+  link: [
+    {
+      other: {
+        reference: `Patient/123`,
+      },
+      type: 'refer',
+    },
+  ],
+  resourceType: 'Patient',
 };
 
 const patientRefSummary1 = 'Patient/1';
@@ -325,10 +388,22 @@ describe('Middlewares', (): void => {
 
     it('should perform MDM expansion when mdm param is supplied', async () => {
       nock(mpiUrl).persist().post('/auth/oauth2_token').reply(200, newOauth2TokenGenerated);
-      nock(mpiUrl).get('/fhir/links/Patient/0x4').reply(200, {...patientFhirResource1, link: [{other: {reference: 'Patient/0x4'}}, {other: {reference: 'Patient/0x7'}}]});
+      nock(mpiUrl)
+        .get('/fhir/links/Patient/0x4')
+        .reply(200, {
+          ...patientFhirResource1,
+          link: [
+            { other: { reference: 'Patient/0x4' } },
+            { other: { reference: 'Patient/0x7' } },
+          ],
+        });
       nock(mpiUrl).get('/fhir/Patient/2').reply(200, patientFhirResource2);
-      const links = encodeURIComponent([createNewPatientRef('0x4'),createNewPatientRef('0x7')].join(','))
-      nock(fhirDatastoreUrl).get(`/fhir/Patient?link=${links}`).reply(200, {entry: [{fullUrl: 'Patient/1'}, {fullUrl: 'Patient/2'}]});
+      const links = encodeURIComponent(
+        [createNewPatientRef('0x4'), createNewPatientRef('0x7')].join(',')
+      );
+      nock(fhirDatastoreUrl)
+        .get(`/fhir/Patient?link=${links}`)
+        .reply(200, { entry: [{ fullUrl: 'Patient/1' }, { fullUrl: 'Patient/2' }] });
       nock(fhirDatastoreUrl).get('/fhir/Patient/1').reply(200, patientFhirResource1);
       nock(fhirDatastoreUrl)
         .get(`/fhir/Encounter?subject=${encodeURIComponent('Patient/1,Patient/2')}`)
@@ -388,10 +463,22 @@ describe('Middlewares', (): void => {
 
     it('should preform MDM expansion when mdm param is supplied', async () => {
       nock(mpiUrl).persist().post('/auth/oauth2_token').reply(200, newOauth2TokenGenerated);
-      nock(mpiUrl).get('/fhir/links/Patient/0x4').reply(200, {...patientFhirResource1, link: [{other: {reference: 'Patient/0x4'}}, {other: {reference: 'Patient/0x7'}}]});
+      nock(mpiUrl)
+        .get('/fhir/links/Patient/0x4')
+        .reply(200, {
+          ...patientFhirResource1,
+          link: [
+            { other: { reference: 'Patient/0x4' } },
+            { other: { reference: 'Patient/0x7' } },
+          ],
+        });
       nock(mpiUrl).get('/fhir/Patient/2').reply(200, patientFhirResource2);
-      const links = encodeURIComponent([createNewPatientRef('0x4'),createNewPatientRef('0x7')].join(','))
-      nock(fhirDatastoreUrl).get(`/fhir/Patient?link=${links}`).reply(200, {entry: [{fullUrl: 'Patient/1'}, {fullUrl: 'Patient/2'}]});
+      const links = encodeURIComponent(
+        [createNewPatientRef('0x4'), createNewPatientRef('0x7')].join(',')
+      );
+      nock(fhirDatastoreUrl)
+        .get(`/fhir/Patient?link=${links}`)
+        .reply(200, { entry: [{ fullUrl: 'Patient/1' }, { fullUrl: 'Patient/2' }] });
       nock(fhirDatastoreUrl).get('/fhir/Patient/1').reply(200, patientFhirResource1);
       nock(fhirDatastoreUrl)
         .get(`/fhir/${patientRefSummary1}/$summary`)
@@ -399,6 +486,17 @@ describe('Middlewares', (): void => {
       nock(fhirDatastoreUrl)
         .get(`/fhir/${patientRefSummary2}/$summary`)
         .reply(200, patientSummary2);
+
+      const stub = sinon.stub(patientMethods, 'fetchPatientById');
+      stub.resolves({
+        status: 200,
+        body: {
+          'x-mediator-urn': 'urn',
+          status: 'Successful',
+          orchestrations: [],
+          response: { status: 200, timestamp: '102203002', body: JSON.stringify(mpiPatient) },
+        },
+      });
 
       const request = {
         body: {},
@@ -428,6 +526,7 @@ describe('Middlewares', (): void => {
       expect(JSON.parse(result.response.body).entry.length).to.equal(2);
       expect(result.orchestrations.length).to.be.greaterThan(0);
       nock.cleanAll();
+      stub.restore();
     });
   });
 
@@ -444,10 +543,22 @@ describe('Middlewares', (): void => {
 
     it('should perform MDM expansion when mdm param is supplied', async () => {
       nock(mpiUrl).persist().post('/auth/oauth2_token').reply(200, {});
-      nock(mpiUrl).get('/fhir/links/Patient/0x4').reply(200, {...patientFhirResource1, link: [{other: {reference: 'Patient/0x4'}}, {other: {reference: 'Patient/0x7'}}]});
+      nock(mpiUrl)
+        .get('/fhir/links/Patient/0x4')
+        .reply(200, {
+          ...patientFhirResource1,
+          link: [
+            { other: { reference: 'Patient/0x4' } },
+            { other: { reference: 'Patient/0x7' } },
+          ],
+        });
       nock(mpiUrl).get('/fhir/Patient/2').reply(200, patientFhirResource2);
-      const links = encodeURIComponent([createNewPatientRef('0x4'),createNewPatientRef('0x7')].join(','))
-      nock(fhirDatastoreUrl).get(`/fhir/Patient?link=${links}`).reply(200, {entry: [{fullUrl: 'Patient/1'}, {fullUrl: 'Patient/2'}]});
+      const links = encodeURIComponent(
+        [createNewPatientRef('0x4'), createNewPatientRef('0x7')].join(',')
+      );
+      nock(fhirDatastoreUrl)
+        .get(`/fhir/Patient?link=${links}`)
+        .reply(200, { entry: [{ fullUrl: 'Patient/1' }, { fullUrl: 'Patient/2' }] });
       nock(fhirDatastoreUrl).get('/fhir/Patient/1').reply(200, patientFhirResource1);
 
       const request = {
