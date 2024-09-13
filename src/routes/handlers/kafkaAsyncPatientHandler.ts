@@ -39,7 +39,9 @@ export const asyncPatientMatchHandler = async (): Promise<void> => {
 
         return;
       } else {
-        bundle = JSON.parse(bundleString);
+        const request = JSON.parse(bundleString);
+
+        bundle = JSON.parse(request.body);
       }
 
       const processingResult: MpiMediatorResponseObject = await processBundle(bundle);
