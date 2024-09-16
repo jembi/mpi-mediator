@@ -8,6 +8,8 @@ import {
 } from '../../src/routes/handlers/fetchPatientSummaries';
 import format from 'date-fns/format';
 import { Orchestration } from '../../src/types/response';
+import * as patientMethods from '../../src/routes/handlers/fetchPatient';
+import sinon from 'sinon';
 
 const config = getConfig();
 
@@ -188,8 +190,80 @@ const combinedBundle2: Bundle = {
 };
 
 describe('FetchPatientSummaries handler', (): void => {
+  const mpiPatient = {
+    id: 123,
+    identifier: [
+      {
+        system: 'http://cdr.aacahb.gov.et/SmartCareID',
+        value: '642b83d3-a43c-41ef-a578-2b730f276bfb',
+      },
+      {
+        system: 'http://cdr.aacahb.gov.et/NationalID',
+        value: 'MRN-642b83d3-a43c-41ef-a578-2b730f476bf9',
+      },
+      {
+        system: 'http://cdr.aacahb.gov.et/UAN',
+        value: 'UAN-642b83d3-a43c-41ef-a578-2b730f276bfb',
+      },
+    ],
+    name: [
+      {
+        use: 'official',
+        family: 'Rodrigues',
+        given: ['Liniee'],
+      },
+    ],
+    telecom: [
+      {
+        system: 'phone',
+        value: '+2519000000',
+        use: 'home',
+      },
+    ],
+    gender: 'female',
+    birthDate: '1999-06-19',
+    address: [
+      {
+        type: 'physical',
+        text: 'Urban',
+        state: 'Addis Ababa',
+        city: 'Cherkos sub city',
+        district: '10',
+        line: ['17', '927/5'],
+      },
+    ],
+    maritalStatus: {
+      coding: [
+        {
+          system: 'http://terminology.hl7.org/CodeSystem/v3-MaritalStatus',
+          code: 'M',
+          display: 'Married',
+        },
+      ],
+    },
+    link: [
+      {
+        other: {
+          reference: `Patient/123`,
+        },
+        type: 'refer',
+      },
+    ],
+    resourceType: 'Patient',
+  };
+
   describe('fetchAllPatientSummariesByRefs', async () => {
     it('should return an empty bundle', async () => {
+      const stub = sinon.stub(patientMethods, 'fetchPatientById');
+      stub.resolves({
+        status: 200,
+        body: {
+          'x-mediator-urn': 'urn',
+          status: 'Successful',
+          orchestrations: [],
+          response: { status: 200, timestamp: '102203002', body: JSON.stringify(mpiPatient) },
+        },
+      });
       nock(fhirDatastoreUrl).get(`/fhir/${emptyPatientRef1}/$summary`).reply(200, {});
       nock(fhirDatastoreUrl).get(`/fhir/${emptyPatientRef2}/$summary`).reply(200, {});
 
@@ -198,30 +272,69 @@ describe('FetchPatientSummaries handler', (): void => {
         emptyPatientRef2,
       ]);
       expect(result).to.deep.equal(emptyBundle);
+      stub.restore();
     });
 
     it('should return a bundle with 2 entries for 2 given patients', async () => {
+      const stub = sinon.stub(patientMethods, 'fetchPatientById');
+      stub.resolves({
+        status: 200,
+        body: {
+          'x-mediator-urn': 'urn',
+          status: 'Successful',
+          orchestrations: [],
+          response: { status: 200, timestamp: '102203002', body: JSON.stringify(mpiPatient) },
+        },
+      });
       nock(fhirDatastoreUrl).get(`/fhir/${patientRef1}/$summary`).reply(200, patientSummary1);
       nock(fhirDatastoreUrl).get(`/fhir/${patientRef2}/$summary`).reply(200, patientSummary2);
 
       const orchestrations: Orchestration[] = [];
-      const result = await fetchAllPatientSummariesByRefs([patientRef1, patientRef2], {}, orchestrations);
+      const result = await fetchAllPatientSummariesByRefs(
+        [patientRef1, patientRef2],
+        {},
+        orchestrations
+      );
       expect(result).to.deep.equal(combinedBundle1);
       expect(orchestrations.length).to.be.greaterThan(0);
+      stub.restore();
     });
   });
 
   describe('fetchPatientSummariesByRefs', async () => {
     it('should return an empty bundle', async () => {
+      const stub = sinon.stub(patientMethods, 'fetchPatientById');
+      stub.resolves({
+        status: 200,
+        body: {
+          'x-mediator-urn': 'urn',
+          status: 'Successful',
+          orchestrations: [],
+          response: { status: 200, timestamp: '102203002', body: JSON.stringify(mpiPatient) },
+        },
+      });
       nock(fhirDatastoreUrl).get(`/fhir/${emptyPatientRef1}/$summary`).reply(200, {});
+
       const result = await fetchPatientSummaryByRef(emptyPatientRef1, {});
       expect(JSON.parse(result.body.response.body)).to.deep.equal(emptyBundle);
+      stub.restore();
     });
     it('should return a bundle with 2 entries for 1 given patient', async () => {
+      const stub = sinon.stub(patientMethods, 'fetchPatientById');
+      stub.resolves({
+        status: 200,
+        body: {
+          'x-mediator-urn': 'urn',
+          status: 'Successful',
+          orchestrations: [],
+          response: { status: 200, timestamp: '102203002', body: JSON.stringify(mpiPatient) },
+        },
+      });
       nock(fhirDatastoreUrl).get(`/fhir/${patientRef3}/$summary`).reply(200, patientSummary3);
 
       const result = await fetchPatientSummaryByRef(patientRef3, {});
       expect(JSON.parse(result.body.response.body)).to.deep.equal(combinedBundle2);
+      stub.restore();
     });
   });
 });
